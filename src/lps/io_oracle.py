@@ -23,7 +23,7 @@ def _infer_year_from_name(path: Path) -> Optional[int]:
 
 def list_oracle_files() -> list[Path]:
 	"""Return all Oracle's Elixir CSV files in the oracle data directory."""
-	return files
+	return sorted(ORACLE_DIR.glob("*.csv"))
 
 
 def load_oracle_year(year: int) -> pd.DataFrame:
@@ -41,7 +41,7 @@ def load_oracle_year(year: int) -> pd.DataFrame:
 		raise RuntimeError(f"Multiple CSVs matched year {year}: {candidates}")
 
 	path = candidates[0]
-	df = pd.read_csv(path)
+	df = pd.read_csv(path, low_memory=False)
 	df["year"] = year
 	return df
 
@@ -66,7 +66,7 @@ def load_oracle_all() -> pd.DataFrame:
 	dfs: list[pd.DataFrame] = []
 	for path in files:
 		year = _infer_year_from_name(path)
-		df = pd.read_csv(path)
+		df = pd.read_csv(path, low_memory=False)
 		if year is not None and "year" not in df.columns:
 			df["year"] = year
 		dfs.append(df)

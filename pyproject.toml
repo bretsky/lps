@@ -1,17 +1,28 @@
-[project]
+[tool.poetry]
 name = "lps"
 version = "0.1.0"
-description = ""
-authors = [
-    {name = "bretsky",email = "bretskyselby99@gmail.com"}
-]
+description = "League of Legends LPS analysis"
+authors = ["bretsky <bretskyselby99@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "pandas (>=2.3.3,<3.0.0)",
-    "numpy (>=2.3.5,<3.0.0)"
+
+# Tell Poetry where your package lives (src layout)
+packages = [
+    { include = "lps", from = "src" }
 ]
 
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+pandas = ">=2.3.3,<3.0.0"
+numpy = ">=2.3.5,<3.0.0"
+scikit-learn = "^1.5.0"
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.0"
+black = "^24.0.0"
+isort = "^5.13.0"
+pytest = "^8.0.0"
+mypy = "^1.10.0"
+jupyter = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
