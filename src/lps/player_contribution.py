@@ -16,12 +16,13 @@ This file implements Model 1: Expected Performance Model
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor
 from tqdm import tqdm
 
 from .io_oracle import load_oracle_years
@@ -53,8 +54,8 @@ class ExpectedPerformanceConfig:
     # Baseline player percentile (20th percentile = bottom 20%)
     baseline_percentile: float = 0.20
 
-    # Model parameters
-    n_estimators: int = 100
+    # Model parameters (HistGradientBoostingRegressor)
+    max_iter: int = 100  # Equivalent to n_estimators
     max_depth: int = 5
     learning_rate: float = 0.1
 
@@ -176,8 +177,9 @@ def build_game_state_features(
 
     # Determine blind pick status from draft order using team rows
     logging.info("Determining blind pick status from draft order...")
+
+    # Initialize blind pick column now (pick_order will be added during merge)
     df["_blind_pick"] = 0  # Default to not blind pick
-    df["_pick_order"] = -1  # Overall pick order in draft
 
     # Standard draft order (Blue=1, Red=2):
     # Blue pick1 (overall 1), Red pick1 (2), Red pick2 (3), Blue pick2 (4),
@@ -190,37 +192,96 @@ def build_game_state_features(
         ("Blue", 5): 9, ("Red", 5): 10,
     }
 
-    # Check if we have pick columns
+    # Check if we have pick columns and team rows
     pick_cols = [f"pick{i}" for i in range(1, 6)]
-    if all(col in df_with_teams.columns for col in pick_cols):
+    has_pick_cols = all(col in df_with_teams.columns for col in pick_cols)
+
+    if has_pick_cols:
         # Get team rows (position == "team")
         team_rows = df_with_teams[df_with_teams["position"] == "team"]
+        logging.info(f"  Found {len(team_rows):,} team rows")
 
         if len(team_rows) > 0:
             logging.info(f"  Found {len(team_rows):,} team rows with draft information")
 
-            # First pass: map each player to their pick order
+            # First pass: build pick order mappings (much faster than repeated masking)
+            logging.info("  Building pick order mappings...")
+            t_start = time.perf_counter()
+
+            mappings = []
             for _, team_row in tqdm(team_rows.iterrows(), total=len(team_rows), desc="Processing draft orders"):
                 game_id = team_row[game_col]
                 side = team_row["side"]
 
-                # Extract pick order and map to players
+                # Extract pick order for each champion
                 for pick_num in range(1, 6):
                     pick_col = f"pick{pick_num}"
                     if pd.notna(team_row[pick_col]):
                         champion = team_row[pick_col]
                         overall_order = draft_order_map.get((side, pick_num), -1)
 
-                        # Mark players with their pick order
-                        mask = (
-                            (df[game_col] == game_id) &
-                            (df["side"] == side) &
-                            (df[champion_col] == champion)
-                        )
-                        df.loc[mask, "_pick_order"] = overall_order
-                    else:
-                        logging.warning(f"    Pick {pick_num} is missing for {side} team on game {game_id}")
-            logging.info(f"  Mapped pick orders")
+                        mappings.append({
+                            game_col: game_id,
+                            "side": side,
+                            champion_col: champion,
+                            "_pick_order": overall_order
+                        })
+
+            t_build = time.perf_counter()
+            logging.info(f"  Built {len(mappings):,} mappings in {t_build - t_start:.2f}s")
+
+            if len(mappings) > 0:
+                # Create mapping dataframe and merge (vectorized operation, much faster)
+                logging.info("  Merging pick orders...")
+                mapping_df = pd.DataFrame(mappings)
+
+                # Debug: Show sample data to understand mismatch
+                logging.info(f"  Sample mapping champions: {mapping_df[champion_col].unique()[:5].tolist()}")
+                logging.info(f"  Sample player champions: {df[champion_col].unique()[:5].tolist()}")
+                logging.info(f"  Unique champions in mappings: {len(mapping_df[champion_col].unique())}")
+                logging.info(f"  Unique champions in players: {len(df[champion_col].unique())}")
+                logging.info(f"  Sample mapping pick orders: {mapping_df['_pick_order'].unique()[:10].tolist()}")
+
+                # Merge to add pick order column
+                df_before_merge = len(df)
+                df = df.merge(
+                    mapping_df,
+                    on=[game_col, "side", champion_col],
+                    how="left",
+                    suffixes=('', '_new'),
+                    indicator=True
+                )
+                matches = (df['_merge'] == 'both').sum()
+                logging.info(f"  Merge matched {matches:,} / {df_before_merge:,} rows")
+                df = df.drop(columns=['_merge'])
+
+                # Check if _pick_order column exists after merge
+                if "_pick_order" in df.columns:
+                    # Debug: Check what values we got from the merge
+                    non_nan_count = df["_pick_order"].notna().sum()
+                    unique_values = df["_pick_order"].dropna().unique()
+                    logging.info(f"  After merge: {non_nan_count:,} non-NaN values, unique values: {sorted(unique_values)[:10]}")
+
+                    # Fill NaN with -1 for games without draft data
+                    df["_pick_order"] = df["_pick_order"].fillna(-1).astype(int)
+                else:
+                    logging.warning("  Merge didn't create _pick_order column, setting all to -1")
+                    df["_pick_order"] = -1
+            else:
+                logging.warning("  No mappings created, setting all pick orders to -1")
+                df["_pick_order"] = -1
+
+            t_merge = time.perf_counter()
+            logging.info(f"  Merged pick orders in {t_merge - t_build:.2f}s")
+
+            # Verify column exists before accessing
+            if "_pick_order" in df.columns:
+                logging.info(f"  Rows without pick order: {(df['_pick_order'] == -1).sum():,}")
+            else:
+                logging.error(f"  ERROR: _pick_order column not in dataframe after merge!")
+                logging.error(f"  Available columns: {df.columns.tolist()}")
+
+            logging.info(f"  Total time: {t_merge - t_start:.2f}s")
 
             # Second pass: determine blind picks by comparing lane opponents
             for game_id in df[game_col].unique():
@@ -248,9 +309,11 @@ def build_game_state_features(
             blind_pick_count = df["_blind_pick"].sum()
             logging.info(f"  Identified {blind_pick_count:,} blind pick instances")
         else:
-            logging.warning("  No team rows found in data")
+            logging.info("  No team rows found in data")
+            df["_pick_order"] = -1  # Initialize if no team rows
     else:
-        logging.warning("  Pick order columns not found, blind pick status unavailable")
+        logging.info("  Pick order columns not found, blind pick status unavailable")
+        df["_pick_order"] = -1  # Initialize if no pick columns
 
     # Identify feature columns
     feature_cols = [
@@ -268,12 +331,20 @@ def build_game_state_features(
 
     logging.info(f"Created {len(feature_cols)} game state features")
 
+    # Final check: ensure critical columns exist
+    required_cols = ["_blind_pick", "_pick_order"]
+    for col in required_cols:
+        if col not in df.columns:
+            logging.error(f"ERROR: Required column '{col}' missing from dataframe!")
+            logging.error(f"Available columns: {df.columns.tolist()[:20]}...")  # Show first 20
+            df[col] = -1 if col == "_pick_order" else 0  # Add with default value
+
     return df, feature_cols
 
 
 def train_expected_performance_model(
     cfg: Optional[ExpectedPerformanceConfig] = None,
-) -> Dict[Tuple[str, str], GradientBoostingRegressor]:
+) -> Dict[Tuple[str, str], HistGradientBoostingRegressor]:
     """
     Train Model 1: Expected Performance Model
 
@@ -309,7 +380,8 @@ def train_expected_performance_model(
     models = {}
 
     for position in cfg.roles:
-        logging.info("\n" + "=" * 60)
+        print()
+        logging.info("=" * 60)
         logging.info(f"Position: {position.upper()}")
         logging.info("=" * 60)
 
@@ -347,9 +419,12 @@ def train_expected_performance_model(
             logging.info(f"    Valid samples: {len(X):,}")
             logging.info(f"    Features: {len(X.columns)}")
 
-            # Train gradient boosting model
-            model = GradientBoostingRegressor(
-                n_estimators=cfg.n_estimators,
+            # Train histogram-based gradient boosting with quantile loss
+            # This predicts the 20th percentile (baseline player) performance
+            model = HistGradientBoostingRegressor(
+                loss='quantile',
+                quantile=cfg.baseline_percentile,
+                max_iter=cfg.max_iter,
                 max_depth=cfg.max_depth,
                 learning_rate=cfg.learning_rate,
                 random_state=42,
@@ -364,15 +439,23 @@ def train_expected_performance_model(
             # Store model with (position, metric) key
             models[(position, metric)] = model
 
-            # Show top features
+            # Show top features with correlation direction
             feature_importance = pd.DataFrame({
                 'feature': X.columns,
                 'importance': model.feature_importances_
-            }).sort_values('importance', ascending=False)
+            })
 
-            logging.info(f"    Top 10 features:") 
+            # Calculate correlation with target for direction
+            correlations = X.corrwith(y)
+            feature_importance['correlation'] = feature_importance['feature'].map(correlations)
+            feature_importance['direction'] = feature_importance['correlation'].apply(
+                lambda x: '+' if x > 0 else '-' if x < 0 else '0'
+            )
+            feature_importance = feature_importance.sort_values('importance', ascending=False)
+
+            logging.info(f"    Top 10 features (direction: + positive, - negative):")
             for _, row in feature_importance.head(10).iterrows():
-                logging.info(f"      {row['feature']:<30} {row['importance']:.3f}")
+                logging.info(f"      {row['direction']} {row['feature']:<28} importance={row['importance']:.3f} corr={row['correlation']:.3f}")
 
     logging.info("\n" + "=" * 60)
     logging.info(f"✓ Trained {len(models)} models ({len(cfg.roles)} positions × {len(cfg.output_metrics)} metrics)")
