@@ -123,6 +123,14 @@ def build_game_state_features(
     logging.info("Building game state features...")
     logging.info(f"Input data: {len(df):,} rows, {len(df.columns)} columns")
 
+    # Filter for complete games only
+    if "datacompleteness" in df.columns:
+        before = len(df)
+        df = df[df["datacompleteness"] == "complete"]
+        logging.info(f"Filtered to complete games: {len(df):,} rows (removed {before - len(df):,})")
+    else:
+        logging.warning("No 'datacompleteness' column found, cannot filter incomplete games")
+
     schema = _detect_schema(df)
     game_col = schema["game"]
     pos_col = schema["pos"]
