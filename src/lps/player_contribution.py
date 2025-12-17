@@ -53,8 +53,9 @@ class ExpectedPerformanceConfig:
         "xpdiffat15",  # XP difference at 15 min
     )
 
-    # Baseline player percentile (20th percentile = bottom 20%)
-    baseline_percentile: float = 0.20
+    # Baseline player percentile (25th percentile = bottom 25%)
+    # Note: Adjusted from 20% due to discrete nature of data (many ties at low values)
+    baseline_percentile: float = 0.25
 
     # Model parameters (HistGradientBoostingRegressor)
     max_iter: int = 500  # More iterations for better convergence
@@ -437,7 +438,7 @@ def train_expected_performance_model(
     # Train separate models for each position and metric
     models = {}
 
-    # map from metric to the list of valid features for that metric
+    # Map from metric to the list of valid features for that metric
     feature_map = {
         "kills": ["_gold_share", "_game_total_kills", "_gamelength_min", "champion"],
         "deaths": ["_game_total_kills", "_gamelength_min", "champion"],
@@ -449,6 +450,9 @@ def train_expected_performance_model(
         # "adc_csdiffat15": ["champion", "oppchampion"],  # Support-specific: ADC's CS diff
         # "adc_xpdiffat15": ["champion", "oppchampion"],  # Support-specific: ADC's XP diff
     }
+
+    # Metrics where LOWER is better (predict high quantile for baseline/bad players)
+    reverse_metrics = {"deaths"}  # Bad players have MORE deaths
 
     for position in cfg.roles:
         print()
@@ -503,19 +507,27 @@ def train_expected_performance_model(
             logging.info(f"    Valid samples: {len(X):,}")
             logging.info(f"    Features: {len(X.columns)}")
 
+            # Determine target quantile (invert for metrics where lower is better)
+            if metric in reverse_metrics:
+                target_quantile = 1.0 - cfg.baseline_percentile  # e.g., 0.75 for deaths
+                quantile_label = f"{target_quantile*100:.0f}th %ile (bad players have MORE {metric})"
+            else:
+                target_quantile = cfg.baseline_percentile  # e.g., 0.25
+                quantile_label = f"{target_quantile*100:.0f}th %ile (bad players have LESS {metric})"
+
             # Diagnostic: Show actual data distribution
             y_quantiles = y.quantile([0.1, 0.2, 0.3, 0.5, 0.7, 0.9])
             logging.info(f"    Target distribution: 10%={y_quantiles[0.1]:.2f} 20%={y_quantiles[0.2]:.2f} 50%={y_quantiles[0.5]:.2f} 90%={y_quantiles[0.9]:.2f}")
 
-            # Naive baseline: just predict the 20th percentile for everyone
-            naive_baseline = y.quantile(cfg.baseline_percentile)
-            logging.info(f"    Naive baseline (constant 20th %ile): {naive_baseline:.2f}")
+            # Naive baseline: just predict the target quantile for everyone
+            naive_baseline = y.quantile(target_quantile)
+            logging.info(f"    Naive baseline (constant {quantile_label}): {naive_baseline:.2f}")
 
             # Train histogram-based gradient boosting with quantile loss
-            # This predicts the 20th percentile (baseline player) performance
+            # This predicts the target percentile (baseline player) performance
             model = HistGradientBoostingRegressor(
                 loss='quantile',
-                quantile=cfg.baseline_percentile,
+                quantile=target_quantile,
                 max_iter=cfg.max_iter,
                 max_depth=cfg.max_depth,
                 learning_rate=cfg.learning_rate,
@@ -548,14 +560,60 @@ def train_expected_performance_model(
             mae_naive = np.abs(y - naive_baseline).mean()
 
             logging.info(f"    R² (MSE-based): {train_score:.3f} [NOTE: Negative is OK for quantile regression]")
-            logging.info(f"    Model predictions at: {actual_percentile:.1f}th %ile (target: {cfg.baseline_percentile*100:.0f}th) | MAE: {mae:.2f}")
-            logging.info(f"    Naive baseline at:    {naive_percentile:.1f}th %ile (target: {cfg.baseline_percentile*100:.0f}th) | MAE: {mae_naive:.2f}")
+            logging.info(f"    Model predictions at: {actual_percentile:.1f}th %ile (target: {target_quantile*100:.0f}th) | MAE: {mae:.2f}")
+            logging.info(f"    Naive baseline at:    {naive_percentile:.1f}th %ile (target: {target_quantile*100:.0f}th) | MAE: {mae_naive:.2f}")
 
             # Show if model is better or worse than naive
-            if abs(actual_percentile - cfg.baseline_percentile*100) < abs(naive_percentile - cfg.baseline_percentile*100):
+            if abs(actual_percentile - target_quantile*100) < abs(naive_percentile - target_quantile*100):
                 logging.info(f"    ✓ Model is closer to target than naive baseline")
             else:
                 logging.warning(f"    ✗ Naive baseline is closer to target than model!")
+
+            # Synthetic sample test: create random match conditions and show prediction
+            logging.info(f"    Synthetic sample test:")
+            synthetic_sample = {}
+            for col in X.columns:
+                # For one-hot encoded champion/oppchampion features, we'll set them all to 0
+                # then randomly pick one to set to 1
+                if col.startswith('champion_') or col.startswith('oppchampion_'):
+                    synthetic_sample[col] = 0
+                else:
+                    # For numeric features, randomly sample from actual values
+                    synthetic_sample[col] = X[col].sample(1, random_state=None).iloc[0]
+
+            # Randomly select one champion and one oppchampion (if present)
+            champion_cols = [c for c in X.columns if c.startswith('champion_')]
+            if champion_cols:
+                selected_champ = np.random.choice(champion_cols)
+                synthetic_sample[selected_champ] = 1
+                champ_name = selected_champ.replace('champion_', '')
+            else:
+                champ_name = "N/A"
+
+            oppchampion_cols = [c for c in X.columns if c.startswith('oppchampion_')]
+            if oppchampion_cols:
+                selected_opp = np.random.choice(oppchampion_cols)
+                synthetic_sample[selected_opp] = 1
+                opp_name = selected_opp.replace('oppchampion_', '')
+            else:
+                opp_name = "N/A"
+
+            # Create dataframe with correct column order
+            synthetic_df = pd.DataFrame([synthetic_sample])[X.columns]
+            synthetic_pred = model.predict(synthetic_df)[0]
+
+            # Show the synthetic sample conditions and prediction
+            conditions = []
+            if champ_name != "N/A":
+                conditions.append(f"{champ_name}")
+            if opp_name != "N/A":
+                conditions.append(f"vs {opp_name}")
+            for col in ['_gold_share', '_gamelength_min', '_game_total_kills', '_game_total_tower_dmg', '_game_total_damagetochampions']:
+                if col in synthetic_sample:
+                    conditions.append(f"{col.replace('_', '')}={synthetic_sample[col]:.2f}")
+
+            logging.info(f"      Conditions: {' | '.join(conditions)}")
+            logging.info(f"      Predicted {metric} for baseline player: {synthetic_pred:.2f}")
 
             # Store model with (position, metric) key
             models[(position, metric)] = model
