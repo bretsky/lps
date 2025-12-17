@@ -23,6 +23,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.inspection import permutation_importance
 from tqdm import tqdm
 
 from .io_oracle import load_oracle_years
@@ -47,6 +48,7 @@ class ExpectedPerformanceConfig:
         "deaths",
         "assists",
         "damagetotowers",
+        "damagetochampions",
         "csdiffat15",  # CS difference at 15 min
         "xpdiffat15",  # XP difference at 15 min
     )
@@ -55,9 +57,12 @@ class ExpectedPerformanceConfig:
     baseline_percentile: float = 0.20
 
     # Model parameters (HistGradientBoostingRegressor)
-    max_iter: int = 100  # Equivalent to n_estimators
-    max_depth: int = 5
-    learning_rate: float = 0.1
+    max_iter: int = 300  # More iterations for better convergence
+    max_depth: int = 6   # Slightly deeper trees for more flexibility
+    learning_rate: float = 0.05  # Lower learning rate for finer adjustments
+    min_samples_leaf: int = 20   # Prevent overfitting to outliers
+    early_stopping: bool = True  # Stop when validation score stops improving
+    validation_fraction: float = 0.2  # Use 20% for validation
 
 
 def _detect_schema(df: pd.DataFrame) -> Dict[str, str]:
@@ -107,13 +112,16 @@ def build_game_state_features(
 
     Features include:
     - Champion (categorical)
+    - Opponent champion (categorical, matched by position)
     - Position (categorical)
     - Gold share (player's % of team gold)
     - Game length
-    - Blind pick status (TODO: need draft order data)
+    - Blind pick status (from draft order data)
     - Overall game kills (both teams)
     - Overall game tower damage (both teams)
-    - Position-specific features
+    - Overall game damage to champions (both teams)
+    - Position-specific features:
+      - Supports: ADC's cs/xp diff at 15 (supports partially responsible for lane outcome)
 
     Returns:
         Tuple of (feature dataframe, feature column names)
@@ -165,15 +173,55 @@ def build_game_state_features(
     if "damagetotowers" in df.columns:
         df["_game_total_tower_dmg"] = df.groupby(game_col)["damagetotowers"].transform("sum")
 
+    # Total damage to champions in game
+    if "damagetochampions" in df.columns:
+        df["_game_total_damagetochampions"] = df.groupby(game_col)["damagetochampions"].transform("sum")
+
     # Player's gold share (% of team's gold)
     if "earnedgold" in df.columns:
         team_gold = df.groupby([game_col, "side"])["earnedgold"].transform("sum")
         df["_gold_share"] = np.where(team_gold > 0, df["earnedgold"] / team_gold, 0)
-    elif "earnedgoldshare" in df.columns:
-        df["_gold_share"] = df["earnedgoldshare"]
     else:
         logging.warning("No gold share data found, using uniform 0.2")
         df["_gold_share"] = 0.2
+
+    # Add opponent champion (same game, same position, opposite side)
+    logging.info("Matching lane opponents...")
+    df["_side_opp"] = df["side"].map({"Blue": "Red", "Red": "Blue"})
+    opponent_df = df[[game_col, pos_col, "_side_opp", champion_col]].rename(
+        columns={champion_col: "oppchampion", "_side_opp": "side"}
+    )
+    df = df.merge(
+        opponent_df,
+        on=[game_col, pos_col, "side"],
+        how="left"
+    )
+    df = df.drop(columns=["_side_opp"])
+
+    # Check match rate
+    opp_match_rate = df["oppchampion"].notna().mean()
+    logging.info(f"Matched {opp_match_rate*100:.1f}% of players with lane opponents")
+
+    # Add ADC's cs/xp diff for supports (supports partially responsible for ADC performance)
+    logging.info("Matching supports with their ADCs...")
+    if "csdiffat15" in df.columns and "xpdiffat15" in df.columns:
+        # Create ADC dataframe (bot laners with their stats)
+        adc_df = df[df[pos_col] == "bot"][[game_col, "side", "csdiffat15", "xpdiffat15"]].rename(
+            columns={"csdiffat15": "adc_csdiffat15", "xpdiffat15": "adc_xpdiffat15"}
+        )
+
+        # Merge ADC stats onto support rows
+        df = df.merge(adc_df, on=[game_col, "side"], how="left")
+
+        # Check match rate for supports
+        support_mask = df[pos_col] == "sup"
+        if support_mask.sum() > 0:
+            adc_match_rate = df.loc[support_mask, "adc_csdiffat15"].notna().mean()
+            logging.info(f"Matched {adc_match_rate*100:.1f}% of supports with their ADCs")
+    else:
+        logging.warning("csdiffat15 or xpdiffat15 not found, cannot add ADC stats for supports")
+        df["adc_csdiffat15"] = np.nan
+        df["adc_xpdiffat15"] = np.nan
 
     # Determine blind pick status from draft order using team rows
     logging.info("Determining blind pick status from draft order...")
@@ -283,6 +331,7 @@ def build_game_state_features(
 
             logging.info(f"  Total time: {t_merge - t_start:.2f}s")
 
+            t_start2 = time.perf_counter() 
             # Second pass: determine blind picks by comparing lane opponents
             for game_id in df[game_col].unique():
                 game_data = df[df[game_col] == game_id]
@@ -308,6 +357,7 @@ def build_game_state_features(
 
             blind_pick_count = df["_blind_pick"].sum()
             logging.info(f"  Identified {blind_pick_count:,} blind pick instances")
+            logging.info(f"  Total time: {time.perf_counter()  - t_start2:.2f}s")
         else:
             logging.info("  No team rows found in data")
             df["_pick_order"] = -1  # Initialize if no team rows
@@ -318,12 +368,14 @@ def build_game_state_features(
     # Identify feature columns
     feature_cols = [
         champion_col,
+        "oppchampion",
         pos_col,
         "_gamelength_min",
         "_gold_share",
         "_blind_pick",
         "_game_total_kills",
         "_game_total_tower_dmg",
+        "_game_total_damagetochampions",
     ]
 
     # Add position-specific features
@@ -379,6 +431,19 @@ def train_expected_performance_model(
     # Train separate models for each position and metric
     models = {}
 
+    # map from metric to the list of valid features for that metric
+    feature_map = {
+        "kills": ["_gold_share", "_game_total_kills", "_gamelength_min", "champion", "_blind_pick"],
+        "deaths": ["_game_total_kills", "_gamelength_min", "champion", "_blind_pick"],
+        "assists": ["_gold_share", "_game_total_kills", "_gamelength_min", "champion", "_blind_pick"],
+        "damagetotowers": ["_gold_share", "_gamelength_min", "champion", "_game_total_tower_dmg", "_blind_pick"],
+        "csdiffat15": ["champion", "oppchampion", "_blind_pick"],
+        "xpdiffat15": ["champion", "oppchampion", "_blind_pick"],
+        "damagetochampions": ["_gold_share", "champion", "_gamelength_min", "_game_total_damagetochampions"],
+        # "adc_csdiffat15": ["champion", "oppchampion", "_blind_pick"],  # Support-specific: ADC's CS diff
+        # "adc_xpdiffat15": ["champion", "oppchampion", "_blind_pick"],  # Support-specific: ADC's XP diff
+    }
+
     for position in cfg.roles:
         print()
         logging.info("=" * 60)
@@ -393,7 +458,15 @@ def train_expected_performance_model(
             logging.warning(f"Insufficient data for {position}, skipping")
             continue
 
-        for metric in cfg.output_metrics:
+        # Get position-specific metrics (supports also predict ADC cs/xp diff)
+        position_metrics = list(cfg.output_metrics)
+        # if position == "sup":
+        #     position_metrics.extend(["adc_csdiffat15", "adc_xpdiffat15"])
+
+        for metric in position_metrics:
+            # TODO: customize input features based on metrics
+            # e.g. don't use tower damage as input for kills, don't use _gold_share for cs diff/xp diff
+            # make support use ADC's cs/xp diff in addition / in replacement to their own, since they are partially responsible for it
             if metric not in pos_df.columns:
                 logging.warning(f"Metric '{metric}' not found for {position}, skipping")
                 continue
@@ -403,8 +476,13 @@ def train_expected_performance_model(
             # Prepare data (exclude position from features since we're training per-position)
             feature_cols_no_pos = [col for col in feature_cols if col != pos_col]
 
-            # One-hot encode champion
-            X = pd.get_dummies(pos_df[feature_cols_no_pos], columns=["champion"], drop_first=False)
+            # Get feature subset based on metric (some metrics don't use all features)
+            metric_features = feature_map.get(metric, feature_cols_no_pos)
+            actual_features = [col for col in metric_features if col in pos_df.columns]
+
+            # One-hot encode categorical features (champion and oppchampion)
+            categorical_cols = [col for col in ["champion", "oppchampion"] if col in actual_features]
+            X = pd.get_dummies(pos_df[actual_features], columns=categorical_cols, drop_first=False)
             y = pos_df[metric]
 
             # Remove rows with missing values
@@ -427,22 +505,61 @@ def train_expected_performance_model(
                 max_iter=cfg.max_iter,
                 max_depth=cfg.max_depth,
                 learning_rate=cfg.learning_rate,
+                min_samples_leaf=cfg.min_samples_leaf,
+                early_stopping=cfg.early_stopping,
+                validation_fraction=cfg.validation_fraction,
                 random_state=42,
+                verbose=0,  # Suppress iteration output
             )
 
             model.fit(X, y)
 
-            # Calculate training R²
+            # Log actual iterations used (may be less than max_iter due to early stopping)
+            if hasattr(model, 'n_iter_'):
+                logging.info(f"    Converged after {model.n_iter_} iterations (max: {cfg.max_iter})")
+
+            # Evaluate model performance
+            # Note: R² is misleading for quantile regression (optimized for quantile loss, not MSE)
             train_score = model.score(X, y)
-            logging.info(f"    Training R²: {train_score:.3f}")
+            y_pred = model.predict(X)
+
+            # Check what percentile our predictions fall at (should be ~20th)
+            actual_percentile = (y_pred[:, None] >= y.values[None, :]).mean(axis=1).mean() * 100
+
+            # Mean Absolute Error (more interpretable than R² for quantile regression)
+            mae = np.abs(y - y_pred).mean()
+
+            logging.info(f"    R² (MSE-based): {train_score:.3f} [NOTE: Negative is OK for quantile regression]")
+            logging.info(f"    Predictions at: {actual_percentile:.1f}th percentile (target: {cfg.baseline_percentile*100:.0f}th)")
+            logging.info(f"    Mean Abs Error: {mae:.2f}")
 
             # Store model with (position, metric) key
             models[(position, metric)] = model
 
-            # Show top features with correlation direction
+            # Calculate permutation importance (HistGradientBoostingRegressor doesn't have feature_importances_)
+            # Use subset of data for speed (permutation importance is expensive)
+            n_samples_perm = min(5000, len(X))
+            if n_samples_perm < len(X):
+                # Random sample for permutation importance
+                perm_idx = np.random.choice(len(X), size=n_samples_perm, replace=False)
+                X_perm = X.iloc[perm_idx]
+                y_perm = y.iloc[perm_idx]
+            else:
+                X_perm = X
+                y_perm = y
+
+            logging.info(f"    Computing permutation importance on {n_samples_perm:,} samples...")
+            perm_result = permutation_importance(
+                model, X_perm, y_perm,
+                n_repeats=5,
+                random_state=42,
+                n_jobs=-1  # Use all CPUs
+            )
+
+            # Build feature importance dataframe
             feature_importance = pd.DataFrame({
                 'feature': X.columns,
-                'importance': model.feature_importances_
+                'importance': perm_result.importances_mean
             })
 
             # Calculate correlation with target for direction
