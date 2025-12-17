@@ -57,11 +57,11 @@ class ExpectedPerformanceConfig:
     baseline_percentile: float = 0.20
 
     # Model parameters (HistGradientBoostingRegressor)
-    max_iter: int = 300  # More iterations for better convergence
-    max_depth: int = 6   # Slightly deeper trees for more flexibility
-    learning_rate: float = 0.05  # Lower learning rate for finer adjustments
-    min_samples_leaf: int = 20   # Prevent overfitting to outliers
-    early_stopping: bool = True  # Stop when validation score stops improving
+    max_iter: int = 500  # More iterations for better convergence
+    max_depth: int = 8   # Deeper trees for capturing distribution tails
+    learning_rate: float = 0.03  # Lower learning rate for finer quantile control
+    min_samples_leaf: int = 10   # Reduced to allow more flexibility at lower quantiles
+    early_stopping: bool = True  # Stop when validation score stops improving (uses quantile loss)
     validation_fraction: float = 0.2  # Use 20% for validation
 
 
@@ -116,12 +116,14 @@ def build_game_state_features(
     - Position (categorical)
     - Gold share (player's % of team gold)
     - Game length
-    - Blind pick status (from draft order data)
     - Overall game kills (both teams)
     - Overall game tower damage (both teams)
     - Overall game damage to champions (both teams)
     - Position-specific features:
       - Supports: ADC's cs/xp diff at 15 (supports partially responsible for lane outcome)
+
+    Note: Blind pick detection is disabled - matchup information is captured directly
+    through oppchampion feature instead.
 
     Returns:
         Tuple of (feature dataframe, feature column names)
@@ -223,28 +225,32 @@ def build_game_state_features(
         df["adc_csdiffat15"] = np.nan
         df["adc_xpdiffat15"] = np.nan
 
+    # Blind pick detection - DISABLED (using oppchampion directly instead)
     # Determine blind pick status from draft order using team rows
-    logging.info("Determining blind pick status from draft order...")
+    # logging.info("Determining blind pick status from draft order...")
 
-    # Initialize blind pick column now (pick_order will be added during merge)
+    # Initialize blind pick column (keep for compatibility, but not used as feature)
     df["_blind_pick"] = 0  # Default to not blind pick
 
-    # Standard draft order (Blue=1, Red=2):
-    # Blue pick1 (overall 1), Red pick1 (2), Red pick2 (3), Blue pick2 (4),
-    # Blue pick3 (5), Red pick3 (6), Red pick4 (7), Blue pick4 (8),
-    # Blue pick5 (9), Red pick5 (10)
-    # Map (side, team_pick_num) -> overall_pick_order
-    draft_order_map = {
-        ("Blue", 1): 1, ("Red", 1): 2, ("Red", 2): 3, ("Blue", 2): 4,
-        ("Blue", 3): 5, ("Red", 3): 6, ("Red", 4): 7, ("Blue", 4): 8,
-        ("Blue", 5): 9, ("Red", 5): 10,
-    }
+    # Initialize _pick_order column (not used as feature anymore)
+    df["_pick_order"] = -1
 
-    # Check if we have pick columns and team rows
-    pick_cols = [f"pick{i}" for i in range(1, 6)]
-    has_pick_cols = all(col in df_with_teams.columns for col in pick_cols)
+    # # Standard draft order (Blue=1, Red=2):
+    # # Blue pick1 (overall 1), Red pick1 (2), Red pick2 (3), Blue pick2 (4),
+    # # Blue pick3 (5), Red pick3 (6), Red pick4 (7), Blue pick4 (8),
+    # # Blue pick5 (9), Red pick5 (10)
+    # # Map (side, team_pick_num) -> overall_pick_order
+    # draft_order_map = {
+    #     ("Blue", 1): 1, ("Red", 1): 2, ("Red", 2): 3, ("Blue", 2): 4,
+    #     ("Blue", 3): 5, ("Red", 3): 6, ("Red", 4): 7, ("Blue", 4): 8,
+    #     ("Blue", 5): 9, ("Red", 5): 10,
+    # }
 
-    if has_pick_cols:
+    # # Check if we have pick columns and team rows
+    # pick_cols = [f"pick{i}" for i in range(1, 6)]
+    # has_pick_cols = all(col in df_with_teams.columns for col in pick_cols)
+
+    if False:  # Disabled blind pick detection
         # Get team rows (position == "team")
         team_rows = df_with_teams[df_with_teams["position"] == "team"]
         logging.info(f"  Found {len(team_rows):,} team rows")
@@ -372,7 +378,7 @@ def build_game_state_features(
         pos_col,
         "_gamelength_min",
         "_gold_share",
-        "_blind_pick",
+        # "_blind_pick",  # Disabled - using oppchampion directly instead
         "_game_total_kills",
         "_game_total_tower_dmg",
         "_game_total_damagetochampions",
@@ -433,15 +439,15 @@ def train_expected_performance_model(
 
     # map from metric to the list of valid features for that metric
     feature_map = {
-        "kills": ["_gold_share", "_game_total_kills", "_gamelength_min", "champion", "_blind_pick"],
-        "deaths": ["_game_total_kills", "_gamelength_min", "champion", "_blind_pick"],
-        "assists": ["_gold_share", "_game_total_kills", "_gamelength_min", "champion", "_blind_pick"],
-        "damagetotowers": ["_gold_share", "_gamelength_min", "champion", "_game_total_tower_dmg", "_blind_pick"],
-        "csdiffat15": ["champion", "oppchampion", "_blind_pick"],
-        "xpdiffat15": ["champion", "oppchampion", "_blind_pick"],
+        "kills": ["_gold_share", "_game_total_kills", "_gamelength_min", "champion"],
+        "deaths": ["_game_total_kills", "_gamelength_min", "champion"],
+        "assists": ["_gold_share", "_game_total_kills", "_gamelength_min", "champion"],
+        "damagetotowers": ["_gold_share", "_gamelength_min", "champion", "_game_total_tower_dmg"],
+        "csdiffat15": ["champion", "oppchampion"],
+        "xpdiffat15": ["champion", "oppchampion"],
         "damagetochampions": ["_gold_share", "champion", "_gamelength_min", "_game_total_damagetochampions"],
-        # "adc_csdiffat15": ["champion", "oppchampion", "_blind_pick"],  # Support-specific: ADC's CS diff
-        # "adc_xpdiffat15": ["champion", "oppchampion", "_blind_pick"],  # Support-specific: ADC's XP diff
+        # "adc_csdiffat15": ["champion", "oppchampion"],  # Support-specific: ADC's CS diff
+        # "adc_xpdiffat15": ["champion", "oppchampion"],  # Support-specific: ADC's XP diff
     }
 
     for position in cfg.roles:
@@ -497,6 +503,14 @@ def train_expected_performance_model(
             logging.info(f"    Valid samples: {len(X):,}")
             logging.info(f"    Features: {len(X.columns)}")
 
+            # Diagnostic: Show actual data distribution
+            y_quantiles = y.quantile([0.1, 0.2, 0.3, 0.5, 0.7, 0.9])
+            logging.info(f"    Target distribution: 10%={y_quantiles[0.1]:.2f} 20%={y_quantiles[0.2]:.2f} 50%={y_quantiles[0.5]:.2f} 90%={y_quantiles[0.9]:.2f}")
+
+            # Naive baseline: just predict the 20th percentile for everyone
+            naive_baseline = y.quantile(cfg.baseline_percentile)
+            logging.info(f"    Naive baseline (constant 20th %ile): {naive_baseline:.2f}")
+
             # Train histogram-based gradient boosting with quantile loss
             # This predicts the 20th percentile (baseline player) performance
             model = HistGradientBoostingRegressor(
@@ -526,12 +540,22 @@ def train_expected_performance_model(
             # Check what percentile our predictions fall at (should be ~20th)
             actual_percentile = (y_pred[:, None] >= y.values[None, :]).mean(axis=1).mean() * 100
 
+            # Compare to naive baseline
+            naive_percentile = (naive_baseline >= y.values).mean() * 100
+
             # Mean Absolute Error (more interpretable than R² for quantile regression)
             mae = np.abs(y - y_pred).mean()
+            mae_naive = np.abs(y - naive_baseline).mean()
 
             logging.info(f"    R² (MSE-based): {train_score:.3f} [NOTE: Negative is OK for quantile regression]")
-            logging.info(f"    Predictions at: {actual_percentile:.1f}th percentile (target: {cfg.baseline_percentile*100:.0f}th)")
-            logging.info(f"    Mean Abs Error: {mae:.2f}")
+            logging.info(f"    Model predictions at: {actual_percentile:.1f}th %ile (target: {cfg.baseline_percentile*100:.0f}th) | MAE: {mae:.2f}")
+            logging.info(f"    Naive baseline at:    {naive_percentile:.1f}th %ile (target: {cfg.baseline_percentile*100:.0f}th) | MAE: {mae_naive:.2f}")
+
+            # Show if model is better or worse than naive
+            if abs(actual_percentile - cfg.baseline_percentile*100) < abs(naive_percentile - cfg.baseline_percentile*100):
+                logging.info(f"    ✓ Model is closer to target than naive baseline")
+            else:
+                logging.warning(f"    ✗ Naive baseline is closer to target than model!")
 
             # Store model with (position, metric) key
             models[(position, metric)] = model
