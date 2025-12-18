@@ -22,7 +22,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor, GradientBoostingRegressor, GradientBoostingClassifier
 from sklearn.inspection import permutation_importance
 from tqdm import tqdm
 
@@ -51,6 +51,9 @@ class ExpectedPerformanceConfig:
         "damagetochampions",
         "csdiffat15",  # CS difference at 15 min
         "xpdiffat15",  # XP difference at 15 min
+        "firstblood",  # First blood kill (binary: 0 or 1)
+        "firstbloodassist",  # First blood assist (binary: 0 or 1)
+        "firstbloodvictim",  # First blood death (binary: 0 or 1) - REVERSE metric
     )
 
     # Baseline player percentile (25th percentile = bottom 25%)
@@ -447,12 +450,18 @@ def train_expected_performance_model(
         "csdiffat15": ["champion", "oppchampion"],
         "xpdiffat15": ["champion", "oppchampion"],
         "damagetochampions": ["_gold_share", "champion", "_gamelength_min", "_game_total_damagetochampions"],
+        "firstblood": ["champion", "oppchampion"],  # First blood based on early game matchup
+        "firstbloodassist": ["champion", "oppchampion"],  # First blood assist based on matchup
+        "firstbloodvictim": ["champion", "oppchampion"],  # First blood death based on matchup
         # "adc_csdiffat15": ["champion", "oppchampion"],  # Support-specific: ADC's CS diff
         # "adc_xpdiffat15": ["champion", "oppchampion"],  # Support-specific: ADC's XP diff
     }
 
     # Metrics where LOWER is better (predict high quantile for baseline/bad players)
-    reverse_metrics = {"deaths"}  # Bad players have MORE deaths
+    reverse_metrics = {"deaths", "firstbloodvictim"}  # Bad players have MORE deaths and die first more often
+
+    # Binary metrics (0 or 1) - use classification instead of regression
+    binary_metrics = {"firstblood", "firstbloodassist", "firstbloodvictim"}
 
     for position in cfg.roles:
         print()
@@ -507,67 +516,176 @@ def train_expected_performance_model(
             logging.info(f"    Valid samples: {len(X):,}")
             logging.info(f"    Features: {len(X.columns)}")
 
-            # Determine target quantile (invert for metrics where lower is better)
-            if metric in reverse_metrics:
-                target_quantile = 1.0 - cfg.baseline_percentile  # e.g., 0.75 for deaths
-                quantile_label = f"{target_quantile*100:.0f}th %ile (bad players have MORE {metric})"
+            # Check if this is a binary classification metric
+            is_binary = metric in binary_metrics
+
+            if is_binary:
+                # === BINARY CLASSIFICATION ===
+                logging.info(f"    Using CLASSIFICATION (binary metric)")
+
+                # Show class distribution
+                class_counts = y.value_counts().sort_index()
+                logging.info(f"    Class distribution: {dict(class_counts)}")
+                pos_rate = (y == 1).mean()
+                logging.info(f"    Positive rate (P(y=1)): {pos_rate:.2%}")
+
+                # Train classifier to predict probability
+                model = GradientBoostingClassifier(
+                    n_estimators=cfg.max_iter,
+                    max_depth=cfg.max_depth,
+                    learning_rate=cfg.learning_rate,
+                    min_samples_leaf=cfg.min_samples_leaf,
+                    random_state=42,
+                    verbose=0,
+                )
+                model.fit(X, y)
+
+                # Log iterations
+                logging.info(f"    Trained {model.n_estimators} trees")
+
+                # No separate mean model for binary metrics
+                mean_model = None
+
             else:
-                target_quantile = cfg.baseline_percentile  # e.g., 0.25
-                quantile_label = f"{target_quantile*100:.0f}th %ile (bad players have LESS {metric})"
+                # === REGRESSION ===
+                logging.info(f"    Using REGRESSION (continuous metric)")
 
-            # Diagnostic: Show actual data distribution
-            y_quantiles = y.quantile([0.1, 0.2, 0.3, 0.5, 0.7, 0.9])
-            logging.info(f"    Target distribution: 10%={y_quantiles[0.1]:.2f} 20%={y_quantiles[0.2]:.2f} 50%={y_quantiles[0.5]:.2f} 90%={y_quantiles[0.9]:.2f}")
+                # Determine target quantile (invert for metrics where lower is better)
+                if metric in reverse_metrics:
+                    target_quantile = 1.0 - cfg.baseline_percentile  # e.g., 0.75 for deaths
+                    quantile_label = f"{target_quantile*100:.0f}th %ile (bad players have MORE {metric})"
+                else:
+                    target_quantile = cfg.baseline_percentile  # e.g., 0.25
+                    quantile_label = f"{target_quantile*100:.0f}th %ile (bad players have LESS {metric})"
 
-            # Naive baseline: just predict the target quantile for everyone
-            naive_baseline = y.quantile(target_quantile)
-            logging.info(f"    Naive baseline (constant {quantile_label}): {naive_baseline:.2f}")
+                # Diagnostic: Show actual data distribution
+                y_quantiles = y.quantile([0.1, 0.2, 0.3, 0.5, 0.7, 0.9])
+                logging.info(f"    Target distribution: 10%={y_quantiles[0.1]:.2f} 20%={y_quantiles[0.2]:.2f} 50%={y_quantiles[0.5]:.2f} 90%={y_quantiles[0.9]:.2f}")
 
-            # Train histogram-based gradient boosting with quantile loss
-            # This predicts the target percentile (baseline player) performance
-            model = HistGradientBoostingRegressor(
-                loss='quantile',
-                quantile=target_quantile,
-                max_iter=cfg.max_iter,
-                max_depth=cfg.max_depth,
-                learning_rate=cfg.learning_rate,
-                min_samples_leaf=cfg.min_samples_leaf,
-                early_stopping=cfg.early_stopping,
-                validation_fraction=cfg.validation_fraction,
-                random_state=42,
-                verbose=0,  # Suppress iteration output
-            )
+                # Naive baseline: just predict the target quantile for everyone
+                naive_baseline = y.quantile(target_quantile)
+                logging.info(f"    Naive baseline (constant {quantile_label}): {naive_baseline:.2f}")
 
-            model.fit(X, y)
+                # Train histogram-based gradient boosting with quantile loss
+                model = HistGradientBoostingRegressor(
+                    loss='quantile',
+                    quantile=target_quantile,
+                    max_iter=cfg.max_iter,
+                    max_depth=cfg.max_depth,
+                    learning_rate=cfg.learning_rate,
+                    min_samples_leaf=cfg.min_samples_leaf,
+                    early_stopping=cfg.early_stopping,
+                    validation_fraction=cfg.validation_fraction,
+                    random_state=42,
+                    verbose=0,
+                )
+                model.fit(X, y)
 
-            # Log actual iterations used (may be less than max_iter due to early stopping)
-            if hasattr(model, 'n_iter_'):
-                logging.info(f"    Converged after {model.n_iter_} iterations (max: {cfg.max_iter})")
+                # Log actual iterations used
+                if hasattr(model, 'n_iter_'):
+                    logging.info(f"    Converged after {model.n_iter_} iterations (max: {cfg.max_iter})")
 
-            # Evaluate model performance
-            # Note: R² is misleading for quantile regression (optimized for quantile loss, not MSE)
-            train_score = model.score(X, y)
-            y_pred = model.predict(X)
+                # Train mean-predicting model for comparison
+                logging.info(f"    Training mean-prediction model for comparison...")
+                mean_model = GradientBoostingRegressor(
+                    loss='squared_error',
+                    n_estimators=100,
+                    max_depth=cfg.max_depth,
+                    learning_rate=cfg.learning_rate,
+                    min_samples_leaf=cfg.min_samples_leaf,
+                    random_state=42,
+                    verbose=0,
+                )
+                mean_model.fit(X, y)
 
-            # Check what percentile our predictions fall at (should be ~20th)
-            actual_percentile = (y_pred[:, None] >= y.values[None, :]).mean(axis=1).mean() * 100
+            if is_binary:
+                # === EVALUATION FOR BINARY CLASSIFICATION ===
+                # Get probability predictions
+                y_pred_proba = model.predict_proba(X)[:, 1]  # Probability of class 1
+                avg_predicted_prob = y_pred_proba.mean()
+                actual_prob = y.mean()
 
-            # Compare to naive baseline
-            naive_percentile = (naive_baseline >= y.values).mean() * 100
+                # Accuracy
+                y_pred_class = model.predict(X)
+                accuracy = (y_pred_class == y).mean()
 
-            # Mean Absolute Error (more interpretable than R² for quantile regression)
-            mae = np.abs(y - y_pred).mean()
-            mae_naive = np.abs(y - naive_baseline).mean()
+                logging.info(f"    Accuracy: {accuracy:.3f}")
+                logging.info(f"      Actual P(y=1): {actual_prob:.2%}")
+                logging.info(f"      Predicted P(y=1) (avg): {avg_predicted_prob:.2%}")
 
-            logging.info(f"    R² (MSE-based): {train_score:.3f} [NOTE: Negative is OK for quantile regression]")
-            logging.info(f"    Model predictions at: {actual_percentile:.1f}th %ile (target: {target_quantile*100:.0f}th) | MAE: {mae:.2f}")
-            logging.info(f"    Naive baseline at:    {naive_percentile:.1f}th %ile (target: {target_quantile*100:.0f}th) | MAE: {mae_naive:.2f}")
+                # Show feature importances (classifier has feature_importances_)
+                feature_importance = pd.DataFrame({
+                    'feature': X.columns,
+                    'importance': model.feature_importances_
+                })
+                correlations = X.corrwith(y)
+                feature_importance['correlation'] = feature_importance['feature'].map(correlations)
+                feature_importance['direction'] = feature_importance['correlation'].apply(
+                    lambda x: '+' if x > 0 else '-' if x < 0 else '0'
+                )
+                feature_importance = feature_importance.sort_values('importance', ascending=False)
+                logging.info(f"    Top 10 features:")
+                for _, row in feature_importance.head(10).iterrows():
+                    logging.info(f"      {row['direction']} {row['feature']:<28} importance={row['importance']:.3f} corr={row['correlation']:.3f}")
 
-            # Show if model is better or worse than naive
-            if abs(actual_percentile - target_quantile*100) < abs(naive_percentile - target_quantile*100):
-                logging.info(f"    ✓ Model is closer to target than naive baseline")
             else:
-                logging.warning(f"    ✗ Naive baseline is closer to target than model!")
+                # === EVALUATION FOR REGRESSION ===
+                # Evaluate mean model performance
+                y_pred_mean = mean_model.predict(X)
+                avg_prediction_mean = y_pred_mean.mean()
+                mean_percentile_of_avg = (avg_prediction_mean >= y.values).mean() * 100
+                mean_avg_of_percentiles = (y_pred_mean[:, None] >= y.values[None, :]).mean(axis=1).mean() * 100
+                mae_mean_model = np.abs(y - y_pred_mean).mean()
+                r2_mean_model = mean_model.score(X, y)
+                logging.info(f"    Mean model R²: {r2_mean_model:.3f} | MAE: {mae_mean_model:.2f}")
+                logging.info(f"      Avg prediction: {avg_prediction_mean:.2f}")
+                logging.info(f"      Percentile of avg: {mean_percentile_of_avg:.1f}th | Avg of percentiles: {mean_avg_of_percentiles:.1f}th")
+
+                # Show feature importances for mean model
+                mean_feature_importance = pd.DataFrame({
+                    'feature': X.columns,
+                    'importance': mean_model.feature_importances_
+                })
+                correlations = X.corrwith(y)
+                mean_feature_importance['correlation'] = mean_feature_importance['feature'].map(correlations)
+                mean_feature_importance['direction'] = mean_feature_importance['correlation'].apply(
+                    lambda x: '+' if x > 0 else '-' if x < 0 else '0'
+                )
+                mean_feature_importance = mean_feature_importance.sort_values('importance', ascending=False)
+                logging.info(f"    Mean model top 10 features:")
+                for _, row in mean_feature_importance.head(10).iterrows():
+                    logging.info(f"      {row['direction']} {row['feature']:<28} importance={row['importance']:.3f} corr={row['correlation']:.3f}")
+
+            # Evaluate main model performance
+            if is_binary:
+                y_pred = model.predict_proba(X)[:, 1]  # Use probabilities for binary
+            else:
+                train_score = model.score(X, y)
+                y_pred = model.predict(X)
+
+            if not is_binary:
+                # Calculate percentiles using both methods (regression only)
+                avg_prediction = y_pred.mean()
+                percentile_of_avg = (avg_prediction >= y.values).mean() * 100
+                avg_of_percentiles = (y_pred[:, None] >= y.values[None, :]).mean(axis=1).mean() * 100
+
+                # Compare to naive baseline
+                naive_percentile = (naive_baseline >= y.values).mean() * 100
+
+                # Mean Absolute Error
+                mae = np.abs(y - y_pred).mean()
+                mae_naive = np.abs(y - naive_baseline).mean()
+
+                logging.info(f"    Quantile model R²: {train_score:.3f} [NOTE: Negative is OK for quantile regression] | MAE: {mae:.2f}")
+                logging.info(f"      Avg prediction: {avg_prediction:.2f} (target: {target_quantile*100:.0f}th %ile)")
+                logging.info(f"      Percentile of avg: {percentile_of_avg:.1f}th | Avg of percentiles: {avg_of_percentiles:.1f}th")
+                logging.info(f"    Naive baseline: {naive_baseline:.2f} at {naive_percentile:.1f}th %ile | MAE: {mae_naive:.2f}")
+
+                # Show if model is better or worse than naive
+                if abs(percentile_of_avg - target_quantile*100) < abs(naive_percentile - target_quantile*100):
+                    logging.info(f"    ✓ Model is closer to target than naive baseline")
+                else:
+                    logging.warning(f"    ✗ Naive baseline is closer to target than model!")
 
             # Synthetic sample test: create random match conditions and show prediction
             logging.info(f"    Synthetic sample test:")
@@ -600,9 +718,8 @@ def train_expected_performance_model(
 
             # Create dataframe with correct column order
             synthetic_df = pd.DataFrame([synthetic_sample])[X.columns]
-            synthetic_pred = model.predict(synthetic_df)[0]
 
-            # Show the synthetic sample conditions and prediction
+            # Show the synthetic sample conditions
             conditions = []
             if champ_name != "N/A":
                 conditions.append(f"{champ_name}")
@@ -613,48 +730,75 @@ def train_expected_performance_model(
                     conditions.append(f"{col.replace('_', '')}={synthetic_sample[col]:.2f}")
 
             logging.info(f"      Conditions: {' | '.join(conditions)}")
-            logging.info(f"      Predicted {metric} for baseline player: {synthetic_pred:.2f}")
+
+            if is_binary:
+                # For binary classification, show probability
+                synthetic_pred_prob = model.predict_proba(synthetic_df)[0, 1]
+                logging.info(f"      Predicted P({metric}=1): {synthetic_pred_prob:.2%}")
+            else:
+                # For regression, show quantile vs mean predictions
+                if hasattr(model, 'predict_proba'):
+                    synthetic_pred_baseline = model.predict_proba(synthetic_df)[0, 1]
+                else:
+                    synthetic_pred_baseline = model.predict(synthetic_df)[0]
+                synthetic_pred_mean = mean_model.predict(synthetic_df)[0]
+
+                logging.info(f"      Baseline ({target_quantile*100:.0f}th %ile): {synthetic_pred_baseline:.2f} | Mean (50th %ile): {synthetic_pred_mean:.2f}")
+
+                # Show if baseline is appropriately lower/higher than mean
+                if metric in reverse_metrics:
+                    if synthetic_pred_baseline > synthetic_pred_mean:
+                        logging.info(f"      ✓ Baseline > Mean (correct for {metric})")
+                    else:
+                        logging.warning(f"      ✗ Baseline < Mean (incorrect for {metric}!)")
+                else:
+                    if synthetic_pred_baseline < synthetic_pred_mean:
+                        logging.info(f"      ✓ Baseline < Mean (correct for {metric})")
+                    else:
+                        logging.warning(f"      ✗ Baseline > Mean (incorrect for {metric}!)")
 
             # Store model with (position, metric) key
             models[(position, metric)] = model
 
-            # Calculate permutation importance (HistGradientBoostingRegressor doesn't have feature_importances_)
-            # Use subset of data for speed (permutation importance is expensive)
-            n_samples_perm = min(5000, len(X))
-            if n_samples_perm < len(X):
-                # Random sample for permutation importance
-                perm_idx = np.random.choice(len(X), size=n_samples_perm, replace=False)
-                X_perm = X.iloc[perm_idx]
-                y_perm = y.iloc[perm_idx]
-            else:
-                X_perm = X
-                y_perm = y
+            # Calculate permutation importance for quantile regression only
+            # (binary classifiers already showed feature importances above)
+            if not is_binary:
+                # Use subset of data for speed (permutation importance is expensive)
+                n_samples_perm = min(5000, len(X))
+                if n_samples_perm < len(X):
+                    # Random sample for permutation importance
+                    perm_idx = np.random.choice(len(X), size=n_samples_perm, replace=False)
+                    X_perm = X.iloc[perm_idx]
+                    y_perm = y.iloc[perm_idx]
+                else:
+                    X_perm = X
+                    y_perm = y
 
-            logging.info(f"    Computing permutation importance on {n_samples_perm:,} samples...")
-            perm_result = permutation_importance(
-                model, X_perm, y_perm,
-                n_repeats=5,
-                random_state=42,
-                n_jobs=-1  # Use all CPUs
-            )
+                logging.info(f"    Computing permutation importance on {n_samples_perm:,} samples...")
+                perm_result = permutation_importance(
+                    model, X_perm, y_perm,
+                    n_repeats=5,
+                    random_state=42,
+                    n_jobs=-1  # Use all CPUs
+                )
 
-            # Build feature importance dataframe
-            feature_importance = pd.DataFrame({
-                'feature': X.columns,
-                'importance': perm_result.importances_mean
-            })
+                # Build feature importance dataframe
+                feature_importance = pd.DataFrame({
+                    'feature': X.columns,
+                    'importance': perm_result.importances_mean
+                })
 
-            # Calculate correlation with target for direction
-            correlations = X.corrwith(y)
-            feature_importance['correlation'] = feature_importance['feature'].map(correlations)
-            feature_importance['direction'] = feature_importance['correlation'].apply(
-                lambda x: '+' if x > 0 else '-' if x < 0 else '0'
-            )
-            feature_importance = feature_importance.sort_values('importance', ascending=False)
+                # Calculate correlation with target for direction
+                correlations = X.corrwith(y)
+                feature_importance['correlation'] = feature_importance['feature'].map(correlations)
+                feature_importance['direction'] = feature_importance['correlation'].apply(
+                    lambda x: '+' if x > 0 else '-' if x < 0 else '0'
+                )
+                feature_importance = feature_importance.sort_values('importance', ascending=False)
 
-            logging.info(f"    Top 10 features (direction: + positive, - negative):")
-            for _, row in feature_importance.head(10).iterrows():
-                logging.info(f"      {row['direction']} {row['feature']:<28} importance={row['importance']:.3f} corr={row['correlation']:.3f}")
+                logging.info(f"    Top 10 features (direction: + positive, - negative):")
+                for _, row in feature_importance.head(10).iterrows():
+                    logging.info(f"      {row['direction']} {row['feature']:<28} importance={row['importance']:.3f} corr={row['correlation']:.3f}")
 
     logging.info("\n" + "=" * 60)
     logging.info(f"✓ Trained {len(models)} models ({len(cfg.roles)} positions × {len(cfg.output_metrics)} metrics)")

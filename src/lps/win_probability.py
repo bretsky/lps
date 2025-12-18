@@ -1,0 +1,295 @@
+"""
+Win Probability Model (Model 2)
+
+Predicts win probability from per-lane player performance.
+
+This is the second part of the player contribution system:
+1. Model 1 (player_contribution.py): Predicts expected baseline performance
+   - Outputs probabilities for binary metrics (firstblood, etc.)
+   - Outputs quantile predictions for continuous metrics
+2. Model 2 (this file): Predicts win probability from actual performance
+   - Uses LogisticRegression to handle continuous probability inputs
+3. Combine: Calculate contribution = (actual - expected) × ∂WinProb/∂stat
+"""
+
+from __future__ import annotations
+
+import logging
+import time
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Sequence, Tuple
+
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+
+from .io_oracle import load_oracle_years
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%H:%M:%S'
+)
+
+
+@dataclass
+class WinProbabilityConfig:
+    """Config for win probability model (Model 2)."""
+
+    years: Iterable[int] = (2024,)
+    roles: Sequence[str] = ("top", "jng", "mid", "bot", "sup")
+
+    # Performance metrics to use as features
+    performance_metrics: Sequence[str] = (
+        "kills",
+        "deaths",
+        "assists",
+        "damagetotowers",
+        "damagetochampions",
+        "csdiffat15",
+        "xpdiffat15",
+        "firstblood",
+        "firstbloodassist",
+        "firstbloodvictim",
+    )
+
+    # Model parameters (LogisticRegression)
+    C: float = 1.0  # Inverse of regularization strength
+    max_iter: int = 1000  # Maximum iterations for solver
+    solver: str = "lbfgs"  # Optimization algorithm
+    penalty: str = "l2"  # Regularization type
+    test_size: float = 0.2
+    random_state: int = 42
+
+
+def _detect_schema(df: pd.DataFrame) -> Dict[str, str]:
+    """Map to canonical column names."""
+    cols = set(df.columns)
+
+    required = {
+        'game': ['gameid'],
+        'pos': ['position'],
+        'result': ['result'],
+    }
+
+    schema = {}
+    for key, candidates in required.items():
+        found = [c for c in candidates if c in cols]
+        if not found:
+            raise ValueError(f"Missing required column for '{key}': tried {candidates}")
+        schema[key] = found[0]
+
+    return schema
+
+
+def _filter_player_rows(df: pd.DataFrame, pos_col: str) -> pd.DataFrame:
+    """Filter to only player rows (exclude team rows)."""
+    valid_positions = {"top", "jng", "jungle", "mid", "bot", "adc", "sup", "support"}
+    return df[df[pos_col].astype(str).str.lower().isin(valid_positions)].copy()
+
+
+def build_team_features(df: pd.DataFrame, cfg: Optional[WinProbabilityConfig] = None) -> pd.DataFrame:
+    """
+    Build team-level features from individual player performance.
+
+    For each game, create features for each position:
+    - top_kills, top_deaths, top_assists, ...
+    - jng_kills, jng_deaths, jng_assists, ...
+    - etc.
+
+    Returns:
+        DataFrame with one row per team (game + side), with columns for each position's stats
+    """
+    if cfg is None:
+        cfg = WinProbabilityConfig()
+
+    logging.info("Building team-level features from player data...")
+
+    schema = _detect_schema(df)
+    game_col = schema["game"]
+    pos_col = schema["pos"]
+    result_col = schema["result"]
+
+    # Filter to complete games and player rows only
+    if "datacompleteness" in df.columns:
+        before = len(df)
+        df = df[df["datacompleteness"] == "complete"]
+        logging.info(f"Filtered to complete games: {len(df):,} rows (removed {before - len(df):,})")
+
+    df = _filter_player_rows(df, pos_col)
+    logging.info(f"Player rows: {len(df):,}")
+
+    # Standardize position names
+    df[pos_col] = df[pos_col].astype(str).str.lower()
+    df[pos_col] = df[pos_col].replace({"jungle": "jng", "adc": "bot", "support": "sup"})
+
+    # Filter to valid positions
+    df = df[df[pos_col].isin(cfg.roles)]
+    logging.info(f"After filtering to valid positions: {len(df):,}")
+
+    # Ensure side column exists
+    if "side" not in df.columns:
+        raise ValueError("Missing 'side' column (Blue/Red team)")
+
+    # Pivot: one row per game+side, columns for each position's stats
+    logging.info("Pivoting player stats to team features...")
+
+    # Build list of features to pivot
+    pivot_features = []
+    for metric in cfg.performance_metrics:
+        if metric in df.columns:
+            pivot_features.append(metric)
+        else:
+            logging.warning(f"Metric '{metric}' not found in data, skipping")
+
+    if not pivot_features:
+        raise ValueError("No performance metrics found in data")
+
+    logging.info(f"Using {len(pivot_features)} metrics: {pivot_features}")
+
+    # For each position, create columns for each metric
+    team_data = []
+
+    for (game_id, side), group in df.groupby([game_col, "side"]):
+        row = {
+            game_col: game_id,
+            "side": side,
+        }
+
+        # Get result (1 = win, 0 = loss)
+        result = group[result_col].iloc[0]
+        row["result"] = 1 if result == 1 else 0
+
+        # For each position, add its stats
+        for position in cfg.roles:
+            pos_players = group[group[pos_col] == position]
+
+            if len(pos_players) == 0:
+                # Missing player for this position (shouldn't happen often)
+                for metric in pivot_features:
+                    row[f"{position}_{metric}"] = np.nan
+            elif len(pos_players) == 1:
+                # Normal case: one player per position
+                player = pos_players.iloc[0]
+                for metric in pivot_features:
+                    row[f"{position}_{metric}"] = player[metric]
+            else:
+                # Multiple players in same position (data issue)
+                logging.warning(f"Multiple {position} players in game {game_id} side {side}, using first")
+                player = pos_players.iloc[0]
+                for metric in pivot_features:
+                    row[f"{position}_{metric}"] = player[metric]
+
+        team_data.append(row)
+
+    team_df = pd.DataFrame(team_data)
+    logging.info(f"Created team features: {len(team_df):,} teams, {len(team_df.columns)} columns")
+
+    # Drop rows with missing data
+    before = len(team_df)
+    team_df = team_df.dropna()
+    if len(team_df) < before:
+        logging.warning(f"Dropped {before - len(team_df):,} teams with missing data")
+
+    return team_df
+
+
+def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> LogisticRegression:
+    """
+    Train Model 2: Win Probability from per-lane performance.
+
+    Uses LogisticRegression to handle continuous probability inputs
+    (e.g., firstblood probabilities from Model 1).
+
+    Returns:
+        Trained logistic regression model
+    """
+    if cfg is None:
+        cfg = WinProbabilityConfig()
+
+    logging.info("=" * 60)
+    logging.info("Model 2: Win Probability from Performance")
+    logging.info("=" * 60)
+
+    # Load data
+    logging.info(f"\nLoading data for years: {list(cfg.years)}")
+    df = load_oracle_years(cfg.years)
+    logging.info(f"Loaded {len(df):,} rows")
+
+    # Build team features
+    team_df = build_team_features(df, cfg)
+
+    # Prepare features and target
+    schema = _detect_schema(df)
+    feature_cols = [col for col in team_df.columns if col not in [schema["game"], "side", "result"]]
+    X = team_df[feature_cols]
+    y = team_df["result"]
+
+    logging.info(f"\nFeatures: {len(feature_cols)} columns")
+    logging.info(f"Samples: {len(X):,} teams ({y.sum():,} wins, {(~y.astype(bool)).sum():,} losses)")
+
+    # Train/test split
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y,
+        test_size=cfg.test_size,
+        random_state=cfg.random_state,
+        stratify=y
+    )
+
+    logging.info(f"\nTrain: {len(X_train):,} | Test: {len(X_test):,}")
+
+    # Train model
+    logging.info("\nTraining Logistic Regression...")
+    model = LogisticRegression(
+        C=cfg.C,
+        max_iter=cfg.max_iter,
+        solver=cfg.solver,
+        penalty=cfg.penalty,
+        random_state=cfg.random_state,
+        verbose=0,
+    )
+
+    t_start = time.perf_counter()
+    model.fit(X_train, y_train)
+    t_elapsed = time.perf_counter() - t_start
+
+    logging.info(f"Training complete in {t_elapsed:.2f}s")
+
+    # Evaluate
+    train_acc = model.score(X_train, y_train)
+    test_acc = model.score(X_test, y_test)
+
+    logging.info(f"\nAccuracy: Train={train_acc:.3f} | Test={test_acc:.3f}")
+
+    # Show feature coefficients (importance for logistic regression)
+    # Positive coefficients increase win probability, negative decrease it
+    coefficients = pd.DataFrame({
+        'feature': feature_cols,
+        'coefficient': model.coef_[0],
+        'abs_coefficient': np.abs(model.coef_[0])
+    }).sort_values('abs_coefficient', ascending=False)
+
+    logging.info(f"\nTop 20 features (by absolute coefficient):")
+    for _, row in coefficients.head(20).iterrows():
+        direction = "↑" if row['coefficient'] > 0 else "↓"
+        logging.info(f"  {row['feature']:<30} coef={row['coefficient']:>7.3f} {direction}")
+
+    # Test on a few samples
+    logging.info(f"\nSample predictions:")
+    sample_indices = np.random.choice(len(X_test), min(5, len(X_test)), replace=False)
+    for idx in sample_indices:
+        pred_proba = model.predict_proba(X_test.iloc[[idx]])[0, 1]
+        actual = y_test.iloc[idx]
+        logging.info(f"  Predicted win prob: {pred_proba:.2%} | Actual: {'Win' if actual == 1 else 'Loss'}")
+
+    logging.info("\n" + "=" * 60)
+    logging.info("Model 2 Complete - Win Probability Model Ready")
+    logging.info("=" * 60)
+
+    return model
+
+
+if __name__ == "__main__":
+    cfg = WinProbabilityConfig()
+    model = train_win_probability_model(cfg)
