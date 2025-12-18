@@ -275,7 +275,14 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
     train_acc = model.score(X_train_scaled, y_train)
     test_acc = model.score(X_test_scaled, y_test)
 
+    # Calculate average predictions (should be close to 50% with fit_intercept=False)
+    train_pred_proba = model.predict_proba(X_train_scaled)[:, 1]
+    test_pred_proba = model.predict_proba(X_test_scaled)[:, 1]
+    train_avg_pred = train_pred_proba.mean()
+    test_avg_pred = test_pred_proba.mean()
+
     logging.info(f"\nAccuracy: Train={train_acc:.3f} | Test={test_acc:.3f}")
+    logging.info(f"Avg prediction: Train={train_avg_pred:.2%} | Test={test_avg_pred:.2%} (should be ~50%)")
 
     # Show feature coefficients (importance for logistic regression)
     # Positive coefficients increase win probability, negative decrease it
@@ -413,24 +420,25 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
     # Scenario 1: Balanced game (all stats equal)
     balanced = {}
     got_fb = random.choice([True, False])
-    first_blood = random.randint(0, 4)
-    for i, col in enumerate(feature_cols):
+    fb_pos = random.choice(cfg.roles)
+    for col in feature_cols:
+        col_pos = col.split('_')[0]
         if 'kills' in col or 'assists' in col:
-            balanced[col] = feature_stats.loc['50%', col]  # Median
+            balanced[col] = round(feature_stats.loc['mean', col])  # Rounded mean
         elif 'deaths' in col:
-            balanced[col] = feature_stats.loc['50%', col]
+            balanced[col] = round(feature_stats.loc['mean', col])
         elif 'damage' in col:
-            balanced[col] = feature_stats.loc['50%', col]
+            balanced[col] = round(feature_stats.loc['mean', col])
         elif 'diff' in col:
             balanced[col] = 0  # Equal CS/XP
-        elif col == 'firstbloodkill':
-            balanced[col] = 1 if (got_fb and first_blood == i) else 0
+        elif 'firstbloodkill' in col:
+            balanced[col] = 1 if (got_fb and col_pos == fb_pos) else 0
         elif col == 'firstbloodassist':
-            balanced[col] = 1 if (got_fb and first_blood != i and random.random() < 0.25) else 0
+            balanced[col] = 1 if (got_fb and col_pos != fb_pos and random.random() < 0.25) else 0
         elif col == 'firstbloodvictim':
-            balanced[col] = 1 if ((not got_fb) and first_blood == i) else 0
+            balanced[col] = 1 if ((not got_fb) and col_pos == fb_pos) else 0
         else:
-            balanced[col] = feature_stats.loc['50%', col]
+            balanced[col] = round(feature_stats.loc['mean', col])
 
     balanced_df, balanced_scaled = print_scenario_details(
         balanced, "1. Balanced game (all lanes equal)", scaler, feature_cols, cfg.roles, model
