@@ -15,6 +15,7 @@ This is the second part of the player contribution system:
 from __future__ import annotations
 
 import logging
+import random
 import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -23,6 +24,7 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 from .io_oracle import load_oracle_years
 
@@ -49,7 +51,7 @@ class WinProbabilityConfig:
         "damagetochampions",
         "csdiffat15",
         "xpdiffat15",
-        "firstblood",
+        "firstbloodkill",
         "firstbloodassist",
         "firstbloodvictim",
     )
@@ -239,26 +241,39 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
 
     logging.info(f"\nTrain: {len(X_train):,} | Test: {len(X_test):,}")
 
+    # Scale features for better convergence
+    logging.info("\nScaling features...")
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+
+    # Convert back to DataFrame for easier handling
+    X_train_scaled = pd.DataFrame(X_train_scaled, columns=X_train.columns, index=X_train.index)
+    X_test_scaled = pd.DataFrame(X_test_scaled, columns=X_test.columns, index=X_test.index)
+
+    logging.info(f"Feature scaling complete (mean=0, std=1)")
+
     # Train model
-    logging.info("\nTraining Logistic Regression...")
+    logging.info("\nTraining Logistic Regression (no intercept - forced 50% baseline)...")
     model = LogisticRegression(
         C=cfg.C,
         max_iter=cfg.max_iter,
         solver=cfg.solver,
         penalty=cfg.penalty,
         random_state=cfg.random_state,
+        fit_intercept=False,  # Force 50-50 baseline (no intercept)
         verbose=0,
     )
 
     t_start = time.perf_counter()
-    model.fit(X_train, y_train)
+    model.fit(X_train_scaled, y_train)
     t_elapsed = time.perf_counter() - t_start
 
     logging.info(f"Training complete in {t_elapsed:.2f}s")
 
     # Evaluate
-    train_acc = model.score(X_train, y_train)
-    test_acc = model.score(X_test, y_test)
+    train_acc = model.score(X_train_scaled, y_train)
+    test_acc = model.score(X_test_scaled, y_test)
 
     logging.info(f"\nAccuracy: Train={train_acc:.3f} | Test={test_acc:.3f}")
 
@@ -276,12 +291,270 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
         logging.info(f"  {row['feature']:<30} coef={row['coefficient']:>7.3f} {direction}")
 
     # Test on a few samples
-    logging.info(f"\nSample predictions:")
-    sample_indices = np.random.choice(len(X_test), min(5, len(X_test)), replace=False)
+    logging.info(f"\nSample predictions (from test set):")
+    sample_indices = np.random.choice(len(X_test_scaled), min(5, len(X_test_scaled)), replace=False)
     for idx in sample_indices:
-        pred_proba = model.predict_proba(X_test.iloc[[idx]])[0, 1]
+        pred_proba = model.predict_proba(X_test_scaled.iloc[[idx]])[0, 1]
         actual = y_test.iloc[idx]
         logging.info(f"  Predicted win prob: {pred_proba:.2%} | Actual: {'Win' if actual == 1 else 'Loss'}")
+
+    # Generate synthetic scenarios to verify model behavior
+    logging.info(f"\nSynthetic scenario testing:")
+    logging.info("=" * 60)
+
+    # Get typical ranges from training data for scaling synthetic values
+    feature_stats = X_train.describe()
+
+    def print_scenario_details(scenario_dict, scenario_name, scaler, feature_cols, roles, model):
+        """Print detailed breakdown of a scenario with raw and scaled values."""
+        logging.info(f"\n{scenario_name}")
+        logging.info("-" * 80)
+
+        # Create DataFrame and scale
+        scenario_df = pd.DataFrame([scenario_dict])[feature_cols]
+        scenario_scaled = pd.DataFrame(
+            scaler.transform(scenario_df),
+            columns=scenario_df.columns
+        )
+
+        # Get coefficients for win probability contribution
+        coefficients = model.coef_[0]
+
+        # Calculate log-odds contributions
+        log_odds_contributions = scenario_scaled.iloc[0] * coefficients
+
+        # Calculate probabilities
+        baseline_prob = 0.50
+        total_log_odds = log_odds_contributions.sum()
+        final_prob = 1 / (1 + np.exp(-total_log_odds))
+        prob_change = final_prob - baseline_prob
+
+        # Convert each feature's log-odds to probability contribution
+        feature_prob_contributions = {}
+        if abs(total_log_odds) > 1e-10:
+            for col in feature_cols:
+                feature_prob_contributions[col] = prob_change * (log_odds_contributions[col] / total_log_odds)
+        else:
+            for col in feature_cols:
+                feature_prob_contributions[col] = 0
+
+        # Print per-lane breakdown
+        for pos in roles:
+            logging.info(f"\n  {pos.upper()}:")
+            pos_features = [col for col in feature_cols if col.startswith(f'{pos}_')]
+
+            for col in pos_features:
+                metric = col.replace(f'{pos}_', '')
+                raw_val = scenario_dict[col]
+                scaled_val = scenario_scaled[col].iloc[0]
+                wr_delta = feature_prob_contributions[col] * 100  # Convert to percentage points
+                sign = "+" if wr_delta >= 0 else ""
+                logging.info(f"    {metric:<20} raw={raw_val:>8.2f}  scaled={scaled_val:>7.2f}  wr_delta={sign}{wr_delta:>6.2f}pp")
+
+        return scenario_df, scenario_scaled
+
+    def print_lane_contributions(scenario_scaled, model, feature_cols, roles):
+        """Calculate and print each lane's contribution to win probability."""
+        logging.info("\n  Lane contributions to win probability:")
+        logging.info("  " + "-" * 70)
+
+        # Get coefficients (no intercept since fit_intercept=False)
+        coefficients = model.coef_[0]
+
+        # Calculate log-odds contribution for each feature
+        # log_odds = sum(coef_i * x_i)  (no intercept)
+        log_odds_contributions = scenario_scaled.iloc[0] * coefficients
+
+        # Group by lane (log-odds space)
+        lane_log_odds = {}
+        for pos in roles:
+            pos_features = [col for col in feature_cols if col.startswith(f'{pos}_')]
+            pos_contribution = sum(log_odds_contributions[col] for col in pos_features if col in log_odds_contributions.index)
+            lane_log_odds[pos] = pos_contribution
+
+        # Calculate probabilities
+        baseline_prob = 0.50  # 50-50 baseline (model forced to this via fit_intercept=False)
+        total_log_odds = log_odds_contributions.sum()  # No intercept
+        final_prob = 1 / (1 + np.exp(-total_log_odds))
+
+        # Convert log-odds contributions to probability contributions
+        # We want contributions to sum to (final_prob - 50%)
+        total_log_odds_from_lanes = sum(lane_log_odds.values())
+        prob_change = final_prob - baseline_prob
+
+        lane_prob_contributions = {}
+        if abs(total_log_odds_from_lanes) > 1e-10:  # Avoid division by zero
+            for pos, log_odds_contrib in lane_log_odds.items():
+                # Scale contribution proportionally
+                lane_prob_contributions[pos] = prob_change * (log_odds_contrib / total_log_odds_from_lanes)
+        else:
+            # All lanes neutral
+            for pos in lane_log_odds.keys():
+                lane_prob_contributions[pos] = 0
+
+        # Sort lanes by probability contribution
+        sorted_lanes = sorted(lane_prob_contributions.items(), key=lambda x: x[1], reverse=True)
+
+        logging.info(f"  {'Lane':<8} {'Prob contrib':<15} {'Cumulative':<15} {'Impact':<10}")
+        logging.info("  " + "-" * 70)
+
+        cumulative_prob = baseline_prob
+        for pos, prob_contrib in sorted_lanes:
+            cumulative_prob += prob_contrib
+            impact = "↑ Helps win" if prob_contrib > 0 else "↓ Hurts win" if prob_contrib < 0 else "= Neutral"
+            logging.info(f"  {pos.upper():<8} {prob_contrib:>+7.2%} ({prob_contrib*100:>+6.2f}pp)  {cumulative_prob:>6.2%}         {impact}")
+
+        logging.info("  " + "-" * 70)
+        logging.info(f"  Baseline (forced 50-50):    {baseline_prob:>6.2%}")
+        logging.info(f"  Lane contributions:         {prob_change:>+6.2%} ({prob_change*100:>+6.2f}pp)")
+        logging.info(f"  Final win probability:      {final_prob:>6.2%}")
+        logging.info(f"  ✓ Verification: {baseline_prob:.2%} + {prob_change:+.2%} = {final_prob:.2%}")
+
+    # Scenario 1: Balanced game (all stats equal)
+    balanced = {}
+    got_fb = random.choice([True, False])
+    first_blood = random.randint(0, 4)
+    for i, col in enumerate(feature_cols):
+        if 'kills' in col or 'assists' in col:
+            balanced[col] = feature_stats.loc['50%', col]  # Median
+        elif 'deaths' in col:
+            balanced[col] = feature_stats.loc['50%', col]
+        elif 'damage' in col:
+            balanced[col] = feature_stats.loc['50%', col]
+        elif 'diff' in col:
+            balanced[col] = 0  # Equal CS/XP
+        elif col == 'firstbloodkill':
+            balanced[col] = 1 if (got_fb and first_blood == i) else 0
+        elif col == 'firstbloodassist':
+            balanced[col] = 1 if (got_fb and first_blood != i and random.random() < 0.25) else 0
+        elif col == 'firstbloodvictim':
+            balanced[col] = 1 if ((not got_fb) and first_blood == i) else 0
+        else:
+            balanced[col] = feature_stats.loc['50%', col]
+
+    balanced_df, balanced_scaled = print_scenario_details(
+        balanced, "1. Balanced game (all lanes equal)", scaler, feature_cols, cfg.roles, model
+    )
+    balanced_prob = model.predict_proba(balanced_scaled)[0, 1]
+    logging.info(f"\n   → Win probability: {balanced_prob:.2%}")
+    print_lane_contributions(balanced_scaled, model, feature_cols, cfg.roles)
+
+    # Scenario 2: Dominating game (high stats across all lanes)
+    dominating = balanced.copy()
+    for col in feature_cols:
+        if 'kills' in col or 'assists' in col:
+            dominating[col] = feature_stats.loc['75%', col]
+        elif 'deaths' in col:
+            dominating[col] = feature_stats.loc['25%', col]
+        elif 'damage' in col:
+            dominating[col] = feature_stats.loc['75%', col]
+        elif 'diff' in col:
+            dominating[col] = abs(feature_stats.loc['75%', col])  # Positive CS/XP lead
+
+    dominating_df, dominating_scaled = print_scenario_details(
+        dominating, "2. Dominating performance (winning all lanes)", scaler, feature_cols, cfg.roles, model
+    )
+    dominating_prob = model.predict_proba(dominating_scaled)[0, 1]
+    logging.info(f"\n   → Win probability: {dominating_prob:.2%}")
+    print_lane_contributions(dominating_scaled, model, feature_cols, cfg.roles)
+
+    # Scenario 3: Losing game (poor stats across all lanes)
+    losing = balanced.copy()
+    for col in feature_cols:
+        if 'kills' in col or 'assists' in col:
+            losing[col] = feature_stats.loc['25%', col]
+        elif 'deaths' in col:
+            losing[col] = feature_stats.loc['75%', col]
+        elif 'damage' in col:
+            losing[col] = feature_stats.loc['25%', col]
+        elif 'diff' in col:
+            losing[col] = -abs(feature_stats.loc['75%', col])  # Negative CS/XP (behind)
+
+    losing_df, losing_scaled = print_scenario_details(
+        losing, "3. Poor performance (losing all lanes)", scaler, feature_cols, cfg.roles, model
+    )
+    losing_prob = model.predict_proba(losing_scaled)[0, 1]
+    logging.info(f"\n   → Win probability: {losing_prob:.2%}")
+    print_lane_contributions(losing_scaled, model, feature_cols, cfg.roles)
+
+    # Scenario 4: Mixed game (some lanes winning, some losing)
+    mixed = balanced.copy()
+    positions_ahead = ['top', 'mid']  # These lanes are winning
+    positions_behind = ['jng', 'bot', 'sup']  # These lanes are losing
+
+    for col in feature_cols:
+        # Check which position this column belongs to
+        for pos in positions_ahead:
+            if col.startswith(f'{pos}_'):
+                if 'kills' in col or 'assists' in col:
+                    mixed[col] = feature_stats.loc['75%', col]
+                elif 'deaths' in col:
+                    mixed[col] = feature_stats.loc['25%', col]
+                elif 'diff' in col:
+                    mixed[col] = abs(feature_stats.loc['75%', col])
+
+        for pos in positions_behind:
+            if col.startswith(f'{pos}_'):
+                if 'kills' in col or 'assists' in col:
+                    mixed[col] = feature_stats.loc['25%', col]
+                elif 'deaths' in col:
+                    mixed[col] = feature_stats.loc['75%', col]
+                elif 'diff' in col:
+                    mixed[col] = -abs(feature_stats.loc['75%', col])
+
+    mixed_df, mixed_scaled = print_scenario_details(
+        mixed, "4. Mixed performance (Top/Mid winning, Jungle/Bot/Support losing)", scaler, feature_cols, cfg.roles, model
+    )
+    mixed_prob = model.predict_proba(mixed_scaled)[0, 1]
+    logging.info(f"\n   → Win probability: {mixed_prob:.2%}")
+    print_lane_contributions(mixed_scaled, model, feature_cols, cfg.roles)
+
+    # Generate random scenarios
+    n_random = 3  # Reduced to 3 since we're showing full details now
+    for i in range(n_random):
+        random_scenario = {}
+
+        # First, sample a random team from training data to get consistent firstblood features
+        # (ensures only one person has firstblood, only one has firstbloodvictim, etc.)
+        random_team_idx = np.random.choice(len(X_train))
+
+        # Extract firstblood features from this team (maintaining consistency)
+        firstblood_cols = [col for col in feature_cols if 'firstblood' in col]
+        for col in firstblood_cols:
+            random_scenario[col] = X_train.iloc[random_team_idx][col]
+
+        # Sample other features independently
+        non_firstblood_cols = [col for col in feature_cols if 'firstblood' not in col]
+        for col in non_firstblood_cols:
+            random_scenario[col] = X_train[col].sample(1, random_state=None).iloc[0]
+
+        random_df, random_scaled = print_scenario_details(
+            random_scenario, f"5.{i+1}. Random scenario #{i+1} (sampled from training data)", scaler, feature_cols, cfg.roles, model
+        )
+        random_prob = model.predict_proba(random_scaled)[0, 1]
+        logging.info(f"\n   → Win probability: {random_prob:.2%}")
+        print_lane_contributions(random_scaled, model, feature_cols, cfg.roles)
+
+    # Verify expectations
+    logging.info("\n" + "=" * 60)
+    logging.info("Sanity checks:")
+    if dominating_prob > balanced_prob > losing_prob:
+        logging.info("✓ Win probability ordering is correct:")
+        logging.info(f"  Dominating ({dominating_prob:.2%}) > Balanced ({balanced_prob:.2%}) > Losing ({losing_prob:.2%})")
+    else:
+        logging.warning("✗ Win probability ordering is INCORRECT!")
+        logging.warning(f"  Expected: Dominating > Balanced > Losing")
+        logging.warning(f"  Got: {dominating_prob:.2%}, {balanced_prob:.2%}, {losing_prob:.2%}")
+
+    if 0.4 < balanced_prob < 0.6:
+        logging.info(f"✓ Balanced scenario predicts near 50%: {balanced_prob:.2%}")
+    else:
+        logging.warning(f"✗ Balanced scenario should be near 50%, got: {balanced_prob:.2%}")
+
+    if mixed_prob > losing_prob:
+        logging.info(f"✓ Mixed scenario better than losing: {mixed_prob:.2%} > {losing_prob:.2%}")
+    else:
+        logging.warning(f"✗ Mixed scenario should be better than losing!")
 
     logging.info("\n" + "=" * 60)
     logging.info("Model 2 Complete - Win Probability Model Ready")
