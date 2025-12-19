@@ -46,9 +46,9 @@ class ExpectedPerformanceConfig:
 
     # Performance metrics to predict
     output_metrics: Sequence[str] = (
-        "kills",
-        "deaths",
-        "assists",
+        "kills_nonfb",  # Kills excluding firstblood
+        "deaths_nonfb",  # Deaths excluding firstblood victim
+        "assists_nonfb",  # Assists excluding firstblood assist
         "damagetotowers",
         "damagetochampions",
         "csdiffat15",  # CS difference at 15 min
@@ -434,6 +434,16 @@ def train_expected_performance_model(
     df = load_oracle_years(cfg.years)
     logging.info(f"Loaded {len(df):,} rows")
 
+    # Decompose KDA to remove firstblood correlation
+    # kills_nonfb = kills - firstbloodkill (removes deterministic +1 kill from firstblood)
+    logging.info("Decomposing KDA features to remove firstblood correlation...")
+    if "kills" in df.columns and "firstbloodkill" in df.columns:
+        df["kills_nonfb"] = df["kills"] - df["firstbloodkill"]
+    if "assists" in df.columns and "firstbloodassist" in df.columns:
+        df["assists_nonfb"] = df["assists"] - df["firstbloodassist"]
+    if "deaths" in df.columns and "firstbloodvictim" in df.columns:
+        df["deaths_nonfb"] = df["deaths"] - df["firstbloodvictim"]
+
     # Build features
     df, feature_cols = build_game_state_features(df, cfg)
 
@@ -445,9 +455,9 @@ def train_expected_performance_model(
 
     # Map from metric to the list of valid features for that metric
     feature_map = {
-        "kills": ["_gold_share", "_game_total_kills", "_gamelength_min", "champion"],
-        "deaths": ["_game_total_kills", "_gamelength_min", "champion"],
-        "assists": ["_gold_share", "_game_total_kills", "_gamelength_min", "champion"],
+        "kills_nonfb": ["_gold_share", "_game_total_kills", "_gamelength_min", "champion"],
+        "deaths_nonfb": ["_game_total_kills", "_gamelength_min", "champion"],
+        "assists_nonfb": ["_gold_share", "_game_total_kills", "_gamelength_min", "champion"],
         "damagetotowers": ["_gold_share", "_gamelength_min", "champion", "_game_total_tower_dmg"],
         "csdiffat15": ["champion", "oppchampion"],
         "xpdiffat15": ["champion", "oppchampion"],

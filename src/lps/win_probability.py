@@ -47,10 +47,10 @@ class WinProbabilityConfig:
         "kills",
         "deaths",
         "assists",
-        "damagetotowers",
         "damagetochampions",
         "csdiffat15",
-        "xpdiffat15",
+        # Note: firstblood features are used for KDA decomposition but not as model features
+        # Instead, we use team-level teamfirstblood feature
         "firstbloodkill",
         "firstbloodassist",
         "firstbloodvictim",
@@ -188,6 +188,38 @@ def build_team_features(df: pd.DataFrame, cfg: Optional[WinProbabilityConfig] = 
     team_df = pd.DataFrame(team_data)
     logging.info(f"Created team features: {len(team_df):,} teams, {len(team_df.columns)} columns")
 
+    # Create team-level firstblood feature
+    # teamfirstblood = 0 if our team got firstblood, 1 if enemy got firstblood
+    logging.info("Creating team-level firstblood feature...")
+    fb_victim_cols = [f"{pos}_firstbloodvictim" for pos in cfg.roles]
+    team_df["teamfirstblood"] = (team_df[fb_victim_cols].sum(axis=1) > 0).astype(int)
+
+    # Decompose KDA to remove firstblood correlation
+    # kills_nonfb = kills - firstbloodkill (removes deterministic +1 kill from firstblood)
+    logging.info("Decomposing KDA features to remove firstblood correlation...")
+    for pos in cfg.roles:
+        if f"{pos}_kills" in team_df.columns and f"{pos}_firstbloodkill" in team_df.columns:
+            team_df[f"{pos}_kills_nonfb"] = team_df[f"{pos}_kills"] - team_df[f"{pos}_firstbloodkill"]
+            team_df = team_df.drop(columns=[f"{pos}_kills"])
+
+        if f"{pos}_assists" in team_df.columns and f"{pos}_firstbloodassist" in team_df.columns:
+            team_df[f"{pos}_assists_nonfb"] = team_df[f"{pos}_assists"] - team_df[f"{pos}_firstbloodassist"]
+            team_df = team_df.drop(columns=[f"{pos}_assists"])
+
+        if f"{pos}_deaths" in team_df.columns and f"{pos}_firstbloodvictim" in team_df.columns:
+            team_df[f"{pos}_deaths_nonfb"] = team_df[f"{pos}_deaths"] - team_df[f"{pos}_firstbloodvictim"]
+            team_df = team_df.drop(columns=[f"{pos}_deaths"])
+
+    # Drop position-specific firstblood columns (we use team-level teamfirstblood instead)
+    logging.info("Dropping position-specific firstblood columns...")
+    fb_cols_to_drop = []
+    for pos in cfg.roles:
+        fb_cols_to_drop.extend([f"{pos}_firstbloodkill", f"{pos}_firstbloodassist", f"{pos}_firstbloodvictim"])
+    fb_cols_to_drop = [col for col in fb_cols_to_drop if col in team_df.columns]
+    if fb_cols_to_drop:
+        team_df = team_df.drop(columns=fb_cols_to_drop)
+        logging.info(f"Dropped {len(fb_cols_to_drop)} firstblood columns")
+
     # Drop rows with missing data
     before = len(team_df)
     team_df = team_df.dropna()
@@ -292,8 +324,8 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
         'abs_coefficient': np.abs(model.coef_[0])
     }).sort_values('abs_coefficient', ascending=False)
 
-    logging.info(f"\nTop 20 features (by absolute coefficient):")
-    for _, row in coefficients.head(20).iterrows():
+    logging.info(f"\nAll features (by absolute coefficient):")
+    for _, row in coefficients.iterrows():
         direction = "↑" if row['coefficient'] > 0 else "↓"
         logging.info(f"  {row['feature']:<30} coef={row['coefficient']:>7.3f} {direction}")
 
@@ -345,6 +377,22 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
             for col in feature_cols:
                 feature_prob_contributions[col] = 0
 
+        # Print team-level features first (features not belonging to a specific lane)
+        team_features = [col for col in feature_cols if not any(col.startswith(f'{pos}_') for pos in roles)]
+        if team_features:
+            logging.info(f"\n  TEAM:")
+            for col in team_features:
+                raw_val = scenario_dict[col]
+                scaled_val = scenario_scaled[col].iloc[0]
+                wr_delta = feature_prob_contributions[col] * 100  # Convert to percentage points
+                sign = "+" if wr_delta >= 0 else ""
+                # Special display for binary features
+                if col == 'teamfirstblood':
+                    fb_text = "Enemy got FB" if raw_val == 1 else "Team got FB"
+                    logging.info(f"    {col:<20} raw={raw_val:>8.0f} ({fb_text})  scaled={scaled_val:>7.2f}  wr_delta={sign}{wr_delta:>6.2f}pp")
+                else:
+                    logging.info(f"    {col:<20} raw={raw_val:>8.2f}  scaled={scaled_val:>7.2f}  wr_delta={sign}{wr_delta:>6.2f}pp")
+
         # Print per-lane breakdown
         for pos in roles:
             logging.info(f"\n  {pos.upper()}:")
@@ -362,7 +410,7 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
 
     def print_lane_contributions(scenario_scaled, model, feature_cols, roles):
         """Calculate and print each lane's contribution to win probability."""
-        logging.info("\n  Lane contributions to win probability:")
+        logging.info("\n  Position & team contributions to win probability:")
         logging.info("  " + "-" * 70)
 
         # Get coefficients (no intercept since fit_intercept=False)
@@ -372,12 +420,18 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
         # log_odds = sum(coef_i * x_i)  (no intercept)
         log_odds_contributions = scenario_scaled.iloc[0] * coefficients
 
-        # Group by lane (log-odds space)
+        # Group by lane and team-level features (log-odds space)
         lane_log_odds = {}
         for pos in roles:
             pos_features = [col for col in feature_cols if col.startswith(f'{pos}_')]
             pos_contribution = sum(log_odds_contributions[col] for col in pos_features if col in log_odds_contributions.index)
             lane_log_odds[pos] = pos_contribution
+
+        # Add team-level features
+        team_features = [col for col in feature_cols if not any(col.startswith(f'{pos}_') for pos in roles)]
+        if team_features:
+            team_contribution = sum(log_odds_contributions[col] for col in team_features if col in log_odds_contributions.index)
+            lane_log_odds['team'] = team_contribution
 
         # Calculate probabilities
         baseline_prob = 0.50  # 50-50 baseline (model forced to this via fit_intercept=False)
@@ -399,10 +453,10 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
             for pos in lane_log_odds.keys():
                 lane_prob_contributions[pos] = 0
 
-        # Sort lanes by probability contribution
+        # Sort all contributions (lanes + team) by probability contribution
         sorted_lanes = sorted(lane_prob_contributions.items(), key=lambda x: x[1], reverse=True)
 
-        logging.info(f"  {'Lane':<8} {'Prob contrib':<15} {'Cumulative':<15} {'Impact':<10}")
+        logging.info(f"  {'Category':<8} {'Prob contrib':<15} {'Cumulative':<15} {'Impact':<10}")
         logging.info("  " + "-" * 70)
 
         cumulative_prob = baseline_prob
@@ -413,30 +467,22 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
 
         logging.info("  " + "-" * 70)
         logging.info(f"  Baseline (forced 50-50):    {baseline_prob:>6.2%}")
-        logging.info(f"  Lane contributions:         {prob_change:>+6.2%} ({prob_change*100:>+6.2f}pp)")
+        logging.info(f"  All contributions:          {prob_change:>+6.2%} ({prob_change*100:>+6.2f}pp)")
         logging.info(f"  Final win probability:      {final_prob:>6.2%}")
         logging.info(f"  ✓ Verification: {baseline_prob:.2%} + {prob_change:+.2%} = {final_prob:.2%}")
 
     # Scenario 1: Balanced game (all stats equal)
     balanced = {}
-    got_fb = random.choice([True, False])
-    fb_pos = random.choice(cfg.roles)
     for col in feature_cols:
-        col_pos = col.split('_')[0]
-        if 'kills' in col or 'assists' in col:
+        col_name = '_'.join(col.split('_')[1:]) if '_' in col else col  # Handle multi-part names like kills_nonfb
+        if col == 'teamfirstblood':
+            balanced[col] = random.choice([0, 1])  # Random firstblood outcome
+        elif col_name in ['kills_nonfb', 'assists_nonfb', 'deaths_nonfb']:
             balanced[col] = round(feature_stats.loc['mean', col])  # Rounded mean
-        elif 'deaths' in col:
+        elif 'damage' in col_name:
             balanced[col] = round(feature_stats.loc['mean', col])
-        elif 'damage' in col:
-            balanced[col] = round(feature_stats.loc['mean', col])
-        elif 'diff' in col:
+        elif 'diff' in col_name:
             balanced[col] = 0  # Equal CS/XP
-        elif 'firstbloodkill' in col:
-            balanced[col] = 1 if (got_fb and col_pos == fb_pos) else 0
-        elif col == 'firstbloodassist':
-            balanced[col] = 1 if (got_fb and col_pos != fb_pos and random.random() < 0.25) else 0
-        elif col == 'firstbloodvictim':
-            balanced[col] = 1 if ((not got_fb) and col_pos == fb_pos) else 0
         else:
             balanced[col] = round(feature_stats.loc['mean', col])
 
@@ -450,9 +496,11 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
     # Scenario 2: Dominating game (high stats across all lanes)
     dominating = balanced.copy()
     for col in feature_cols:
-        if 'kills' in col or 'assists' in col:
+        if col == 'teamfirstblood':
+            dominating[col] = 0  # Team got firstblood in dominating scenario
+        elif 'kills_nonfb' in col or 'assists_nonfb' in col:
             dominating[col] = feature_stats.loc['75%', col]
-        elif 'deaths' in col:
+        elif 'deaths_nonfb' in col:
             dominating[col] = feature_stats.loc['25%', col]
         elif 'damage' in col:
             dominating[col] = feature_stats.loc['75%', col]
@@ -469,9 +517,11 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
     # Scenario 3: Losing game (poor stats across all lanes)
     losing = balanced.copy()
     for col in feature_cols:
-        if 'kills' in col or 'assists' in col:
+        if col == 'teamfirstblood':
+            losing[col] = 1  # Enemy got firstblood in losing scenario
+        elif 'kills_nonfb' in col or 'assists_nonfb' in col:
             losing[col] = feature_stats.loc['25%', col]
-        elif 'deaths' in col:
+        elif 'deaths_nonfb' in col:
             losing[col] = feature_stats.loc['75%', col]
         elif 'damage' in col:
             losing[col] = feature_stats.loc['25%', col]
@@ -494,18 +544,18 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
         # Check which position this column belongs to
         for pos in positions_ahead:
             if col.startswith(f'{pos}_'):
-                if 'kills' in col or 'assists' in col:
+                if 'kills_nonfb' in col or 'assists_nonfb' in col:
                     mixed[col] = feature_stats.loc['75%', col]
-                elif 'deaths' in col:
+                elif 'deaths_nonfb' in col:
                     mixed[col] = feature_stats.loc['25%', col]
                 elif 'diff' in col:
                     mixed[col] = abs(feature_stats.loc['75%', col])
 
         for pos in positions_behind:
             if col.startswith(f'{pos}_'):
-                if 'kills' in col or 'assists' in col:
+                if 'kills_nonfb' in col or 'assists_nonfb' in col:
                     mixed[col] = feature_stats.loc['25%', col]
-                elif 'deaths' in col:
+                elif 'deaths_nonfb' in col:
                     mixed[col] = feature_stats.loc['75%', col]
                 elif 'diff' in col:
                     mixed[col] = -abs(feature_stats.loc['75%', col])
@@ -522,18 +572,8 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
     for i in range(n_random):
         random_scenario = {}
 
-        # First, sample a random team from training data to get consistent firstblood features
-        # (ensures only one person has firstblood, only one has firstbloodvictim, etc.)
-        random_team_idx = np.random.choice(len(X_train))
-
-        # Extract firstblood features from this team (maintaining consistency)
-        firstblood_cols = [col for col in feature_cols if 'firstblood' in col]
-        for col in firstblood_cols:
-            random_scenario[col] = X_train.iloc[random_team_idx][col]
-
-        # Sample other features independently
-        non_firstblood_cols = [col for col in feature_cols if 'firstblood' not in col]
-        for col in non_firstblood_cols:
+        # Sample all features independently from training data
+        for col in feature_cols:
             random_scenario[col] = X_train[col].sample(1, random_state=None).iloc[0]
 
         random_df, random_scaled = print_scenario_details(
