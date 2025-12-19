@@ -330,28 +330,61 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
     logging.info(f"\nMeta-model Accuracy: Train={train_acc:.3f} | Test={test_acc:.3f}")
     logging.info(f"Meta-model Avg prediction: Train={train_proba.mean():.2%} | Test={test_proba.mean():.2%}")
 
-    # Show feature importances (which positions matter most)
-    feature_importances = pd.DataFrame({
-        'position': meta_X_train.columns,
-        'importance': meta_model.feature_importances_
-    }).sort_values('importance', ascending=False)
-
-    logging.info(f"\nPosition importances in meta-model (from GradientBoosting):")
-    for _, row in feature_importances.iterrows():
-        logging.info(f"  {row['position'].upper():<8} importance={row['importance']:.3f}")
-
-    # Show correlations between position predictions and win
+    # Show feature importances and correlations (combined view)
     correlations = meta_X_train.corrwith(y_train).fillna(0)
-    correlations_df = pd.DataFrame({
-        'position': correlations.index,
-        'correlation': correlations.values,
-        'abs_correlation': np.abs(correlations.values)
-    }).sort_values('abs_correlation', ascending=False)
 
-    logging.info(f"\nPosition prediction correlations with win:")
-    for _, row in correlations_df.iterrows():
-        direction = "↑" if row['correlation'] > 0 else "↓"
-        logging.info(f"  {row['position'].upper():<8} corr={row['correlation']:>7.3f} {direction}")
+    feature_analysis = pd.DataFrame({
+        'position': meta_X_train.columns,
+        'importance': meta_model.feature_importances_,
+        'correlation': [correlations[pos] for pos in meta_X_train.columns],
+    })
+
+    # Calculate directional importance (importance × sign of correlation)
+    feature_analysis['directional_importance'] = (
+        feature_analysis['importance'] * np.sign(feature_analysis['correlation'])
+    )
+    feature_analysis['abs_directional_importance'] = np.abs(feature_analysis['directional_importance'])
+
+    # Sort by absolute directional importance
+    feature_analysis = feature_analysis.sort_values('abs_directional_importance', ascending=False)
+
+    logging.info(f"\nMeta-model position effects (magnitude & direction):")
+    logging.info(f"  {'Position':<10} {'Importance':<12} {'Correlation':<14} {'Dir. Effect':<15} {'Interpretation':<20}")
+    logging.info("  " + "-" * 85)
+
+    for _, row in feature_analysis.iterrows():
+        pos = row['position']
+        importance = row['importance']
+        correlation = row['correlation']
+        dir_importance = row['directional_importance']
+
+        # Determine direction symbol and interpretation
+        if correlation > 0:
+            direction = "↑"
+            interpretation = "Higher → More wins"
+        else:
+            direction = "↓"
+            interpretation = "Higher → Fewer wins"
+
+        sign = "+" if dir_importance >= 0 else ""
+
+        logging.info(
+            f"  {pos.upper():<10} {importance:>7.3f}      {correlation:>+7.3f} {direction}      "
+            f"{sign}{dir_importance:>+7.3f}        {interpretation}"
+        )
+
+    logging.info("\nInterpretation:")
+    logging.info("  - Importance: How much the meta-model relies on this position (magnitude)")
+    logging.info("  - Correlation: Direction of relationship between position prediction and winning")
+    logging.info("  - Directional Effect: Importance × sign(Correlation) - combined magnitude & direction")
+    logging.info("  - All positions should show ↑ (higher performance → more wins)")
+
+    # Store feature importances for use in scenarios
+    # Create a simplified version for backward compatibility
+    feature_importances = pd.DataFrame({
+        'position': feature_analysis['position'],
+        'importance': feature_analysis['importance']
+    })
 
     # ========================================================================
     # Test scenarios
@@ -476,17 +509,14 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
         for pos, pos_prob, deviation, importance, contrib in normalized_contributions:
             cumulative += contrib
             impact = "↑ Helps" if contrib > 0 else "↓ Hurts" if contrib < 0 else "= Neutral"
-            sign_dev = "+" if deviation >= 0 else ""
-            sign_contrib = "+" if contrib >= 0 else ""
             logging.info(
-                f"  {pos.upper():<8} {pos_prob:>6.2%}     {sign_dev}{deviation*100:>+6.2f}pp     "
-                f"{importance:>6.3f}       {sign_contrib}{contrib*100:>+6.2f}pp     {impact}"
+                f"  {pos.upper():<8} {pos_prob:>6.2%}     {deviation*100:>+6.2f}pp     "
+                f"{importance:>6.3f}       {contrib*100:>+6.2f}pp     {impact}"
             )
 
         logging.info("  " + "-" * 80)
-        sign_total = "+" if total_change >= 0 else ""
         logging.info(f"  Baseline:                                             {baseline:.2%}")
-        logging.info(f"  Total position contributions:                         {sign_total}{total_change*100:>+6.2f}pp")
+        logging.info(f"  Total position contributions:                         {total_change*100:>+6.2f}pp")
         logging.info(f"  Final win probability:                                {final_prob:.2%}")
         logging.info(f"  ✓ Verification: {baseline:.2%} + {total_change*100:+.2f}pp = {final_prob:.2%}")
 
