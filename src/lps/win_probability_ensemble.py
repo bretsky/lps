@@ -4,7 +4,7 @@ Model 2: Ensemble Win Probability Prediction
 This module implements a two-stage ensemble approach:
 1. Train 5 position-specific models (one per role) that predict win probability
    using only that position's features
-2. Train a meta-model (GradientBoostingClassifier) that combines the 5 position
+2. Train a meta-model (LogisticRegression) that combines the 5 position
    predictions into a final win probability
 
 This approach allows each position model to specialize in understanding how
@@ -21,7 +21,6 @@ from typing import Iterable, Optional, Sequence
 
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
@@ -57,10 +56,11 @@ class EnsembleConfig:
     position_max_iter: int = 1000
     position_solver: str = "lbfgs"
 
-    # Meta-model parameters (GradientBoostingClassifier)
-    meta_n_estimators: int = 100
-    meta_max_depth: int = 3
-    meta_learning_rate: float = 0.1
+    # Meta-model parameters (LogisticRegression)
+    meta_C: float = 1.0
+    meta_max_iter: int = 1000
+    meta_solver: str = "lbfgs"
+    meta_fit_intercept: bool = False  # Force 50% baseline (no intercept)
 
     random_state: int = 42
 
@@ -300,7 +300,7 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
     # Stage 2: Train meta-model
     # ========================================================================
     logging.info("\n" + "=" * 60)
-    logging.info("Stage 2: Training Meta-Model (Gradient Boosting)")
+    logging.info("Stage 2: Training Meta-Model (Logistic Regression)")
     logging.info("=" * 60)
 
     # Create meta-features: 5 position win rate predictions
@@ -310,80 +310,108 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
     logging.info(f"Meta-features shape: Train={meta_X_train.shape} | Test={meta_X_test.shape}")
     logging.info(f"Meta-features: {list(meta_X_train.columns)}")
 
-    # Train meta-model
-    meta_model = GradientBoostingClassifier(
-        n_estimators=cfg.meta_n_estimators,
-        max_depth=cfg.meta_max_depth,
-        learning_rate=cfg.meta_learning_rate,
+    # Scale meta-features
+    meta_scaler = StandardScaler()
+    meta_X_train_scaled = meta_scaler.fit_transform(meta_X_train)
+    meta_X_test_scaled = meta_scaler.transform(meta_X_test)
+
+    # Show scaling info
+    logging.info(f"\nMeta-feature scaling (StandardScaler):")
+    for i, pos in enumerate(meta_X_train.columns):
+        mean = meta_scaler.mean_[i]
+        std = meta_scaler.scale_[i]
+        logging.info(f"  {pos.upper():<8} mean={mean:.4f}  std={std:.4f}")
+
+    # Train LogisticRegression meta-model
+    meta_model = LogisticRegression(
+        C=cfg.meta_C,
+        max_iter=cfg.meta_max_iter,
+        solver=cfg.meta_solver,
+        fit_intercept=cfg.meta_fit_intercept,
         random_state=cfg.random_state,
         verbose=0,
     )
-    meta_model.fit(meta_X_train, y_train)
+    meta_model.fit(meta_X_train_scaled, y_train)
 
-    # Evaluate
-    train_acc = accuracy_score(y_train, meta_model.predict(meta_X_train))
-    test_acc = accuracy_score(y_test, meta_model.predict(meta_X_test))
+    # Evaluate LogisticRegression meta-model
+    train_acc = accuracy_score(y_train, meta_model.predict(meta_X_train_scaled))
+    test_acc = accuracy_score(y_test, meta_model.predict(meta_X_test_scaled))
 
-    train_proba = meta_model.predict_proba(meta_X_train)[:, 1]
-    test_proba = meta_model.predict_proba(meta_X_test)[:, 1]
+    train_proba = meta_model.predict_proba(meta_X_train_scaled)[:, 1]
+    test_proba = meta_model.predict_proba(meta_X_test_scaled)[:, 1]
 
-    logging.info(f"\nMeta-model Accuracy: Train={train_acc:.3f} | Test={test_acc:.3f}")
-    logging.info(f"Meta-model Avg prediction: Train={train_proba.mean():.2%} | Test={test_proba.mean():.2%}")
+    logging.info(f"\nLogisticRegression meta-model:")
+    logging.info(f"  Accuracy: Train={train_acc:.3f} | Test={test_acc:.3f}")
+    logging.info(f"  Avg prediction: Train={train_proba.mean():.2%} | Test={test_proba.mean():.2%} (should be ~50%)")
 
-    # Show feature importances and correlations (combined view)
-    correlations = meta_X_train.corrwith(y_train).fillna(0)
+    # Create simple average baseline meta-model for comparison
+    def average_meta_model(position_probs):
+        """Simple baseline: just average the 5 position predictions."""
+        return np.mean(list(position_probs.values()))
 
-    feature_analysis = pd.DataFrame({
+    # Evaluate average meta-model
+    train_avg_proba = meta_X_train.mean(axis=1).values
+    test_avg_proba = meta_X_test.mean(axis=1).values
+
+    train_avg_pred = (train_avg_proba > 0.5).astype(int)
+    test_avg_pred = (test_avg_proba > 0.5).astype(int)
+
+    train_avg_acc = accuracy_score(y_train, train_avg_pred)
+    test_avg_acc = accuracy_score(y_test, test_avg_pred)
+
+    logging.info(f"\nSimple Average meta-model (baseline):")
+    logging.info(f"  Accuracy: Train={train_avg_acc:.3f} | Test={test_avg_acc:.3f}")
+    logging.info(f"  Avg prediction: Train={train_avg_proba.mean():.2%} | Test={test_avg_proba.mean():.2%}")
+
+    # Show coefficients (direct interpretability with LogisticRegression!)
+    coefficients_df = pd.DataFrame({
         'position': meta_X_train.columns,
-        'importance': meta_model.feature_importances_,
-        'correlation': [correlations[pos] for pos in meta_X_train.columns],
-    })
+        'coefficient': meta_model.coef_[0],
+        'abs_coefficient': np.abs(meta_model.coef_[0])
+    }).sort_values('abs_coefficient', ascending=False)
 
-    # Calculate directional importance (importance × sign of correlation)
-    feature_analysis['directional_importance'] = (
-        feature_analysis['importance'] * np.sign(feature_analysis['correlation'])
-    )
-    feature_analysis['abs_directional_importance'] = np.abs(feature_analysis['directional_importance'])
+    logging.info(f"\nLogisticRegression coefficients (on scaled position predictions):")
+    logging.info(f"  {'Position':<10} {'Coefficient':<14} {'Interpretation':<30}")
+    logging.info("  " + "-" * 60)
 
-    # Sort by absolute directional importance
-    feature_analysis = feature_analysis.sort_values('abs_directional_importance', ascending=False)
-
-    logging.info(f"\nMeta-model position effects (magnitude & direction):")
-    logging.info(f"  {'Position':<10} {'Importance':<12} {'Correlation':<14} {'Dir. Effect':<15} {'Interpretation':<20}")
-    logging.info("  " + "-" * 85)
-
-    for _, row in feature_analysis.iterrows():
+    for _, row in coefficients_df.iterrows():
         pos = row['position']
-        importance = row['importance']
-        correlation = row['correlation']
-        dir_importance = row['directional_importance']
+        coef = row['coefficient']
 
-        # Determine direction symbol and interpretation
-        if correlation > 0:
+        # Determine direction and interpretation
+        if coef > 0:
             direction = "↑"
             interpretation = "Higher → More wins"
         else:
             direction = "↓"
-            interpretation = "Higher → Fewer wins"
+            interpretation = "Higher → Fewer wins (unexpected!)"
 
-        sign = "+" if dir_importance >= 0 else ""
+        logging.info(f"  {pos.upper():<10} {coef:>+7.3f} {direction}      {interpretation}")
 
-        logging.info(
-            f"  {pos.upper():<10} {importance:>7.3f}      {correlation:>+7.3f} {direction}      "
-            f"{sign}{dir_importance:>+7.3f}        {interpretation}"
-        )
+    # Show correlations for comparison
+    correlations = meta_X_train.corrwith(y_train).fillna(0)
+    correlations_df = pd.DataFrame({
+        'position': correlations.index,
+        'correlation': correlations.values,
+    }).sort_values('correlation', ascending=False)
+
+    logging.info(f"\nPosition prediction correlations with win (for comparison):")
+    for _, row in correlations_df.iterrows():
+        direction = "↑" if row['correlation'] > 0 else "↓"
+        logging.info(f"  {row['position'].upper():<10} {row['correlation']:>+7.3f} {direction}")
 
     logging.info("\nInterpretation:")
-    logging.info("  - Importance: How much the meta-model relies on this position (magnitude)")
-    logging.info("  - Correlation: Direction of relationship between position prediction and winning")
-    logging.info("  - Directional Effect: Importance × sign(Correlation) - combined magnitude & direction")
-    logging.info("  - All positions should show ↑ (higher performance → more wins)")
+    logging.info("  - Coefficients are on scaled position predictions (standardized)")
+    logging.info("  - No intercept (forced 50% baseline)")
+    logging.info("  - Positive coefficient: Higher position win rate → Higher overall win rate")
+    logging.info("  - Larger coefficient = position matters more in final prediction")
+    logging.info("  - All positions should have positive coefficients")
+    logging.info("  - If all coefficients are similar, LogisticRegression is learning to average")
 
-    # Store feature importances for use in scenarios
-    # Create a simplified version for backward compatibility
+    # Store coefficients as "importance" for use in scenarios (now it's the actual coefficient!)
     feature_importances = pd.DataFrame({
-        'position': feature_analysis['position'],
-        'importance': feature_analysis['importance']
+        'position': coefficients_df['position'],
+        'importance': np.abs(coefficients_df['coefficient'])  # Use absolute value for weighting
     })
 
     # ========================================================================
@@ -459,15 +487,31 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
             pos_prob = print_position_details(pos, scenario_dict, position_models, position_scalers, feature_stats)
             position_probs[pos] = pos_prob
 
-        # Get final prediction from meta-model
+        # Get predictions from both meta-models
         meta_input = pd.DataFrame([position_probs])
-        final_prob = meta_model.predict_proba(meta_input)[0, 1]
+        meta_input_scaled = meta_scaler.transform(meta_input)
 
-        logging.info(f"\n  Position-level predictions:")
-        for pos in cfg.roles:
-            logging.info(f"    {pos.upper():<8} {position_probs[pos]:.2%}")
+        # LogisticRegression prediction
+        lr_prob = meta_model.predict_proba(meta_input_scaled)[0, 1]
 
-        logging.info(f"\n  → Final win probability (from meta-model): {final_prob:.2%}")
+        # Simple average prediction
+        avg_prob = average_meta_model(position_probs)
+
+        logging.info(f"\n  Meta-model inputs (position-level win rate predictions):")
+        logging.info(f"    {'Position':<8} {'Unscaled':<12} {'Scaled':<12}")
+        logging.info(f"    {'-'*8} {'-'*12} {'-'*12}")
+        for i, pos in enumerate(cfg.roles):
+            unscaled_val = position_probs[pos]
+            scaled_val = meta_input_scaled[0, i]
+            logging.info(f"    {pos.upper():<8} {unscaled_val:>7.4f} ({unscaled_val:>5.1%})  {scaled_val:>+7.3f}")
+
+        logging.info(f"\n  Final win probability (meta-model comparison):")
+        logging.info(f"    Simple Average:         {avg_prob:.2%}")
+        logging.info(f"    LogisticRegression:     {lr_prob:.2%}")
+        logging.info(f"    Difference:             {(lr_prob - avg_prob)*100:+.2f}pp")
+
+        # Use LogisticRegression for detailed breakdown
+        final_prob = lr_prob
 
         # Calculate net winrate change attributable to each position
         logging.info(f"\n  Net winrate change attributable to each position:")
@@ -617,6 +661,8 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
         'position_models': position_models,
         'position_scalers': position_scalers,
         'meta_model': meta_model,
+        'meta_scaler': meta_scaler,
+        'average_meta_model': average_meta_model,
         'feature_stats': feature_stats,
         'cfg': cfg,
     }
