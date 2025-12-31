@@ -7,7 +7,7 @@ import json
 import logging
 from pathlib import Path
 
-from .config import LEAGUEPEDIA_DIR
+from .config import LEAGUEPEDIA_INFO_DIR
 
 # Configure logging
 logging.basicConfig(
@@ -151,6 +151,8 @@ def save_teams_to_csv(team_names: set[str], output_file: Path) -> None:
 
 def main():
     """Main entry point for extracting team names."""
+    from .config import LEAGUEPEDIA_DIR
+
     matches_dir = LEAGUEPEDIA_DIR / "matches"
 
     logging.info("Extracting team names from Leaguepedia matches...")
@@ -163,14 +165,14 @@ def main():
         logging.info("Run: python -m lps.fetch_international_matches")
         return
 
-    # Save one CSV per year
+    # Save one CSV per year to info directory
     for year in sorted(teams_by_year.keys()):
-        output_file = LEAGUEPEDIA_DIR / f"team_regions_{year}.csv"
+        output_file = LEAGUEPEDIA_INFO_DIR / f"team_regions_{year}.csv"
         team_names = teams_by_year[year]
         save_teams_to_csv(team_names, output_file)
 
     logging.info(f"\nDone! Created {len(teams_by_year)} CSV files (one per year)")
-    logging.info(f"Location: {LEAGUEPEDIA_DIR}/team_regions_YYYY.csv")
+    logging.info(f"Location: {LEAGUEPEDIA_INFO_DIR}/team_regions_YYYY.csv")
     logging.info("\nPlease fill in the regions for each year:")
     logging.info("  - team_name: The team name (already filled)")
     logging.info("  - region: Your region code (e.g., NA, EU, KR, CN, LMS/PCS, BR, etc.)")

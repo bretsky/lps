@@ -6,7 +6,7 @@ import csv
 import logging
 from pathlib import Path
 
-from .config import LEAGUEPEDIA_DIR
+from .config import LEAGUEPEDIA_INFO_DIR
 
 # Configure logging
 logging.basicConfig(
@@ -15,27 +15,27 @@ logging.basicConfig(
 )
 
 
-def load_team_regions_by_year(leaguepedia_dir: Path | None = None) -> dict[int, dict[str, str]]:
+def load_team_regions_by_year(info_dir: Path | None = None) -> dict[int, dict[str, str]]:
     """
     Load team-to-region mappings from all year-specific CSV files.
 
     Args:
-        leaguepedia_dir: Directory containing team_regions_YYYY.csv files.
-                         Defaults to LEAGUEPEDIA_DIR.
+        info_dir: Directory containing team_regions_YYYY.csv files.
+                  Defaults to LEAGUEPEDIA_INFO_DIR.
 
     Returns:
         Dictionary mapping year to (team_name -> region) dictionary.
     """
-    if leaguepedia_dir is None:
-        leaguepedia_dir = LEAGUEPEDIA_DIR
+    if info_dir is None:
+        info_dir = LEAGUEPEDIA_INFO_DIR
 
     regions_by_year = {}
 
     # Find all team_regions_YYYY.csv files
-    csv_files = list(leaguepedia_dir.glob("team_regions_*.csv"))
+    csv_files = list(info_dir.glob("team_regions_*.csv"))
 
     if not csv_files:
-        logging.error(f"No team_regions_YYYY.csv files found in {leaguepedia_dir}")
+        logging.error(f"No team_regions_YYYY.csv files found in {info_dir}")
         logging.info("Run: python -m lps.extract_team_names")
         return {}
 
@@ -68,22 +68,22 @@ def load_team_regions_by_year(leaguepedia_dir: Path | None = None) -> dict[int, 
     return regions_by_year
 
 
-def load_team_regions(year: int, leaguepedia_dir: Path | None = None) -> dict[str, str]:
+def load_team_regions(year: int, info_dir: Path | None = None) -> dict[str, str]:
     """
     Load team-to-region mappings for a specific year.
 
     Args:
         year: The year to load mappings for.
-        leaguepedia_dir: Directory containing team_regions_YYYY.csv files.
-                         Defaults to LEAGUEPEDIA_DIR.
+        info_dir: Directory containing team_regions_YYYY.csv files.
+                  Defaults to LEAGUEPEDIA_INFO_DIR.
 
     Returns:
         Dictionary mapping team name to region for the specified year.
     """
-    if leaguepedia_dir is None:
-        leaguepedia_dir = LEAGUEPEDIA_DIR
+    if info_dir is None:
+        info_dir = LEAGUEPEDIA_INFO_DIR
 
-    csv_file = leaguepedia_dir / f"team_regions_{year}.csv"
+    csv_file = info_dir / f"team_regions_{year}.csv"
 
     if not csv_file.exists():
         logging.error(f"Team regions CSV not found for year {year}: {csv_file}")
@@ -134,25 +134,25 @@ def get_team_region(
     return year_regions.get(team_name)
 
 
-def validate_team_regions(leaguepedia_dir: Path | None = None) -> dict[int, tuple[int, int]]:
+def validate_team_regions(info_dir: Path | None = None) -> dict[int, tuple[int, int]]:
     """
     Validate all year-specific team regions CSVs and report statistics.
 
     Args:
-        leaguepedia_dir: Directory containing team_regions_YYYY.csv files.
-                         Defaults to LEAGUEPEDIA_DIR.
+        info_dir: Directory containing team_regions_YYYY.csv files.
+                  Defaults to LEAGUEPEDIA_INFO_DIR.
 
     Returns:
         Dictionary mapping year to (teams_with_regions, teams_without_regions).
     """
-    if leaguepedia_dir is None:
-        leaguepedia_dir = LEAGUEPEDIA_DIR
+    if info_dir is None:
+        info_dir = LEAGUEPEDIA_INFO_DIR
 
     # Find all team_regions_YYYY.csv files
-    csv_files = list(leaguepedia_dir.glob("team_regions_*.csv"))
+    csv_files = list(info_dir.glob("team_regions_*.csv"))
 
     if not csv_files:
-        logging.error(f"No team_regions_YYYY.csv files found in {leaguepedia_dir}")
+        logging.error(f"No team_regions_YYYY.csv files found in {info_dir}")
         return {}
 
     stats_by_year = {}

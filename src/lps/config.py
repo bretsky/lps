@@ -13,6 +13,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 DATA_DIR = PROJECT_ROOT / "data"
 ORACLE_DIR = DATA_DIR / "oracle"
 LEAGUEPEDIA_DIR = DATA_DIR / "leaguepedia"
+LEAGUEPEDIA_INFO_DIR = LEAGUEPEDIA_DIR / "info"
 
 # Leaguepedia credentials (from .env file or environment variables)
 LP_USERNAME = os.getenv("LP_USERNAME", "")
