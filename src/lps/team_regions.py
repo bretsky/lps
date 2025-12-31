@@ -6,7 +6,7 @@ import csv
 import logging
 from pathlib import Path
 
-from .config import LEAGUEPEDIA_INFO_DIR
+from .config import INFO_DIR
 
 # Configure logging
 logging.basicConfig(
@@ -21,13 +21,13 @@ def load_team_regions_by_year(info_dir: Path | None = None) -> dict[int, dict[st
 
     Args:
         info_dir: Directory containing team_regions_YYYY.csv files.
-                  Defaults to LEAGUEPEDIA_INFO_DIR.
+                  Defaults to INFO_DIR.
 
     Returns:
         Dictionary mapping year to (team_name -> region) dictionary.
     """
     if info_dir is None:
-        info_dir = LEAGUEPEDIA_INFO_DIR
+        info_dir = INFO_DIR
 
     regions_by_year = {}
 
@@ -75,13 +75,13 @@ def load_team_regions(year: int, info_dir: Path | None = None) -> dict[str, str]
     Args:
         year: The year to load mappings for.
         info_dir: Directory containing team_regions_YYYY.csv files.
-                  Defaults to LEAGUEPEDIA_INFO_DIR.
+                  Defaults to INFO_DIR.
 
     Returns:
         Dictionary mapping team name to region for the specified year.
     """
     if info_dir is None:
-        info_dir = LEAGUEPEDIA_INFO_DIR
+        info_dir = INFO_DIR
 
     csv_file = info_dir / f"team_regions_{year}.csv"
 
@@ -140,13 +140,13 @@ def validate_team_regions(info_dir: Path | None = None) -> dict[int, tuple[int, 
 
     Args:
         info_dir: Directory containing team_regions_YYYY.csv files.
-                  Defaults to LEAGUEPEDIA_INFO_DIR.
+                  Defaults to INFO_DIR.
 
     Returns:
         Dictionary mapping year to (teams_with_regions, teams_without_regions).
     """
     if info_dir is None:
-        info_dir = LEAGUEPEDIA_INFO_DIR
+        info_dir = INFO_DIR
 
     # Find all team_regions_YYYY.csv files
     csv_files = list(info_dir.glob("team_regions_*.csv"))

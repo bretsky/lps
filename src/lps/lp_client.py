@@ -146,7 +146,7 @@ class LPClient:
         results = self.query(
             tables="Tournaments=T, MatchSchedule=MS, TeamRedirects=TR1, TeamRedirects=TR2",
             fields=(
-                "T.Name, T.League, MS.DateTime_UTC, MS.Team1, MS.Team2, MS.Winner, "
+                "T.Name, T.League, MS.DateTime_UTC, MS.Team1, MS.Team2, MS.Winner, MS.Team1Final, MS.Team2Final, "
                 "MS.OverviewPage, MS.MatchId, MS.MatchDay, TR1._pageName=TeamName1, TR2._pageName=TeamName2"
             ),
             where=where,
@@ -184,8 +184,8 @@ class LPClient:
         results = self.query(
             tables="MatchSchedule=MS, TeamRedirects=TR1, TeamRedirects=TR2",
             fields=(
-                "MS.DateTime_UTC, MS.Team1, MS.Team2, MS.Winner, MS.OverviewPage, "
-                "MS.MatchId, MS.MatchDay, TR1._pageName=TeamName1, TR2._pageName=TeamName2"
+                "MS.DateTime_UTC, MS.Team1, MS.Team2, MS.Winner, MS.Team1Final, MS.Team2Final, "
+                "MS.OverviewPage, MS.MatchId, MS.MatchDay, TR1._pageName=TeamName1, TR2._pageName=TeamName2"
             ),
             where=where,
             join_on="MS.Team1=TR1.AllName, MS.Team2=TR2.AllName",
@@ -222,7 +222,7 @@ class LPClient:
         results = self.query(
             tables="Tournaments=T, MatchSchedule=MS, TeamRedirects=TR1, TeamRedirects=TR2",
             fields=(
-                "T.Name, T.League, T.Year, MS.DateTime_UTC, MS.Team1, MS.Team2, MS.Winner, "
+                "T.Name, T.League, T.Year, MS.DateTime_UTC, MS.Team1, MS.Team2, MS.Team1Score, MS.Team2Score, MS.Winner, "
                 "MS.OverviewPage, MS.MatchId, MS.MatchDay, TR1._pageName=TeamName1, TR2._pageName=TeamName2"
             ),
             where=where,

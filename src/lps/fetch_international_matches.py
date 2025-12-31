@@ -225,7 +225,7 @@ def main():
     logging.info("Fetching international tournament matches...")
     all_matches = fetch_all_international_matches(
         client,
-        force_refetch=False,  # Set to True to refetch everything
+        force_refetch=True,  # Set to True to refetch everything
     )
 
     logging.info("Done!")

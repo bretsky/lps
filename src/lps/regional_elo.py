@@ -6,6 +6,7 @@ import argparse
 import csv
 import json
 import logging
+import math
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -13,7 +14,7 @@ from typing import Any
 
 import pandas as pd
 
-from .config import LEAGUEPEDIA_DIR, LEAGUEPEDIA_INFO_DIR
+from .config import LEAGUEPEDIA_DIR, INFO_DIR
 from .team_regions import load_team_regions_by_year
 
 # Configure logging
@@ -25,7 +26,7 @@ logging.basicConfig(
 
 # Elo configuration
 DEFAULT_ELO = 1000  # Starting Elo for all regions
-K_FACTOR = 32  # How much Elo changes per match (higher = more volatile)
+K_FACTOR = 64  # How much Elo changes per match (higher = more volatile)
 
 
 class RegionalEloTracker:
@@ -42,11 +43,35 @@ class RegionalEloTracker:
         self.default_elo = default_elo
         self.k_factor = k_factor
         self.elos: dict[str, float] = defaultdict(lambda: default_elo)
+        self.match_counts: dict[str, int] = defaultdict(int)  # Track matches played per region
         self.match_history: list[dict[str, Any]] = []
 
     def get_elo(self, region: str) -> float:
         """Get current Elo for a region."""
         return self.elos[region]
+
+    def get_match_count(self, region: str) -> int:
+        """Get match count for a region."""
+        return self.match_counts[region]
+
+    def get_k_factor(self, region: str) -> float:
+        """
+        Get K-factor for a region based on match count.
+
+        Decays from 64 (at 0 matches) to 32 (at many matches) using exponential decay.
+        Formula: K = 32 + 32 * exp(-matches / 20)
+
+        Args:
+            region: The region to get K-factor for.
+
+        Returns:
+            K-factor for this region.
+        """
+        matches = self.get_match_count(region)
+        # Exponential decay: starts at 64, asymptotically approaches 32
+        decay = math.exp(-matches / 20)
+        k = 32 + 32 * decay
+        return k
 
     def expected_score(self, elo_a: float, elo_b: float) -> float:
         """
@@ -67,6 +92,7 @@ class RegionalEloTracker:
         region_b: str,
         score_a: float,
         match_data: dict[str, Any] | None = None,
+        k_scale: float = 1.0,
     ) -> tuple[float, float, float, float]:
         """
         Update Elo ratings based on match result.
@@ -74,15 +100,26 @@ class RegionalEloTracker:
         Args:
             region_a: Region of team A.
             region_b: Region of team B.
-            score_a: Actual score for region A (1.0 = win, 0.0 = loss).
+            score_a: Actual score for region A (1.0 = win, 0.0 = loss, or fractional for series).
             match_data: Optional match metadata to store in history.
+            k_scale: Scale factor for K (e.g., sqrt(games) for series length).
 
         Returns:
             Tuple of (old_elo_a, new_elo_a, old_elo_b, new_elo_b).
         """
-        # Get current Elos
+        # Get current Elos and match counts
         old_elo_a = self.get_elo(region_a)
         old_elo_b = self.get_elo(region_b)
+        old_matches_a = self.get_match_count(region_a)
+        old_matches_b = self.get_match_count(region_b)
+
+        # Get region-specific K-factors (with decay based on experience)
+        k_a = self.get_k_factor(region_a)
+        k_b = self.get_k_factor(region_b)
+
+        # Apply series length scaling
+        k_a *= k_scale
+        k_b *= k_scale
 
         # Calculate expected scores
         expected_a = self.expected_score(old_elo_a, old_elo_b)
@@ -91,12 +128,16 @@ class RegionalEloTracker:
         # Calculate actual scores
         score_b = 1.0 - score_a
 
-        # Update Elos
-        new_elo_a = old_elo_a + self.k_factor * (score_a - expected_a)
-        new_elo_b = old_elo_b + self.k_factor * (score_b - expected_b)
+        # Update Elos with region-specific K-factors
+        new_elo_a = old_elo_a + k_a * (score_a - expected_a)
+        new_elo_b = old_elo_b + k_b * (score_b - expected_b)
 
         self.elos[region_a] = new_elo_a
         self.elos[region_b] = new_elo_b
+
+        # Increment match counts
+        self.match_counts[region_a] += 1
+        self.match_counts[region_b] += 1
 
         # Record in history
         history_entry = {
@@ -108,6 +149,8 @@ class RegionalEloTracker:
             "new_elo_b": new_elo_b,
             "expected_a": expected_a,
             "score_a": score_a,
+            "k_factor_a": k_a,
+            "k_factor_b": k_b,
             "elo_change_a": new_elo_a - old_elo_a,
             "elo_change_b": new_elo_b - old_elo_b,
         }
@@ -127,47 +170,51 @@ class RegionalEloTracker:
         self.match_history.clear()
 
 
-def load_starting_elos(year: int, info_dir: Path | None = None) -> dict[str, float]:
+def load_starting_elos(year: int, info_dir: Path | None = None) -> tuple[dict[str, float], dict[str, int]]:
     """
-    Load starting Elos for regions from a CSV file.
+    Load starting Elos and match counts for regions from a CSV file.
 
     Args:
         year: The year to load starting Elos for.
         info_dir: Directory containing starting_elos_YEAR.csv files.
 
     Returns:
-        Dictionary mapping region to starting Elo.
+        Tuple of (starting_elos dict, match_counts dict).
     """
     if info_dir is None:
-        info_dir = LEAGUEPEDIA_INFO_DIR
+        info_dir = INFO_DIR
 
     csv_file = info_dir / f"starting_elos_{year}.csv"
 
     if not csv_file.exists():
         logging.error(f"Starting Elos file not found: {csv_file}")
-        logging.info(f"Please create {csv_file} with columns: region,starting_elo")
+        logging.info(f"Please create {csv_file} with columns: region,starting_elo,match_count")
         raise FileNotFoundError(f"Missing starting Elos file: {csv_file}")
 
     starting_elos = {}
+    match_counts = {}
 
     with open(csv_file, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             region = row.get("region", "").strip()
             elo_str = row.get("starting_elo", "").strip()
+            matches_str = row.get("match_count", "0").strip()
 
             if not region or not elo_str:
                 continue
 
             try:
                 elo = float(elo_str)
+                matches = int(matches_str) if matches_str else 0
                 starting_elos[region] = elo
+                match_counts[region] = matches
             except ValueError:
-                logging.warning(f"Invalid Elo value for {region}: {elo_str}")
+                logging.warning(f"Invalid Elo/match count for {region}: {elo_str}, {matches_str}")
                 continue
 
-    logging.info(f"Loaded starting Elos for {len(starting_elos)} regions from {csv_file}")
-    return starting_elos
+    logging.info(f"Loaded starting Elos and match counts for {len(starting_elos)} regions from {csv_file}")
+    return starting_elos, match_counts
 
 
 def load_all_matches(matches_dir: Path) -> list[dict[str, Any]]:
@@ -237,13 +284,37 @@ def get_winner(match: dict[str, Any]) -> int | None:
     return None
 
 
+def get_series_score(match: dict[str, Any]) -> tuple[int, int] | None:
+    """
+    Get the series score (games won by each team).
+
+    Args:
+        match: Match dictionary.
+
+    Returns:
+        Tuple of (team1_score, team2_score) or None if not available.
+    """
+    # Try Team1Final/Team2Final first (newer format)
+    score1 = match.get("Team1Score")
+    score2 = match.get("Team2Score")
+
+    if score1 is not None and score2 is not None:
+        try:
+            return (int(score1), int(score2))
+        except (ValueError, TypeError):
+            pass
+
+    return None
+
+
 def compute_regional_elos_for_year(
     year: int,
     matches: list[dict[str, Any]],
     team_regions: dict[str, str],
     starting_elos: dict[str, float],
+    starting_match_counts: dict[str, int] | None = None,
     k_factor: float = K_FACTOR,
-) -> tuple[dict[str, float], dict[str, float], list[dict[str, Any]]]:
+) -> tuple[dict[str, float], dict[str, float], dict[str, int], list[dict[str, Any]], dict]:
     """
     Compute regional Elo ratings for a single year.
 
@@ -252,15 +323,21 @@ def compute_regional_elos_for_year(
         matches: List of all international matches.
         team_regions: Team-to-region mappings for this year.
         starting_elos: Starting Elo for each region.
+        starting_match_counts: Starting match counts for each region (for K-factor decay).
         k_factor: K-factor for Elo calculations.
 
     Returns:
-        Tuple of (starting_elos, ending_elos, match_history).
+        Tuple of (starting_elos, ending_elos, ending_match_counts, match_history, matchup_stats).
     """
-    # Initialize tracker with starting Elos
+    # Initialize tracker with starting Elos and match counts
     tracker = RegionalEloTracker(default_elo=DEFAULT_ELO, k_factor=k_factor)
     for region, elo in starting_elos.items():
         tracker.elos[region] = elo
+
+    # Initialize match counts
+    if starting_match_counts:
+        for region, count in starting_match_counts.items():
+            tracker.match_counts[region] = count
 
     # Parse and filter matches for this year
     year_matches = []
@@ -288,6 +365,9 @@ def compute_regional_elos_for_year(
     year_matches.sort(key=lambda x: x[0])
     logging.info(f"Processing {len(year_matches)} matches for year {year}")
 
+    # Track head-to-head statistics
+    matchup_stats = defaultdict(lambda: {"total": 0, "wins_a": 0, "wins_b": 0})
+
     # Process matches
     for dt, match in year_matches:
         # Extract teams and winner
@@ -312,10 +392,44 @@ def compute_regional_elos_for_year(
         if region1 == region2:
             continue
 
-        # Determine score (1.0 = team1 won, 0.0 = team2 won)
-        score1 = 1.0 if winner == 1 else 0.0
+        # Get series score and calculate weighted result
+        series_score = get_series_score(match)
+        if series_score:
+            score1_games, score2_games = series_score
+            total_games = score1_games + score2_games
 
-        # Update Elos
+            if total_games > 0:
+                # Fractional score based on games won (e.g., 3-2 = 0.6)
+                score1 = score1_games / total_games
+
+                # Scale K by sqrt(n) where n is number of games
+                k_scale = math.sqrt(total_games)
+            else:
+                # Fallback: binary win/loss with no scaling
+                score1 = 1.0 if winner == 1 else 0.0
+                k_scale = 1.0
+        else:
+            # No series score available: binary win/loss with no scaling
+            score1 = 1.0 if winner == 1 else 0.0
+            k_scale = 1.0
+
+        # Track matchup stats (use sorted tuple for consistent key)
+        matchup_key = tuple(sorted([region1, region2]))
+        matchup_stats[matchup_key]["total"] += 1
+
+        # Track wins (need to know which region is "a" in the sorted pair)
+        if region1 == matchup_key[0]:
+            if winner == 1:
+                matchup_stats[matchup_key]["wins_a"] += 1
+            else:
+                matchup_stats[matchup_key]["wins_b"] += 1
+        else:
+            if winner == 1:
+                matchup_stats[matchup_key]["wins_b"] += 1
+            else:
+                matchup_stats[matchup_key]["wins_a"] += 1
+
+        # Update Elos with scaled K and fractional score
         tracker.update_elos(
             region1,
             region2,
@@ -326,19 +440,22 @@ def compute_regional_elos_for_year(
                 "team1": team1,
                 "team2": team2,
                 "winner": winner,
+                "series_score": f"{series_score[0]}-{series_score[1]}" if series_score else None,
                 "tournament": match.get("Name", ""),
             },
+            k_scale=k_scale,
         )
 
-    # Get final Elos
+    # Get final Elos and match counts
     ending_elos = tracker.get_all_elos()
+    ending_match_counts = dict(tracker.match_counts)
 
     # Ensure all regions from starting_elos are in ending_elos
     for region in starting_elos:
         if region not in ending_elos:
             ending_elos[region] = starting_elos[region]
 
-    return starting_elos, ending_elos, tracker.match_history
+    return starting_elos, ending_elos, ending_match_counts, tracker.match_history, matchup_stats
 
 
 def compute_regional_elos_by_year(
@@ -588,37 +705,37 @@ def main():
         year = args.year
         logging.info(f"\nComputing Elos for year {year}...")
 
-        # Load starting Elos
+        # Load starting Elos and match counts
         try:
-            starting_elos = load_starting_elos(year)
+            starting_elos, starting_match_counts = load_starting_elos(year)
         except FileNotFoundError:
             logging.error(f"Cannot compute Elos for {year} without starting_elos_{year}.csv")
-            logging.info(f"Please create data/leaguepedia/info/starting_elos_{year}.csv with columns:")
-            logging.info("  region,starting_elo")
+            logging.info(f"Please create info/starting_elos_{year}.csv with columns:")
+            logging.info("  region,starting_elo,match_count")
             logging.info("Example:")
-            logging.info("  NA,1000")
-            logging.info("  EU,1050")
-            logging.info("  KR,1200")
+            logging.info("  NA,1000,0")
+            logging.info("  EU,1050,0")
+            logging.info("  KR,1200,0")
             return
 
         # Get team regions for this year
         team_regions = regions_by_year.get(year, {})
         if not team_regions:
             logging.error(f"No team region mappings found for year {year}")
-            logging.info(f"Please fill in data/leaguepedia/team_regions_{year}.csv")
+            logging.info(f"Please fill in info/team_regions_{year}.csv")
             return
 
         # Compute Elos for this year
-        starting, ending, match_history = compute_regional_elos_for_year(
-            year, matches, team_regions, starting_elos, K_FACTOR
+        starting, ending, ending_match_counts, match_history, matchup_stats = compute_regional_elos_for_year(
+            year, matches, team_regions, starting_elos, starting_match_counts, K_FACTOR
         )
 
         # Print results
         logging.info(f"\n{'='*80}")
         logging.info(f"Year {year} Results:")
         logging.info(f"{'='*80}")
-        logging.info(f"  {'Region':<8} {'Start Elo':<12} {'End Elo':<12} {'Change':<10} {'Matches':<10}")
-        logging.info("  " + "-" * 70)
+        logging.info(f"  {'Region':<8} {'Start Elo':<12} {'End Elo':<12} {'Change':<10} {'Matches':<10} {'Final K':<10}")
+        logging.info("  " + "-" * 80)
 
         # Count matches per region
         region_match_counts = {}
@@ -635,24 +752,60 @@ def main():
             start_elo = starting.get(region, DEFAULT_ELO)
             change = end_elo - start_elo
             matches_count = region_match_counts.get(region, 0)
+            final_match_count = ending_match_counts.get(region, 0)
+
+            # Calculate final K-factor using same formula as tracker
+            decay = math.exp(-final_match_count / 20)
+            final_k = 32 + 32 * decay
+
             sign = "+" if change >= 0 else ""
             logging.info(
                 f"  {region:<8} {start_elo:>8.1f}      {end_elo:>8.1f}      "
-                f"{sign}{change:>6.1f}      {matches_count:>4}"
+                f"{sign}{change:>6.1f}      {matches_count:>4}       {final_k:>6.2f}"
             )
 
-        # Save ending Elos for next year
-        output_file = LEAGUEPEDIA_INFO_DIR / f"ending_elos_{year}.csv"
+        # Save ending Elos and match counts for next year
+        output_file = INFO_DIR / f"ending_elos_{year}.csv"
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
         with open(output_file, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["region", "ending_elo"])
+            writer.writerow(["region", "ending_elo", "match_count"])
             for region in sorted(ending.keys()):
-                writer.writerow([region, round(ending[region], 2)])
+                match_count = ending_match_counts.get(region, 0)
+                writer.writerow([region, round(ending[region], 2), match_count])
 
-        logging.info(f"\nEnding Elos saved to {output_file}")
+        logging.info(f"\nEnding Elos and match counts saved to {output_file}")
         logging.info(f"Use this as starting_elos_{year + 1}.csv for next year")
+
+        # Print head-to-head matchup statistics
+        if matchup_stats:
+            logging.info(f"\n{'='*80}")
+            logging.info(f"Head-to-Head Matchup Statistics:")
+            logging.info(f"{'='*80}")
+            logging.info(f"  {'Matchup':<20} {'Matches':<10} {'Record':<20} {'Win Rate':<12}")
+            logging.info("  " + "-" * 70)
+
+            # Sort by total matches (descending)
+            sorted_matchups = sorted(
+                matchup_stats.items(),
+                key=lambda x: x[1]["total"],
+                reverse=True
+            )
+
+            for (region_a, region_b), stats in sorted_matchups:
+                total = stats["total"]
+                wins_a = stats["wins_a"]
+                wins_b = stats["wins_b"]
+                winrate_a = wins_a / total * 100 if total > 0 else 0
+
+                matchup_name = f"{region_a} vs {region_b}"
+                record = f"{region_a} {wins_a}-{wins_b} {region_b}"
+                winrate_str = f"{region_a} {winrate_a:.1f}%"
+
+                logging.info(
+                    f"  {matchup_name:<20} {total:<10} {record:<20} {winrate_str:<12}"
+                )
 
     # Multi-year mode (legacy)
     else:
