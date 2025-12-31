@@ -41,14 +41,12 @@ class EnsembleConfig:
     roles: Sequence[str] = ("top", "jng", "mid", "bot", "sup")
 
     # Performance metrics to use as features (per position)
+    # Note: Firstblood is a team-level feature in meta-model, not position-level
     performance_metrics: Sequence[str] = (
-        "kills_nonfb",  # Kills excluding firstblood
-        "deaths_nonfb",  # Deaths excluding firstblood victim
-        "assists_nonfb",  # Assists excluding firstblood assist
+        "kills",
+        "deaths",
+        "assists",
         "csdiffat15",
-        "firstbloodkill",  # Binary: did this player get firstblood kill
-        "firstbloodassist",  # Binary: did this player get firstblood assist
-        "firstbloodvictim",  # Binary: did this player die to firstblood
     )
 
     # Position model parameters (LogisticRegression)
@@ -123,21 +121,16 @@ def build_team_features(cfg: Optional[EnsembleConfig] = None) -> pd.DataFrame:
 
     logging.info(f"Loaded {len(df):,} player-games")
 
-    # Decompose KDA to remove firstblood correlation
-    logging.info("Decomposing KDA features...")
-    if "kills" in df.columns and "firstbloodkill" in df.columns:
-        df["kills_nonfb"] = df["kills"] - df["firstbloodkill"]
-    if "assists" in df.columns and "firstbloodassist" in df.columns:
-        df["assists_nonfb"] = df["assists"] - df["firstbloodassist"]
-    if "deaths" in df.columns and "firstbloodvictim" in df.columns:
-        df["deaths_nonfb"] = df["deaths"] - df["firstbloodvictim"]
-
     # Build team-level features
     logging.info("Building team-level features...")
 
     # We need to pivot so each game-team has all 5 positions as columns
     # Group by gameid + team (all players on same team have same result)
     pivot_features = list(cfg.performance_metrics)
+
+    # Also include firstblood features temporarily (needed for team-level firstblood flag)
+    firstblood_features = ["firstbloodkill", "firstbloodassist", "firstbloodvictim"]
+    pivot_features.extend(firstblood_features)
 
     # Check which features exist
     pivot_features = [f for f in pivot_features if f in df.columns]
@@ -175,6 +168,28 @@ def build_team_features(cfg: Optional[EnsembleConfig] = None) -> pd.DataFrame:
     team_df = pd.DataFrame(team_data)
     logging.info(f"Created team features: {len(team_df):,} teams, {len(team_df.columns)} columns")
 
+    # Create team-level firstblood feature
+    # teamfirstblood = 1 if team got firstblood, 0 if enemy got firstblood
+    logging.info("Creating team-level firstblood feature...")
+    fb_kill_cols = [f"{pos}_firstbloodkill" for pos in cfg.roles]
+    fb_assist_cols = [f"{pos}_firstbloodassist" for pos in cfg.roles]
+
+    # Team got firstblood if any position got kill or assist
+    team_df["teamfirstblood"] = (
+        (team_df[fb_kill_cols].sum(axis=1) > 0) |
+        (team_df[fb_assist_cols].sum(axis=1) > 0)
+    ).astype(int)
+
+    # Drop position-specific firstblood columns (no longer needed)
+    logging.info("Dropping position-specific firstblood columns...")
+    fb_cols_to_drop = []
+    for pos in cfg.roles:
+        fb_cols_to_drop.extend([f"{pos}_firstbloodkill", f"{pos}_firstbloodassist", f"{pos}_firstbloodvictim"])
+    fb_cols_to_drop = [col for col in fb_cols_to_drop if col in team_df.columns]
+    if fb_cols_to_drop:
+        team_df = team_df.drop(columns=fb_cols_to_drop)
+        logging.info(f"Dropped {len(fb_cols_to_drop)} position-specific firstblood columns")
+
     # Drop rows with missing data
     before = len(team_df)
     team_df = team_df.dropna()
@@ -201,13 +216,14 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
     # Build team features
     team_df = build_team_features(cfg)
 
-    # Extract target variable
+    # Extract target variable and teamfirstblood
     y = team_df["result"]
-    team_df = team_df.drop(columns=["gameid", "result"])
+    teamfirstblood = team_df["teamfirstblood"]
+    team_df = team_df.drop(columns=["gameid", "result", "teamfirstblood"])
 
     # Split into train/test
-    X_train, X_test, y_train, y_test = train_test_split(
-        team_df, y, test_size=0.2, random_state=cfg.random_state, stratify=y
+    X_train, X_test, y_train, y_test, teamfb_train, teamfb_test = train_test_split(
+        team_df, y, teamfirstblood, test_size=0.2, random_state=cfg.random_state, stratify=y
     )
 
     logging.info(f"\nTrain size: {len(X_train):,} | Test size: {len(X_test):,}")
@@ -303,9 +319,13 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
     logging.info("Stage 2: Training Meta-Model (Logistic Regression)")
     logging.info("=" * 60)
 
-    # Create meta-features: 5 position win rate predictions
+    # Create meta-features: 5 position win rate predictions + team firstblood
     meta_X_train = pd.DataFrame(position_predictions_train)
     meta_X_test = pd.DataFrame(position_predictions_test)
+
+    # Add team-level firstblood feature
+    meta_X_train['teamfirstblood'] = teamfb_train.values
+    meta_X_test['teamfirstblood'] = teamfb_test.values
 
     logging.info(f"Meta-features shape: Train={meta_X_train.shape} | Test={meta_X_test.shape}")
     logging.info(f"Meta-features: {list(meta_X_train.columns)}")
@@ -346,12 +366,15 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
 
     # Create simple average baseline meta-model for comparison
     def average_meta_model(position_probs):
-        """Simple baseline: just average the 5 position predictions."""
-        return np.mean(list(position_probs.values()))
+        """Simple baseline: just average the 5 position predictions (ignore teamfirstblood)."""
+        # Only average the position predictions, not teamfirstblood
+        pos_only = {k: v for k, v in position_probs.items() if k in cfg.roles}
+        return np.mean(list(pos_only.values()))
 
-    # Evaluate average meta-model
-    train_avg_proba = meta_X_train.mean(axis=1).values
-    test_avg_proba = meta_X_test.mean(axis=1).values
+    # Evaluate average meta-model (only average position predictions, not teamfirstblood)
+    position_cols = [col for col in meta_X_train.columns if col in cfg.roles]
+    train_avg_proba = meta_X_train[position_cols].mean(axis=1).values
+    test_avg_proba = meta_X_test[position_cols].mean(axis=1).values
 
     train_avg_pred = (train_avg_proba > 0.5).astype(int)
     test_avg_pred = (test_avg_proba > 0.5).astype(int)
@@ -365,53 +388,62 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
 
     # Show coefficients (direct interpretability with LogisticRegression!)
     coefficients_df = pd.DataFrame({
-        'position': meta_X_train.columns,
+        'feature': meta_X_train.columns,
         'coefficient': meta_model.coef_[0],
         'abs_coefficient': np.abs(meta_model.coef_[0])
     }).sort_values('abs_coefficient', ascending=False)
 
-    logging.info(f"\nLogisticRegression coefficients (on scaled position predictions):")
-    logging.info(f"  {'Position':<10} {'Coefficient':<14} {'Interpretation':<30}")
-    logging.info("  " + "-" * 60)
+    logging.info(f"\nLogisticRegression coefficients (on scaled features):")
+    logging.info(f"  {'Feature':<15} {'Coefficient':<14} {'Interpretation':<30}")
+    logging.info("  " + "-" * 65)
 
     for _, row in coefficients_df.iterrows():
-        pos = row['position']
+        feat = row['feature']
         coef = row['coefficient']
 
         # Determine direction and interpretation
-        if coef > 0:
-            direction = "↑"
-            interpretation = "Higher → More wins"
+        if feat == 'teamfirstblood':
+            if coef > 0:
+                direction = "↑"
+                interpretation = "Team FB → More wins"
+            else:
+                direction = "↓"
+                interpretation = "Team FB → Fewer wins (unexpected!)"
         else:
-            direction = "↓"
-            interpretation = "Higher → Fewer wins (unexpected!)"
+            if coef > 0:
+                direction = "↑"
+                interpretation = "Higher → More wins"
+            else:
+                direction = "↓"
+                interpretation = "Higher → Fewer wins (unexpected!)"
 
-        logging.info(f"  {pos.upper():<10} {coef:>+7.3f} {direction}      {interpretation}")
+        logging.info(f"  {feat.upper():<15} {coef:>+7.3f} {direction}      {interpretation}")
 
     # Show correlations for comparison
     correlations = meta_X_train.corrwith(y_train).fillna(0)
     correlations_df = pd.DataFrame({
-        'position': correlations.index,
+        'feature': correlations.index,
         'correlation': correlations.values,
     }).sort_values('correlation', ascending=False)
 
-    logging.info(f"\nPosition prediction correlations with win (for comparison):")
+    logging.info(f"\nMeta-feature correlations with win (for comparison):")
     for _, row in correlations_df.iterrows():
         direction = "↑" if row['correlation'] > 0 else "↓"
-        logging.info(f"  {row['position'].upper():<10} {row['correlation']:>+7.3f} {direction}")
+        logging.info(f"  {row['feature'].upper():<15} {row['correlation']:>+7.3f} {direction}")
 
     logging.info("\nInterpretation:")
-    logging.info("  - Coefficients are on scaled position predictions (standardized)")
+    logging.info("  - Coefficients are on scaled features (standardized)")
     logging.info("  - No intercept (forced 50% baseline)")
-    logging.info("  - Positive coefficient: Higher position win rate → Higher overall win rate")
-    logging.info("  - Larger coefficient = position matters more in final prediction")
-    logging.info("  - All positions should have positive coefficients")
+    logging.info("  - Positive coefficient: Higher value → Higher overall win rate")
+    logging.info("  - Larger coefficient = feature matters more in final prediction")
+    logging.info("  - All features should have positive coefficients")
     logging.info("  - If all coefficients are similar, LogisticRegression is learning to average")
 
     # Store coefficients as "importance" for use in scenarios (now it's the actual coefficient!)
     feature_importances = pd.DataFrame({
-        'position': coefficients_df['position'],
-        'importance': np.abs(coefficients_df['coefficient'])  # Use absolute value for weighting
+        'feature': coefficients_df['feature'],
+        'importance': np.abs(coefficients_df['coefficient']),  # Use absolute value for weighting
+        'coefficient': coefficients_df['coefficient']  # Keep raw coefficient for direction
     })
 
     # ========================================================================
@@ -487,8 +519,12 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
             pos_prob = print_position_details(pos, scenario_dict, position_models, position_scalers, feature_stats)
             position_probs[pos] = pos_prob
 
+        # Extract teamfirstblood from scenario
+        teamfirstblood = scenario_dict.get('teamfirstblood', 0)
+
         # Get predictions from both meta-models
         meta_input = pd.DataFrame([position_probs])
+        meta_input['teamfirstblood'] = teamfirstblood
         meta_input_scaled = meta_scaler.transform(meta_input)
 
         # LogisticRegression prediction
@@ -497,13 +533,18 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
         # Simple average prediction
         avg_prob = average_meta_model(position_probs)
 
-        logging.info(f"\n  Meta-model inputs (position-level win rate predictions):")
-        logging.info(f"    {'Position':<8} {'Unscaled':<12} {'Scaled':<12}")
-        logging.info(f"    {'-'*8} {'-'*12} {'-'*12}")
+        logging.info(f"\n  Meta-model inputs:")
+        logging.info(f"    {'Feature':<12} {'Unscaled':<15} {'Scaled':<12}")
+        logging.info(f"    {'-'*12} {'-'*15} {'-'*12}")
         for i, pos in enumerate(cfg.roles):
             unscaled_val = position_probs[pos]
             scaled_val = meta_input_scaled[0, i]
-            logging.info(f"    {pos.upper():<8} {unscaled_val:>7.4f} ({unscaled_val:>5.1%})  {scaled_val:>+7.3f}")
+            logging.info(f"    {pos.upper():<12} {unscaled_val:>7.4f} ({unscaled_val:>5.1%})  {scaled_val:>+7.3f}")
+        # Add teamfirstblood
+        fb_unscaled = teamfirstblood
+        fb_scaled = meta_input_scaled[0, -1]  # Last feature
+        fb_text = "Team got FB" if fb_unscaled == 1 else "Enemy got FB"
+        logging.info(f"    {'teamfb':<12} {fb_unscaled:>7.0f} ({fb_text:<7})  {fb_scaled:>+7.3f}")
 
         logging.info(f"\n  Final win probability (meta-model comparison):")
         logging.info(f"    Simple Average:         {avg_prob:.2%}")
@@ -513,23 +554,33 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
         # Use LogisticRegression for detailed breakdown
         final_prob = lr_prob
 
-        # Calculate net winrate change attributable to each position
-        logging.info(f"\n  Net winrate change attributable to each position:")
-        logging.info("  " + "-" * 80)
+        # Calculate net winrate change attributable to each feature (positions + teamfirstblood)
+        logging.info(f"\n  Net winrate change attributable to each feature:")
+        logging.info("  " + "-" * 85)
 
         baseline = 0.50
         total_change = final_prob - baseline
 
         # Calculate weighted contributions
-        # Approximate contribution as (deviation from 50%) * importance, then normalize
+        # Approximate contribution as (deviation from neutral) * importance, then normalize
         contributions = []
         raw_contributions = {}
+
+        # Position contributions
         for pos in cfg.roles:
-            importance = feature_importances[feature_importances['position'] == pos]['importance'].iloc[0]
+            importance = feature_importances[feature_importances['feature'] == pos]['importance'].iloc[0]
             deviation = position_probs[pos] - baseline
             raw_contribution = deviation * importance
             raw_contributions[pos] = raw_contribution
-            contributions.append((pos, position_probs[pos], deviation, importance, raw_contribution))
+            contributions.append((pos, position_probs[pos], deviation, importance, raw_contribution, 'position'))
+
+        # Teamfirstblood contribution
+        fb_importance = feature_importances[feature_importances['feature'] == 'teamfirstblood']['importance'].iloc[0]
+        fb_baseline = 0.5  # Neutral = 50% chance of getting firstblood
+        fb_deviation = teamfirstblood - fb_baseline
+        fb_raw_contribution = fb_deviation * fb_importance
+        raw_contributions['teamfirstblood'] = fb_raw_contribution
+        contributions.append(('teamfirstblood', teamfirstblood, fb_deviation, fb_importance, fb_raw_contribution, 'team'))
 
         # Normalize contributions to sum to total_change
         sum_raw_contributions = sum(raw_contributions.values())
@@ -539,84 +590,78 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
             normalization_factor = 0
 
         normalized_contributions = []
-        for pos, pos_prob, deviation, importance, raw_contrib in contributions:
+        for feat, value, deviation, importance, raw_contrib, feat_type in contributions:
             normalized_contrib = raw_contrib * normalization_factor
-            normalized_contributions.append((pos, pos_prob, deviation, importance, normalized_contrib))
+            normalized_contributions.append((feat, value, deviation, importance, normalized_contrib, feat_type))
 
         # Sort by absolute contribution
         normalized_contributions.sort(key=lambda x: abs(x[4]), reverse=True)
 
-        logging.info(f"  {'Pos':<8} {'Pred WR':<10} {'Dev 50%':<12} {'Importance':<12} {'WR Contrib':<12} {'Impact':<10}")
-        logging.info("  " + "-" * 80)
+        logging.info(f"  {'Feature':<12} {'Value':<12} {'Dev Neut':<12} {'Importance':<12} {'WR Contrib':<12} {'Impact':<10}")
+        logging.info("  " + "-" * 85)
 
         cumulative = baseline
-        for pos, pos_prob, deviation, importance, contrib in normalized_contributions:
+        for feat, value, deviation, importance, contrib, feat_type in normalized_contributions:
             cumulative += contrib
             impact = "↑ Helps" if contrib > 0 else "↓ Hurts" if contrib < 0 else "= Neutral"
+
+            if feat_type == 'position':
+                value_str = f"{value:>6.2%}"
+            else:  # teamfirstblood
+                value_str = "Got FB" if value == 1 else "Lost FB"
+
             logging.info(
-                f"  {pos.upper():<8} {pos_prob:>6.2%}     {deviation*100:>+6.2f}pp     "
+                f"  {feat.upper():<12} {value_str:<12} {deviation*100:>+6.2f}pp     "
                 f"{importance:>6.3f}       {contrib*100:>+6.2f}pp     {impact}"
             )
 
-        logging.info("  " + "-" * 80)
-        logging.info(f"  Baseline:                                             {baseline:.2%}")
-        logging.info(f"  Total position contributions:                         {total_change*100:>+6.2f}pp")
-        logging.info(f"  Final win probability:                                {final_prob:.2%}")
+        logging.info("  " + "-" * 85)
+        logging.info(f"  Baseline:                                                     {baseline:.2%}")
+        logging.info(f"  Total contributions:                                          {total_change*100:>+6.2f}pp")
+        logging.info(f"  Final win probability:                                        {final_prob:.2%}")
         logging.info(f"  ✓ Verification: {baseline:.2%} + {total_change*100:+.2f}pp = {final_prob:.2%}")
 
     # Scenario 1: Balanced game (all stats equal)
-    # Sample firstblood features from a random match to ensure consistency
-    random_match_idx = np.random.choice(len(X_train))
-    firstblood_cols = [col for col in X_train.columns if 'firstblood' in col]
-
     balanced = {}
     for col in X_train.columns:
         col_name = '_'.join(col.split('_')[1:]) if '_' in col else col
-        if col in firstblood_cols:
-            # Use firstblood values from the same random match
-            balanced[col] = X_train.iloc[random_match_idx][col]
-        elif col_name in ['kills_nonfb', 'assists_nonfb', 'deaths_nonfb']:
+        if col_name in ['kills', 'assists', 'deaths']:
             balanced[col] = round(feature_stats.loc['mean', col])
         elif 'diff' in col_name:
             balanced[col] = 0  # Equal CS/XP
         else:
             balanced[col] = round(feature_stats.loc['mean', col])
 
+    # Add team-level firstblood (sample from training data)
+    balanced['teamfirstblood'] = int(teamfb_train.sample(1).iloc[0])
+
     print_scenario(balanced, "1. Balanced game (all positions average performance)")
 
     # Scenario 2: Dominating game (high stats across all lanes)
     dominating = balanced.copy()
     for col in X_train.columns:
-        if 'kills_nonfb' in col or 'assists_nonfb' in col:
+        if 'kills' in col or 'assists' in col:
             dominating[col] = feature_stats.loc['75%', col]
-        elif 'deaths_nonfb' in col:
+        elif 'deaths' in col:
             dominating[col] = feature_stats.loc['25%', col]
         elif 'diff' in col:
             dominating[col] = abs(feature_stats.loc['75%', col])
-        elif 'firstbloodkill' in col:
-            dominating[col] = 1  # Got firstblood kill
-        elif 'firstbloodassist' in col:
-            dominating[col] = 0
-        elif 'firstbloodvictim' in col:
-            dominating[col] = 0
+
+    dominating['teamfirstblood'] = 1  # Team got firstblood
 
     print_scenario(dominating, "2. Dominating performance (winning all lanes)")
 
     # Scenario 3: Losing game (poor stats across all lanes)
     losing = balanced.copy()
     for col in X_train.columns:
-        if 'kills_nonfb' in col or 'assists_nonfb' in col:
+        if 'kills' in col or 'assists' in col:
             losing[col] = feature_stats.loc['25%', col]
-        elif 'deaths_nonfb' in col:
+        elif 'deaths' in col:
             losing[col] = feature_stats.loc['75%', col]
         elif 'diff' in col:
             losing[col] = -abs(feature_stats.loc['75%', col])
-        elif 'firstbloodkill' in col:
-            losing[col] = 0
-        elif 'firstbloodassist' in col:
-            losing[col] = 0
-        elif 'firstbloodvictim' in col:
-            losing[col] = 1  # Died to firstblood
+
+    losing['teamfirstblood'] = 0  # Enemy got firstblood
 
     print_scenario(losing, "3. Poor performance (losing all lanes)")
 
@@ -628,20 +673,18 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
     for col in X_train.columns:
         for pos in positions_ahead:
             if col.startswith(f'{pos}_'):
-                if 'kills_nonfb' in col or 'assists_nonfb' in col:
+                if 'kills' in col or 'assists' in col:
                     mixed[col] = feature_stats.loc['75%', col]
-                elif 'deaths_nonfb' in col:
+                elif 'deaths' in col:
                     mixed[col] = feature_stats.loc['25%', col]
                 elif 'diff' in col:
                     mixed[col] = abs(feature_stats.loc['75%', col])
-                elif 'firstbloodkill' in col:
-                    mixed[col] = 1 if pos == 'top' else 0  # Top got firstblood
 
         for pos in positions_behind:
             if col.startswith(f'{pos}_'):
-                if 'kills_nonfb' in col or 'assists_nonfb' in col:
+                if 'kills' in col or 'assists' in col:
                     mixed[col] = feature_stats.loc['25%', col]
-                elif 'deaths_nonfb' in col:
+                elif 'deaths' in col:
                     mixed[col] = feature_stats.loc['75%', col]
                 elif 'diff' in col:
                     mixed[col] = -abs(feature_stats.loc['75%', col])
@@ -654,6 +697,9 @@ def train_ensemble_model(cfg: Optional[EnsembleConfig] = None):
         random_scenario = {}
         for col in X_train.columns:
             random_scenario[col] = X_train[col].sample(1, random_state=None).iloc[0]
+
+        # Sample teamfirstblood independently
+        random_scenario['teamfirstblood'] = int(teamfb_train.sample(1).iloc[0])
 
         print_scenario(random_scenario, f"5.{i+1}. Random scenario #{i+1} (sampled from training data)")
 

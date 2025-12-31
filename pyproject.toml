@@ -16,6 +16,10 @@ pandas = ">=2.3.3,<3.0.0"
 numpy = ">=2.3.5,<3.0.0"
 scikit-learn = "^1.5.0"
 tqdm = "^4.67.1"
+mwclient = "^0.11.0"
+mwrogue = "^0.1.5"
+pytz = "^2025.2"
+python-dotenv = "^1.2.1"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.0"
