@@ -342,6 +342,9 @@ def compute_regional_elos_for_year(
     # Parse and filter matches for this year
     year_matches = []
     for match in matches:
+        # Only process matches from the specified year
+        if int(match["Year"]) != year:
+            continue
         datetime_str = match.get("DateTime UTC")
         if not datetime_str:
             continue
@@ -355,9 +358,7 @@ def compute_regional_elos_for_year(
         except (ValueError, TypeError):
             continue
 
-        # Only process matches from the specified year
-        if dt.year != year:
-            continue
+        
 
         year_matches.append((dt, match))
 
