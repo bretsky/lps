@@ -33,6 +33,8 @@ INTERNATIONAL_TOURNAMENTS = {
     "RiftRivals": {"tournament": "Rift Rivals", "league": ["Rift Rivals 2017 GPL-LJL-OPL", "Rift Rivals 2017 LCK-LPL-LMS", "Rift Rivals 2017 LCL-TCL", "Rift Rivals 2017 LLN-CLS-CBLOL", "Rift Rivals 2017 NA-EU", "Rift Rivals 2018 LLN-CLS-CBLOL", "Rift Rivals 2018 SEA-LJL-OPL"]},  # Rift Rivals
     "MidSeasonCup": {"tournament": "Mid-Season Cup", "league": ["Mid-Season Cup 2020"]},  # Mid-Season Cup
     "MidSeasonShowdown": {"tournament": "Mid-Season Showdown", "league": ["Riot Games"]},  # Mid-Season Showdown
+    "GPL": {"tournament": "GPL", "league": ["Garena Premier League"]},  # GPL
+    "ASI": {"tournament": "Asia Invitational", "league": ["League of Legends Asia Invitational"]},  # Asia Invitational
 }
 
 # Year range to fetch

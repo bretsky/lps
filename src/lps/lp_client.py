@@ -17,7 +17,7 @@ from .config import LP_PASSWORD, LP_USERNAME
 class LPClient:
     """Client for querying Leaguepedia data via Cargo."""
 
-    def __init__(self, max_backoff: int = 64):
+    def __init__(self, max_backoff: int = 256):
         """
         Initialize the Leaguepedia client.
 
@@ -30,8 +30,8 @@ class LPClient:
         except Exception as e:
             print(f"Error initializing EsportsClient: {e}")
             self.client = None
-        self.backoff = 2
-        self.init_backoff = 2
+        self.backoff = 32
+        self.init_backoff = 32
         self.max_backoff = max_backoff
 
     def query(self, **kwargs) -> list[dict]:
