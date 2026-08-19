@@ -283,7 +283,7 @@ def _write_about(writer, meta: dict) -> None:
         ("  beta (win bonus)", meta["beta"]),
         ("  intl_weight (tournament phase)", meta["intl_weight"]),
         ("  min games", meta["min_games"]),
-        ("  N_ref (per-phase reference games)", round(float(meta["n_ref"]), 1)),
+        ("  N_ref (per-phase reference MATCHES)", round(float(meta["n_ref"]), 1)),
         ("", ""),
         ("Tournament weights (sqrt avg viewership, Worlds=1)", ""),
     ]

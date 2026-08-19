@@ -279,11 +279,34 @@ def build_player_ratings(
 
     source_terms = [f"{s}_term" for s in _SOURCES]
     comps = ["baseline_term", "contribution_term", "win_bonus"] + source_terms
-    reg = matches[matches["phase"] == "regular"]
-    plf = matches[matches["phase"] == "playoff"]
-    tourn = matches[matches["phase"] == "tournament"].copy()
 
-    n_ref = (
+    # SERIES (match) unit. A Bo3/Bo5 is ONE match, not N games. We collapse each series to the
+    # MEAN of its games and make the accumulation unit the MATCH -- so a series won 2-0 is
+    # never worth less than 2-1 (same per-game average => same score; a dominant sweep, with
+    # no lost game dragging the mean, scores HIGHER). Volume ("more = better") now counts
+    # matches/series (deeper runs, more tournaments), not games. A series is identified by
+    # day + event label + unordered team pair (both teams share the id).
+    m = matches.copy()
+    _day = pd.to_datetime(m["date"]).dt.date.astype(str)
+    _a, _b = m["teamname"].astype(str), m["opp_teamname"].astype(str)
+    _pair = np.where(_a.values < _b.values, _a + "|" + _b, _b + "|" + _a)
+    m["seriesid"] = _day + "@" + m["game_label"].astype(str) + "@" + _pair
+
+    def _to_series(phase_df: pd.DataFrame) -> pd.DataFrame:
+        """One row per (player, series): the comps AVERAGED over the series' games."""
+        if phase_df.empty:
+            return pd.DataFrame(columns=["playername", "seriesid", "own_league", "game_label"] + comps)
+        agg = {c: (c, "mean") for c in comps}
+        agg.update(own_league=("own_league", "first"), game_label=("game_label", "first"),
+                   teamname=("teamname", "first"))
+        return phase_df.groupby(["playername", "seriesid"], as_index=False).agg(**agg)
+
+    reg = _to_series(m[m["phase"] == "regular"])
+    plf = _to_series(m[m["phase"] == "playoff"])
+    tourn = _to_series(m[m["phase"] == "tournament"])
+    tourn_games = m[m["phase"] == "tournament"]   # game-level, kept only for champion detection
+
+    n_ref = (   # reference volume = mean regular-season MATCHES (series) per player
         regular_season_ref_games
         if regular_season_ref_games is not None
         else (reg.groupby("playername").size().mean() if len(reg) else 0.0)
@@ -297,41 +320,36 @@ def build_player_ratings(
         logging.warning(f"[tournaments] no weight for {unknown}; counting them as 0 -- add viewership.")
     tourn["w"] = tourn["game_label"].map(tw).fillna(0.0)
 
-    # Tournament CAP + LENGTH NORMALIZATION: each player's accumulation is capped at
-    # min(their games, the CHAMPION team's games) in that tournament, so a long lower-bracket
-    # grind can't out-accumulate the efficient champion. Champion = winner of the tournament's
-    # last game; champ_games is that team's game count (the "full run" length / number of
-    # matches to win it). Below the cap, more games still help; at/above it, per-game quality
-    # (rate) decides.
-    #
-    # We then DIVIDE by champ_games so a full champion run in any tournament sums to exactly
-    # its weight w -- regardless of how many games the tournament has. This decompounds
-    # Worlds's double advantage: it should be worth more only because its w is higher, NOT
-    # also because it simply has more matches than MSI/EWC/etc. Per game the effective weight
-    # is  w * min(1, champ_games/player_games) / champ_games, so a player's per-tournament
-    # total is  w * min(player_games, champ_games)/champ_games  = w * (fraction of a full run).
-    _t = tourn.sort_values(["date", "gameid"])
+    # Tournament CAP + LENGTH NORMALIZATION, in MATCHES: each player's accumulation is capped
+    # at min(their matches, the CHAMPION team's matches) in that tournament, so a long
+    # lower-bracket grind can't out-accumulate the efficient champion. Champion = winner of the
+    # tournament's last game; champ_matches is that team's SERIES count (full-run length). We
+    # DIVIDE by champ_matches so a full champion run = the tournament weight w regardless of how
+    # many matches the bracket has (decompounds Worlds's game-count advantage). Per match the
+    # effective weight is  w * min(1, champ_matches/player_matches) / champ_matches.
+    _t = tourn_games.sort_values(["date", "gameid"])
     champ = _t[_t["result"] == 1].groupby("game_label")["teamname"].last().to_dict()
-    champ_games = {
-        lbl: tourn.loc[(tourn["game_label"] == lbl) & (tourn["teamname"] == team), "gameid"].nunique()
+    champ_matches = {
+        lbl: tourn_games.loc[(tourn_games["game_label"] == lbl) & (tourn_games["teamname"] == team),
+                             "seriesid"].nunique()
         for lbl, team in champ.items()
     }
-    player_games = tourn.groupby(["playername", "game_label"])["gameid"].transform("nunique")
-    cap = tourn["game_label"].map(champ_games)
-    norm = cap.where(cap > 0, 1.0)  # per-tournament length normalizer (champion's game count)
-    tourn["w_eff"] = tourn["w"] * np.minimum(1.0, cap / player_games).fillna(1.0) / norm
+    player_matches = tourn.groupby(["playername", "game_label"])["seriesid"].transform("size")
+    cap = tourn["game_label"].map(champ_matches)
+    norm = cap.where(cap > 0, 1.0)  # per-tournament length normalizer (champion's match count)
+    tourn["w_eff"] = tourn["w"] * np.minimum(1.0, cap / player_matches).fillna(1.0) / norm
 
     # Normalize to the deepest capped-weighted run so the champion gets a full weighted phase.
     weighted_run = tourn.groupby("playername")["w_eff"].sum()
     max_run = weighted_run.max() if len(weighted_run) else 1.0
     tourn_scale = (intl_weight * n_ref / max_run) if max_run else 0.0
 
-    # Regular season and playoffs both ACCUMULATE (a one-game sub scores far less than a
-    # full-season/full-run player), but each game is weighted by N_ref / (deepest run in
-    # that league) so a FULL run ~ one phase unit in every region -- equalizing
-    # schedule/bracket length across regions without removing the volume signal within one.
-    def _accumulate(phase_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
-        d = phase_df.copy()
+    # Regular season and playoffs both ACCUMULATE (a one-match sub scores far less than a
+    # full-run player), but each MATCH is weighted by N_ref / (deepest run in matches in that
+    # league) so a FULL run ~ one phase unit in every region -- equalizing schedule/bracket
+    # length across regions without removing the volume signal within one.
+    def _accumulate(series_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
+        d = series_df.copy()
         if d.empty:
             return pd.DataFrame(columns=comps), pd.Series(dtype=float)
         run = d.groupby(["own_league", "playername"]).size().groupby(level="own_league").max()
@@ -343,7 +361,7 @@ def build_player_ratings(
     reg_c, reg_w = _accumulate(reg)
     plf_c, plf_w = _accumulate(plf)
 
-    # Tournaments: accumulate weighted by tournament importance (w_eff = weight x cap),
+    # Tournaments: accumulate per MATCH weighted by tournament importance (w_eff = weight x cap),
     # normalized to the deepest capped-weighted run.
     tourn_weighted = tourn[comps].mul(tourn["w_eff"], axis=0)
     tourn_c = tourn_weighted.groupby(tourn["playername"]).sum() * tourn_scale
@@ -498,8 +516,9 @@ def _demo(year: int = 2024, per_lane: int = 20) -> None:
     tw_str = ", ".join(f"{k}={v:.2f}" for k, v in sorted(tw.items(), key=lambda kv: -kv[1]))
     logging.info(
         f"\n{year} player ratings  (alpha={w.alpha}, lam={w.lam}, beta={w.beta}, min 15 games)\n"
-        f"Phases: regular & playoffs accumulate, normalized so a full run per league ~ 1 unit "
-        f"(N_ref={n_ref:.0f}); subs score less.\n"
+        f"Phases: regular & playoffs accumulate by MATCH (Bo3/Bo5 averaged to one unit; a "
+        f"2-0 counts the same as a 2-1 at equal per-game avg), normalized so a full run per "
+        f"league ~ 1 unit (N_ref={n_ref:.0f} matches); subs score less.\n"
         f"Tournament weights (sqrt-scaled avg viewership, Worlds=1): {tw_str}.\n"
         f"Score broken down by phase: reg + plf + (each tournament) = total."
     )
