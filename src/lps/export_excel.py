@@ -30,7 +30,7 @@ import pandas as pd
 
 from .config import PROJECT_ROOT
 from .contribution import ROLES
-from .scoring import ScoreWeights
+from .scoring import REFERENCE_ELO, ScoreWeights, expected_score, load_league_elos
 from .season import (
     _DEMO_WEIGHTS,
     _LANE_NAMES,
@@ -55,6 +55,7 @@ _COLUMNS: list[tuple[str, str, str, int, str]] = [
     ("playername",    "Player",      None, 16, "id"),
     ("team",          "Team",        None, 18, "id"),
     ("league",        "League",      None, 8,  "id"),
+    ("region_elo",    "RegElo",      _INT, 8,  "id"),
     # volume
     ("games",         "Games",       _INT, 7,  "vol"),
     ("wins",          "Wins",        _INT, 6,  "vol"),
@@ -68,6 +69,8 @@ _COLUMNS: list[tuple[str, str, str, int, str]] = [
     ("pts_per_game",  "LPS/Gm",      _PTS, 9,  "score"),
     ("pts_per_game_w","LPS/Gm·wt",   _PTS, 10, "score"),
     ("clutch_gap",    "Clutch",      _SIGNED, 9, "score"),
+    ("contrib_pg",    "Con/Gm",      _PTS, 9,  "score"),
+    ("contrib_pg_w",  "Con/Gm·wt",   _PTS, 10, "score"),
     # by phase
     ("reg_pts",       "Regular",     _PTS, 9,  "phase"),
     ("playoff_pts",   "Playoffs",    _PTS, 9,  "phase"),
@@ -107,6 +110,11 @@ _GLOSSARY: list[tuple[str, str]] = [
                "Weights each game by its stakes (playoff/tournament games count more) but "
                "divides by the total weight, so it stays comparable across leagues. Above the "
                "pure mean => the player raised their game in higher-stakes matches."),
+    ("Con/Gm", "Contribution component of LPS per game (pure mean, LPS scale) -- how much "
+               "per-game value comes from win-prob contribution. Schedule-length invariant."),
+    ("Con/Gm·wt", "Weighted contribution per game = contribution points / total accumulation "
+               "weight (same match scaling as LPS/Gm.wt). Above Con/Gm => the player's "
+               "contribution was stronger in higher-stakes games."),
     ("Clutch", "INDIVIDUAL clutch = LPS/Gm.wt - LPS/Gm. How much the player's OWN per-game "
                "value rose (or fell) in higher-stakes games. Positive = stepped up in "
                "playoffs/tournaments; negative = faded. (Distinct from Intangibles, which is "
@@ -131,6 +139,8 @@ _GLOSSARY: list[tuple[str, str]] = [
     ("FB%", "Share of games the player got first blood or was the first-blood victim."),
     ("BestGame / WorstGame", "Player's single-game best / worst net contribution (win-prob)."),
     ("#Trn", "Distinct tournaments the player appeared in."),
+    ("RegElo", "The player's home-region strength: that league's ending Elo for the year "
+               "(see the Regions sheet). Higher = stronger region."),
     ("<Tournament>", "LPS earned at that specific tournament (WLDs=Worlds, MSI, EWC=Esports "
                      "World Cup, KeSPA/DCup=domestic cups). These sum to Tourneys."),
 ]
@@ -167,6 +177,10 @@ def build_export_frame(
         # NOT leak into a per-game number, or a long-schedule league would look worse per
         # game at equal quality. The raw mean cancels it out (it's schedule-length invariant).
         "pts_per_game": g["score"].mean(),
+        # Contribution per game, same treatment as LPS/Gm (on the LPS/point scale, i.e.
+        # lam-weighted contribution_term) so you can read how much per-game value is
+        # contribution. Pure mean here; weighted variant added after the join.
+        "contrib_pg": g["contribution_term"].mean(),
         "avg_contrib": g["net_contribution"].mean(),
         "avg_resid": g["_resid"].mean(),
         "avg_p_model": g["p_model"].mean(),
@@ -187,6 +201,12 @@ def build_export_frame(
     # Individual "clutch": how much a player's own per-game value shifted UP in higher-stakes
     # (higher-weight: playoff/tournament) games. Positive = raised their game when it mattered.
     r["clutch_gap"] = r["pts_per_game_w"] - r["pts_per_game"]
+    # Weighted contribution per game: contrib_pts / total accumulation weight (same match
+    # scaling as LPS/Gm.wt, restricted to the contribution component).
+    r["contrib_pg_w"] = r["contrib_pts"] / r["total_weight"].where(r["total_weight"] > 0, 1.0)
+    # Home-region strength (the year's ending Elo for the player's league).
+    elos = load_league_elos(year)
+    r["region_elo"] = r["league"].map(elos)
     r = r.reset_index().rename(columns={"index": "playername"})
     if "playername" not in r.columns and "playername" not in r:
         r = r.rename(columns={r.columns[0]: "playername"})
@@ -200,6 +220,7 @@ def build_export_frame(
         "intl_weight": intl_weight,
         "n_ref": ratings.attrs.get("n_ref", 0.0),
         "tournament_weights": ratings.attrs.get("tournament_weights", {}),
+        "elos": elos,
     }
     return r, tourn_cols, meta
 
@@ -278,6 +299,31 @@ def _write_about(writer, meta: dict) -> None:
         row[0].font = Font(bold=True)
 
 
+def _write_regions(writer, meta: dict) -> None:
+    """Regional strength: each league's ending Elo and its baseline (win rate vs 1000-Elo)."""
+    elos = meta.get("elos", {})
+    if not elos:
+        return
+    rows = [(lg, elo, expected_score(elo, REFERENCE_ELO))
+            for lg, elo in sorted(elos.items(), key=lambda kv: -kv[1])]
+    reg = pd.DataFrame(rows, columns=["League", "Elo", "Baseline"])
+    reg.to_excel(writer, sheet_name="Regions", index=False)
+    ws = writer.sheets["Regions"]
+    from openpyxl.styles import Alignment, Font, PatternFill
+    ws.column_dimensions["A"].width = 10
+    ws.column_dimensions["B"].width = 10
+    ws.column_dimensions["C"].width = 12
+    for j, hdr in enumerate(["League", "Elo", "Baseline"], start=1):
+        c = ws.cell(row=1, column=j)
+        c.font = Font(bold=True, color="FFFFFF")
+        c.fill = PatternFill("solid", fgColor="305496")
+        c.alignment = Alignment(horizontal="center")
+    for row in range(2, ws.max_row + 1):
+        ws.cell(row=row, column=2).number_format = "0"
+        ws.cell(row=row, column=3).number_format = "0.0%"
+    ws.freeze_panes = "A2"
+
+
 def _write_glossary(writer) -> None:
     gl = pd.DataFrame(_GLOSSARY, columns=["Column", "Meaning"])
     gl.to_excel(writer, sheet_name="Glossary", index=False)
@@ -307,9 +353,10 @@ def export_excel(
     layout = _ordered_columns(tourn_cols)
 
     # Overview: everyone across all lanes, ranked together (a compact column subset).
-    overview_cols = ["rank", "playername", "team", "league", "position", "games", "win_rate",
-                     "total_score", "pts_per_game", "pts_per_game_w", "clutch_gap", "reg_pts",
-                     "playoff_pts", "tourn_pts", "base_pts", "contrib_pts", "wbonus_pts"] + tourn_cols
+    overview_cols = ["rank", "playername", "team", "league", "region_elo", "position", "games",
+                     "win_rate", "total_score", "pts_per_game", "pts_per_game_w", "clutch_gap",
+                     "contrib_pg", "contrib_pg_w", "reg_pts", "playoff_pts", "tourn_pts",
+                     "base_pts", "contrib_pts", "wbonus_pts"] + tourn_cols
     overview_layout = [(c, h, f, w) for (c, h, f, w) in layout if c in overview_cols]
     # add position header explicitly (not in _COLUMNS layout)
     overview_layout = ([("rank", "Rank", _INT, 6), ("playername", "Player", None, 16),
@@ -320,6 +367,7 @@ def export_excel(
 
     with pd.ExcelWriter(out, engine="openpyxl") as writer:
         _write_about(writer, meta)
+        _write_regions(writer, meta)
 
         ov = frame.sort_values("total_score", ascending=False).copy()
         ov.insert(0, "rank", range(1, len(ov) + 1))
