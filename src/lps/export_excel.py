@@ -67,6 +67,7 @@ _COLUMNS: list[tuple[str, str, str, int, str]] = [
     ("total_score",   "LPS",         _PTS, 9,  "score"),
     ("pts_per_game",  "LPS/Gm",      _PTS, 9,  "score"),
     ("pts_per_game_w","LPS/Gm·wt",   _PTS, 10, "score"),
+    ("clutch_gap",    "Clutch",      _SIGNED, 9, "score"),
     # by phase
     ("reg_pts",       "Regular",     _PTS, 9,  "phase"),
     ("playoff_pts",   "Playoffs",    _PTS, 9,  "phase"),
@@ -84,7 +85,7 @@ _COLUMNS: list[tuple[str, str, str, int, str]] = [
     # per-tournament (filled dynamically from tournament_cols)
     # rate / quality stats
     ("avg_contrib",   "AvgContrib",  _SIGNED, 10, "rate"),
-    ("avg_resid",     "AvgClutch",   _SIGNED, 10, "rate"),
+    ("avg_resid",     "Intangibles", _SIGNED, 12, "rate"),
     ("avg_p_model",   "AvgWinProb",  _PCT, 10, "rate"),
     ("sched_strength","SoS",         _PCT, 8,  "rate"),
     ("fb_rate",       "FB%",         _PCT, 7,  "rate"),
@@ -106,6 +107,10 @@ _GLOSSARY: list[tuple[str, str]] = [
                "Weights each game by its stakes (playoff/tournament games count more) but "
                "divides by the total weight, so it stays comparable across leagues. Above the "
                "pure mean => the player raised their game in higher-stakes matches."),
+    ("Clutch", "INDIVIDUAL clutch = LPS/Gm.wt - LPS/Gm. How much the player's OWN per-game "
+               "value rose (or fell) in higher-stakes games. Positive = stepped up in "
+               "playoffs/tournaments; negative = faded. (Distinct from Intangibles, which is "
+               "team-level and identical for all 5 teammates.)"),
     ("Regular / Playoffs / Tourneys", "LPS earned in each phase. Regular & playoffs are "
         "length-normalized per region (a full run ~ one unit); tournaments are weighted by "
         "viewership and normalized so a full winning run = the tournament's weight."),
@@ -117,7 +122,10 @@ _GLOSSARY: list[tuple[str, str]] = [
     ("Kills/Deaths/Assists/Damage/FirstBlood", "Contribution split by stat source -- these "
         "sum to Contribution. First blood is credited to the FB getter (+) / victim (-)."),
     ("AvgContrib", "Mean per-game net win-probability contribution (raw, not scaled)."),
-    ("AvgClutch", "Mean per-game (result - p_model): over/under-performance vs the model."),
+    ("Intangibles", "TEAM-level: mean per-game (result - p_model), i.e. how much the team wins "
+                 "ABOVE what its box score (KDA/damage/first blood) predicts -- macro, "
+                 "shotcalling, closing games, doing more with less. Identical for all 5 "
+                 "teammates (not individual)."),
     ("AvgWinProb", "Mean model win probability for the player's team-games (team strength)."),
     ("SoS", "Strength of schedule: mean opponent-league baseline faced (higher = tougher)."),
     ("FB%", "Share of games the player got first blood or was the first-blood victim."),
@@ -176,6 +184,9 @@ def build_export_frame(
     # performed better in higher-stakes (higher-weight: playoff/tournament) games, but divides
     # by the total weight so it stays on the same comparable scale as the pure mean.
     r["pts_per_game_w"] = r["total_score"] / r["total_weight"].where(r["total_weight"] > 0, 1.0)
+    # Individual "clutch": how much a player's own per-game value shifted UP in higher-stakes
+    # (higher-weight: playoff/tournament) games. Positive = raised their game when it mattered.
+    r["clutch_gap"] = r["pts_per_game_w"] - r["pts_per_game"]
     r = r.reset_index().rename(columns={"index": "playername"})
     if "playername" not in r.columns and "playername" not in r:
         r = r.rename(columns={r.columns[0]: "playername"})
@@ -297,8 +308,8 @@ def export_excel(
 
     # Overview: everyone across all lanes, ranked together (a compact column subset).
     overview_cols = ["rank", "playername", "team", "league", "position", "games", "win_rate",
-                     "total_score", "pts_per_game", "pts_per_game_w", "reg_pts", "playoff_pts",
-                     "tourn_pts", "base_pts", "contrib_pts", "wbonus_pts"] + tourn_cols
+                     "total_score", "pts_per_game", "pts_per_game_w", "clutch_gap", "reg_pts",
+                     "playoff_pts", "tourn_pts", "base_pts", "contrib_pts", "wbonus_pts"] + tourn_cols
     overview_layout = [(c, h, f, w) for (c, h, f, w) in layout if c in overview_cols]
     # add position header explicitly (not in _COLUMNS layout)
     overview_layout = ([("rank", "Rank", _INT, 6), ("playername", "Player", None, 16),
