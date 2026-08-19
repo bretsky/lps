@@ -42,13 +42,14 @@ class WinProbabilityConfig:
     years: Iterable[int] = (2024,)
     roles: Sequence[str] = ("top", "jng", "mid", "bot", "sup")
 
-    # Performance metrics to use as features
+    # Performance metrics to use as features.
+    # Note: csdiffat15 is omitted so the LPL (no @15 timeline data in Oracle's Elixir)
+    # can be scored on the stats it has (KDA + damage). See contribution.LANE_STATS.
     performance_metrics: Sequence[str] = (
         "kills",
         "deaths",
         "assists",
         "damagetochampions",
-        "csdiffat15",
         # Note: firstblood features are used for KDA decomposition but not as model features
         # Instead, we use team-level teamfirstblood feature
         "firstbloodkill",
@@ -113,11 +114,12 @@ def build_team_features(df: pd.DataFrame, cfg: Optional[WinProbabilityConfig] = 
     pos_col = schema["pos"]
     result_col = schema["result"]
 
-    # Filter to complete games and player rows only
+    # Keep complete AND partial games (LPL is all "partial"): the KDA + damage features
+    # this model uses are present in partial games; truly-missing values are dropped later.
     if "datacompleteness" in df.columns:
         before = len(df)
-        df = df[df["datacompleteness"] == "complete"]
-        logging.info(f"Filtered to complete games: {len(df):,} rows (removed {before - len(df):,})")
+        df = df[df["datacompleteness"].isin(["complete", "partial"])]
+        logging.info(f"Kept complete+partial games: {len(df):,} rows (removed {before - len(df):,})")
 
     df = _filter_player_rows(df, pos_col)
     logging.info(f"Player rows: {len(df):,}")
@@ -189,25 +191,32 @@ def build_team_features(df: pd.DataFrame, cfg: Optional[WinProbabilityConfig] = 
     logging.info(f"Created team features: {len(team_df):,} teams, {len(team_df.columns)} columns")
 
     # Create team-level firstblood feature
-    # teamfirstblood = 0 if our team got firstblood, 1 if enemy got firstblood
+    # teamfirstblood = 1 if our team got firstblood, 0 if the enemy got firstblood
+    # (canonical polarity, matching win_probability_ensemble.py)
     logging.info("Creating team-level firstblood feature...")
-    fb_victim_cols = [f"{pos}_firstbloodvictim" for pos in cfg.roles]
-    team_df["teamfirstblood"] = (team_df[fb_victim_cols].sum(axis=1) > 0).astype(int)
+    fb_kill_cols = [f"{pos}_firstbloodkill" for pos in cfg.roles]
+    fb_assist_cols = [f"{pos}_firstbloodassist" for pos in cfg.roles]
+    team_df["teamfirstblood"] = (
+        (team_df[fb_kill_cols].sum(axis=1) > 0) |
+        (team_df[fb_assist_cols].sum(axis=1) > 0)
+    ).astype(int)
 
     # Decompose KDA to remove firstblood correlation
     # kills_nonfb = kills - firstbloodkill (removes deterministic +1 kill from firstblood)
     logging.info("Decomposing KDA features to remove firstblood correlation...")
+    # firstblood terms are fillna(0): the LPL is missing firstbloodassist/victim, so a
+    # missing flag means "no adjustment" (a negligible +/-1 on one event per game).
     for pos in cfg.roles:
         if f"{pos}_kills" in team_df.columns and f"{pos}_firstbloodkill" in team_df.columns:
-            team_df[f"{pos}_kills_nonfb"] = team_df[f"{pos}_kills"] - team_df[f"{pos}_firstbloodkill"]
+            team_df[f"{pos}_kills_nonfb"] = team_df[f"{pos}_kills"] - team_df[f"{pos}_firstbloodkill"].fillna(0)
             team_df = team_df.drop(columns=[f"{pos}_kills"])
 
         if f"{pos}_assists" in team_df.columns and f"{pos}_firstbloodassist" in team_df.columns:
-            team_df[f"{pos}_assists_nonfb"] = team_df[f"{pos}_assists"] - team_df[f"{pos}_firstbloodassist"]
+            team_df[f"{pos}_assists_nonfb"] = team_df[f"{pos}_assists"] - team_df[f"{pos}_firstbloodassist"].fillna(0)
             team_df = team_df.drop(columns=[f"{pos}_assists"])
 
         if f"{pos}_deaths" in team_df.columns and f"{pos}_firstbloodvictim" in team_df.columns:
-            team_df[f"{pos}_deaths_nonfb"] = team_df[f"{pos}_deaths"] - team_df[f"{pos}_firstbloodvictim"]
+            team_df[f"{pos}_deaths_nonfb"] = team_df[f"{pos}_deaths"] - team_df[f"{pos}_firstbloodvictim"].fillna(0)
             team_df = team_df.drop(columns=[f"{pos}_deaths"])
 
     # Drop position-specific firstblood columns (we use team-level teamfirstblood instead)
@@ -388,7 +397,7 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
                 sign = "+" if wr_delta >= 0 else ""
                 # Special display for binary features
                 if col == 'teamfirstblood':
-                    fb_text = "Enemy got FB" if raw_val == 1 else "Team got FB"
+                    fb_text = "Team got FB" if raw_val == 1 else "Enemy got FB"
                     logging.info(f"    {col:<20} raw={raw_val:>8.0f} ({fb_text})  scaled={scaled_val:>7.2f}  wr_delta={sign}{wr_delta:>6.2f}pp")
                 else:
                     logging.info(f"    {col:<20} raw={raw_val:>8.2f}  scaled={scaled_val:>7.2f}  wr_delta={sign}{wr_delta:>6.2f}pp")
@@ -497,7 +506,7 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
     dominating = balanced.copy()
     for col in feature_cols:
         if col == 'teamfirstblood':
-            dominating[col] = 0  # Team got firstblood in dominating scenario
+            dominating[col] = 1  # Team got firstblood in dominating scenario
         elif 'kills_nonfb' in col or 'assists_nonfb' in col:
             dominating[col] = feature_stats.loc['75%', col]
         elif 'deaths_nonfb' in col:
@@ -518,7 +527,7 @@ def train_win_probability_model(cfg: Optional[WinProbabilityConfig] = None) -> L
     losing = balanced.copy()
     for col in feature_cols:
         if col == 'teamfirstblood':
-            losing[col] = 1  # Enemy got firstblood in losing scenario
+            losing[col] = 0  # Enemy got firstblood in losing scenario
         elif 'kills_nonfb' in col or 'assists_nonfb' in col:
             losing[col] = feature_stats.loc['25%', col]
         elif 'deaths_nonfb' in col:

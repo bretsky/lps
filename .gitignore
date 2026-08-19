@@ -94,6 +94,13 @@ data/*.csv
 *.sqlite
 *.sqlite3
 
+# Generated outputs / scratch
+player_above_expected_metrics.csv
+season_out.txt
+*.stackdump
+info/backup/
+info/backup2/
+
 # OS
 Thumbs.db
 .DS_Store
