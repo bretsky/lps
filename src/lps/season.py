@@ -455,7 +455,9 @@ def _print_outliers(matches: pd.DataFrame, n: int = 5) -> None:
 
 
 # Default demo weights: baseline down-weighted (alpha) so contribution/win-bonus matter more.
-_DEMO_WEIGHTS = ScoreWeights(alpha=0.5, lam=3.0, beta=1.0)
+# lam=2 (vs 3) gives the league-strength baseline more relative weight, lifting the premier
+# leagues (LCK/LPL) over LEC/LCS players who post strong individual contribution domestically.
+_DEMO_WEIGHTS = ScoreWeights(alpha=0.5, lam=2.0, beta=1.0)
 _MAJOR = {"LCK", "LPL", "LEC", "LCS"}
 
 
