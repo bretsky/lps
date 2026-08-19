@@ -65,7 +65,8 @@ _COLUMNS: list[tuple[str, str, str, int, str]] = [
     ("n_tourneys",    "#Trn",        _INT, 6,  "vol"),
     # headline score
     ("total_score",   "LPS",         _PTS, 9,  "score"),
-    ("pts_per_game",  "LPS/Game",    _PTS, 9,  "score"),
+    ("pts_per_game",  "LPS/Gm",      _PTS, 9,  "score"),
+    ("pts_per_game_w","LPS/Gm·wt",   _PTS, 10, "score"),
     # by phase
     ("reg_pts",       "Regular",     _PTS, 9,  "phase"),
     ("playoff_pts",   "Playoffs",    _PTS, 9,  "phase"),
@@ -98,8 +99,13 @@ _GLOSSARY: list[tuple[str, str]] = [
     ("Rank", "Rank within the lane by LPS (Overview sheet: rank across all lanes)."),
     ("LPS", "League Performance Score: total_score = Baseline + Contribution + WinBonus, "
             "accumulated across regular season, playoffs and tournaments (more games help)."),
-    ("LPS/Game", "LPS divided by games played -- per-game efficiency (a full-run star and a "
-                 "one-series sub can be compared here)."),
+    ("LPS/Gm", "Pure mean per-game score (baseline + contribution + win-bonus), every game "
+               "weighted equally, before the accumulation weighting -- schedule-length "
+               "invariant, so leagues with more games aren't penalized."),
+    ("LPS/Gm·wt", "WEIGHTED mean per-game score: total_score / total accumulation weight. "
+               "Weights each game by its stakes (playoff/tournament games count more) but "
+               "divides by the total weight, so it stays comparable across leagues. Above the "
+               "pure mean => the player raised their game in higher-stakes matches."),
     ("Regular / Playoffs / Tourneys", "LPS earned in each phase. Regular & playoffs are "
         "length-normalized per region (a full run ~ one unit); tournaments are weighted by "
         "viewership and normalized so a full winning run = the tournament's weight."),
@@ -147,6 +153,12 @@ def build_export_frame(
     g = matches.groupby("playername")
     extra = pd.DataFrame({
         "wins": g["result"].sum().astype(int),
+        # LPS/Game is the mean RAW per-game score (baseline + contribution + win-bonus,
+        # BEFORE the accumulation weighting). total_score carries the per-league N_ref/run
+        # downweighting so full runs equalize across regions -- but that normalization must
+        # NOT leak into a per-game number, or a long-schedule league would look worse per
+        # game at equal quality. The raw mean cancels it out (it's schedule-length invariant).
+        "pts_per_game": g["score"].mean(),
         "avg_contrib": g["net_contribution"].mean(),
         "avg_resid": g["_resid"].mean(),
         "avg_p_model": g["p_model"].mean(),
@@ -160,7 +172,10 @@ def build_export_frame(
 
     r = ratings.join(extra)
     r["n_tourneys"] = r["n_tourneys"].fillna(0).astype(int)
-    r["pts_per_game"] = r["total_score"] / r["games"].where(r["games"] > 0, 1)
+    # Weighted per-game average: total_score / total accumulation weight. Rewards players who
+    # performed better in higher-stakes (higher-weight: playoff/tournament) games, but divides
+    # by the total weight so it stays on the same comparable scale as the pure mean.
+    r["pts_per_game_w"] = r["total_score"] / r["total_weight"].where(r["total_weight"] > 0, 1.0)
     r = r.reset_index().rename(columns={"index": "playername"})
     if "playername" not in r.columns and "playername" not in r:
         r = r.rename(columns={r.columns[0]: "playername"})
@@ -282,8 +297,8 @@ def export_excel(
 
     # Overview: everyone across all lanes, ranked together (a compact column subset).
     overview_cols = ["rank", "playername", "team", "league", "position", "games", "win_rate",
-                     "total_score", "pts_per_game", "reg_pts", "playoff_pts", "tourn_pts",
-                     "base_pts", "contrib_pts", "wbonus_pts"] + tourn_cols
+                     "total_score", "pts_per_game", "pts_per_game_w", "reg_pts", "playoff_pts",
+                     "tourn_pts", "base_pts", "contrib_pts", "wbonus_pts"] + tourn_cols
     overview_layout = [(c, h, f, w) for (c, h, f, w) in layout if c in overview_cols]
     # add position header explicitly (not in _COLUMNS layout)
     overview_layout = ([("rank", "Rank", _INT, 6), ("playername", "Player", None, 16),

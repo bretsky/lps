@@ -330,19 +330,30 @@ def build_player_ratings(
     # full-season/full-run player), but each game is weighted by N_ref / (deepest run in
     # that league) so a FULL run ~ one phase unit in every region -- equalizing
     # schedule/bracket length across regions without removing the volume signal within one.
-    def _accumulate(phase_df: pd.DataFrame) -> pd.DataFrame:
+    def _accumulate(phase_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
         d = phase_df.copy()
+        if d.empty:
+            return pd.DataFrame(columns=comps), pd.Series(dtype=float)
         run = d.groupby(["own_league", "playername"]).size().groupby(level="own_league").max()
         d["w"] = n_ref / d["own_league"].map(run)
-        return d[comps].mul(d["w"], axis=0).groupby(d["playername"]).sum()
+        comp_sums = d[comps].mul(d["w"], axis=0).groupby(d["playername"]).sum()
+        weight_sums = d["w"].groupby(d["playername"]).sum()  # per-player total accumulation weight
+        return comp_sums, weight_sums
 
-    reg_c = _accumulate(reg)
-    plf_c = _accumulate(plf)
+    reg_c, reg_w = _accumulate(reg)
+    plf_c, plf_w = _accumulate(plf)
 
     # Tournaments: accumulate weighted by tournament importance (w_eff = weight x cap),
     # normalized to the deepest capped-weighted run.
     tourn_weighted = tourn[comps].mul(tourn["w_eff"], axis=0)
     tourn_c = tourn_weighted.groupby(tourn["playername"]).sum() * tourn_scale
+    tourn_w = (tourn["w_eff"] * tourn_scale).groupby(tourn["playername"]).sum()
+
+    # Per-player TOTAL accumulation weight = Σ weight_g over all games (the same weights that
+    # built total_score = Σ score_g·weight_g). It's the denominator for a scale-comparable
+    # WEIGHTED per-game average (total_score / total_weight): high-stakes games count more,
+    # but dividing by the total weight keeps it comparable across leagues/schedules.
+    total_weight = reg_w.add(plf_w, fill_value=0.0).add(tourn_w, fill_value=0.0)
 
     rename = {"baseline_term": "base_pts", "contribution_term": "contrib_pts", "win_bonus": "wbonus_pts"}
     rename.update({f"{s}_term": f"{s[2:]}_pts" for s in _SOURCES})  # c_kills_term -> kills_pts, c_fb_term -> fb_pts
@@ -379,8 +390,9 @@ def build_player_ratings(
     )
 
     r = meta.join(src).join(phase_tot).join(by_tourn)
+    r["total_weight"] = total_weight
     pts = (["base_pts", "contrib_pts", "wbonus_pts", "total_score", "reg_pts", "playoff_pts",
-            "tourn_pts"] + [f"{s[2:]}_pts" for s in _SOURCES] + tourn_cols)
+            "tourn_pts", "total_weight"] + [f"{s[2:]}_pts" for s in _SOURCES] + tourn_cols)
     r[pts] = r[pts].fillna(0.0)
 
     r = r[r["games"] >= min_games].sort_values("total_score", ascending=False)
