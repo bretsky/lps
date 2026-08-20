@@ -26,6 +26,7 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+import numpy as np
 import pandas as pd
 
 from .config import PROJECT_ROOT
@@ -48,6 +49,9 @@ _SUM_COLS = [
     "kills_pts", "deaths_pts", "assists_pts", "damage_pts", "fb_pts",
     "reg_pts", "playoff_pts", "tourn_pts", "total_weight",
 ]
+# Counts don't scale with schedule length; every other summed column (the point
+# accumulations) is proportional to that year's N_ref, so it gets schedule-normalized.
+_COUNT_COLS = ["games", "wins", "reg_games", "playoff_games", "tourn_games", "n_tourneys"]
 # Columns averaged across years weighted by that year's games.
 _GW_COLS = ["pts_per_game", "contrib_pg", "avg_contrib", "avg_resid", "avg_p_model",
             "sched_strength", "fb_rate", "region_elo"]
@@ -67,6 +71,7 @@ def run_year_frames(
 
     frames: dict[int, pd.DataFrame] = {}
     all_tourn: list[str] = []
+    nref: dict[int, float] = {}
     failed: list[int] = []
     for year in years:
         logger.info(f"[career] {year}: building ratings (force_recompute={force_recompute}) ...")
@@ -78,6 +83,7 @@ def run_year_frames(
             failed.append(year)
             continue
         frames[year] = frame
+        nref[year] = float(meta.get("n_ref", 0.0) or 0.0)
         for c in tourn_cols:
             if c not in all_tourn:
                 all_tourn.append(c)
@@ -87,7 +93,7 @@ def run_year_frames(
             logger.info(f"[career] {year}: wrote {out.name}  ({len(frame)} players)")
     if failed:
         logger.warning(f"[career] skipped years: {failed}")
-    return frames, all_tourn
+    return frames, all_tourn, nref
 
 
 def _stack(frames: dict[int, pd.DataFrame], all_tourn: list[str]) -> pd.DataFrame:
@@ -226,6 +232,10 @@ def _write_about(writer, meta: dict) -> None:
         ("", "changes), then LPS and every breakdown are SUMMED across years per player."),
         ("", "CareerLPS rewards both peak and longevity. Per-year columns (yYYYY) show the"),
         ("", "trajectory; PeakYr/PeakLPS mark the best single season."),
+        ("", ""),
+        ("Schedule normalization", f"Point totals rescaled per year by REF/N_ref "
+         f"(REF={meta.get('ref_nref', 0):.1f} matches) so schedule length doesn't bias the"),
+        ("", "career sum across eras; the Elo/baseline strength signal is kept."),
     ]
     about = pd.DataFrame(rows, columns=["Field", "Value"])
     about.to_excel(writer, sheet_name="About", index=False)
@@ -271,18 +281,27 @@ def build_and_write(
     weights = weights or _DEMO_WEIGHTS
     out = Path(out) if out is not None else PROJECT_ROOT / f"player_ratings_career_{years[0]}_{years[-1]}.xlsx"
 
-    frames, all_tourn = run_year_frames(
+    frames, all_tourn, nref = run_year_frames(
         years, weights, min_games, intl_weight, force_recompute, write_yearly)
     if not frames:
         raise RuntimeError("no years produced ratings; nothing to aggregate")
     got = tuple(sorted(frames))          # years that actually succeeded
     allyears = _stack(frames, all_tourn)
 
+    # SCHEDULE-LENGTH NORMALIZATION: point accumulations scale with each year's N_ref
+    # (matches/player), which varies ~1.5x (14.5-22.4). Rescale every year's point columns
+    # by REF/N_ref so a full season is worth the same regardless of schedule length, while
+    # keeping the Elo/baseline signal (stronger modern leagues still score higher per game).
+    ref_nref = float(np.mean([nref[y] for y in got if nref.get(y)])) or 1.0
+    mult = allyears["year"].map({y: (ref_nref / nref[y] if nref.get(y) else 1.0) for y in got})
+    accum = [c for c in _SUM_COLS if c not in _COUNT_COLS] + all_tourn
+    allyears[accum] = allyears[accum].mul(mult.values, axis=0)
+
     career_all = _aggregate(allyears, ["playername"], all_tourn, got)
     career_lane = _aggregate(allyears, ["playername", "position"], all_tourn, got)
 
     meta = {"years": got, "alpha": weights.alpha, "lam": weights.lam, "beta": weights.beta,
-            "intl_weight": intl_weight, "min_games": min_games}
+            "intl_weight": intl_weight, "min_games": min_games, "ref_nref": ref_nref}
     write_career_workbook(out, career_all, career_lane, all_tourn, got, meta)
     logger.info(f"[career] wrote {out.name}  ({len(career_all)} players, {len(got)} years)")
     return out
