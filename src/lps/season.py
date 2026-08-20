@@ -67,9 +67,63 @@ _TOURNAMENT_VIEWERSHIP = {
     "MSI":   [2315920, 3447582, 2829728],   # Mid-Season Invitational
     "EWC":   [1477470, 1208123, 1123619],   # Esports World Cup
     "FST":   [1106126, 1500730],            # First Stand (2025+; Oracle label to confirm)
+    "MSC":   [591496],              # Mid-Season Cup (2020; peak concurrent viewers)
+    "LTA":   [318462],              # LTA cross-conference championship (Americas, 2025)
     "KeSPA": [173449, 110196, 66335],       # KeSPA Cup (domestic, KR)
     "DCup":  [55751, 69654, 60238],         # Demacia Cup (domestic, CN)
 }
+
+# Small international / cross-region events without reliable viewership data: a flat 0.1
+# weight on the same 0-1 scale (Worlds = 1.0). Kept SEPARATE from _TOURNAMENT_VIEWERSHIP so
+# the viewership-derived numbers stay honest. (Minor DOMESTIC 2nd-tiers are dropped instead
+# -- see EXCLUDED_LEAGUES.)
+_MANUAL_TOURNAMENT_WEIGHTS = {
+    "IEM":  0.1,    # Intel Extreme Masters (3rd-party intl, top teams, off-season)
+    "ASI":  0.1,    # Asia Invitational (minor intl)
+    "IWCI": 0.1,    # International Wildcard Invitational (wildcard qualifier)
+    "Riot": 0.1,    # 2020 VCS x PCS cross-region event (MSI-cancelled COVID season)
+}
+
+# Minor / secondary tiers (2nd divisions, academy & challenger leagues, regional feeders)
+# that have no regional Elo. Previously these were mislabeled as 0-weight "tournaments",
+# which (a) polluted games/win_rate/min_games and (b) buried the real gaps in the warning.
+# We DROP them from scoring instead -- but ONLY in years where the label isn't a RATED top
+# league (see build_player_ratings). That rated guard is what lets PCS/VCS/LJL/LCO appear
+# here safely: they are top-tier (rated) in some years and secondary feeders in others
+# (e.g. 2025, after the Pacific regions folded into LCP), and we only exclude the latter.
+EXCLUDED_LEAGUES = {
+    "NA CS", "EU CS",                       # NA / EU Challenger Series
+    "CK",                                    # Challengers Korea
+    "LSPL",                                  # LoL Secondary Pro League (CN 2nd div)
+    "OCS",                                   # Oceanic Challenger Series
+    "LJLCS",                                 # LJL Challenger Series (JP 2nd div)
+    "NACL",                                  # NA Challengers League
+    "CD", "CDF",                             # Circuito Desafiante (BR 2nd div) / minor cup
+    "BRCC", "CISC", "TCS",                   # minor / qualifier circuits
+    "LHE", "LMF", "DDH", "SL (LATAM)", "ASCI",  # LATAM minor / secondary
+    "EM",                                    # EMEA Masters (2nd-tier EU)
+    "NEST",                                  # domestic minor multi-title event (CN)
+    "Asia Master",                           # regional invitational feeder
+    "LRN", "LRS",                            # LTA North/South regional feeders (below LTA N/S)
+    "PCS", "VCS", "LJL", "LCO",              # top-tier in their years (rated guard keeps those)
+}
+
+# Year-aware league-label aliases: Oracle sometimes labels the Worlds regional-qualifier
+# gauntlet (Sept, top domestic teams) with the MODERN league name (LCS/LEC) or the LCK code
+# before that name became the top-league label. Remap source -> target ONLY in years where
+# the source isn't rated but the target is, so it fires for the 2015-2018 gauntlet games and
+# never touches 2019+ (where LCS/LEC ARE the top leagues). Folds them into the parent major
+# league instead of dropping them at weight 0.
+_LEAGUE_ALIASES = {"LCS": "NA LCS", "LEC": "EU LCS", "LCK": "OGN"}
+
+# (year, league) pairs whose Elo is CARRIED FORWARD from the last year the region had
+# international anchoring matches (they stopped attending Worlds/MSI, so their Elo can't be
+# recomputed -- see info/ending_elos_*.csv). Listed here so home-league resolution treats
+# them as rated for the BASELINE but NOT as a home-preference: a team that also played a
+# genuinely-anchored rated league that year keeps that as its home (e.g. 2024 DetonatioN
+# FocusMe stays PCS, which it actually competed in), while pure-region teams (AXIZ, Burning
+# Core) still fall back to their mode league and finally get a valid baseline.
+_CARRYFORWARD_ELOS = {(2023, "LCO"), (2024, "LJL"), (2024, "LCO")}
 
 
 def _viewership_weights(scale: str = "sqrt") -> dict:
@@ -91,7 +145,29 @@ def _viewership_weights(scale: str = "sqrt") -> dict:
     else:
         raise ValueError(f"unknown scale {scale!r}")
     top = max(f.values())
-    return {k: round(x / top, 3) for k, x in f.items()}
+    weights = {k: round(x / top, 3) for k, x in f.items()}
+    # Fold in hand-set weights for events without viewership data (already on the 0-1 scale).
+    weights.update(_MANUAL_TOURNAMENT_WEIGHTS)
+    return weights
+
+
+def _remap_league_aliases(df: pd.DataFrame, rated: set[str]) -> pd.DataFrame:
+    """Fold Worlds regional-qualifier gauntlet games (Oracle-labelled with the modern
+    league name, e.g. 'LCS'/'LEC', or 'LCK' pre-rename) into their parent major league.
+    Remap source -> target only where the source ISN'T rated this year but the target IS,
+    so it fires for the 2015-2018 gauntlet and never touches years where LCS/LEC/LCK are
+    themselves the rated top league."""
+    active = {src: tgt for src, tgt in _LEAGUE_ALIASES.items()
+              if tgt in rated and src not in rated}
+    if not active or "league" not in df.columns:
+        return df
+    hits = df["league"].isin(active)
+    if hits.any():
+        df = df.copy()
+        df.loc[hits, "league"] = df.loc[hits, "league"].map(active)
+        logging.info(f"[leagues] remapped {int(hits.sum())} gauntlet game-rows "
+                     f"{ {k: active[k] for k in sorted(active)} }")
+    return df
 
 
 def _player_lane_table(df: pd.DataFrame) -> pd.DataFrame:
@@ -135,6 +211,7 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
 
     cfg = WinProbabilityConfig(years=(year,))
     df = load_oracle_years(cfg.years)
+    df = _remap_league_aliases(df, set(load_league_elos(year)))
 
     # Model 2 + per-team-game contributions, referenced against Model 1 expected values.
     bundle = train_win_prob_bundle(cfg)
@@ -177,7 +254,10 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
     # games instead of being dropped for having an unrated home league. A caller-supplied map
     # (resolved across Oracle + Leaguepedia) takes precedence for the gap years.
     if home_leagues is None:
-        home_leagues = resolve_home_leagues(df, preferred=set(load_league_elos(year)))
+        # Carry-forward leagues rate the baseline but don't claim home from a team's
+        # genuinely-anchored rated league (see _CARRYFORWARD_ELOS).
+        carry = {lg for (y, lg) in _CARRYFORWARD_ELOS if y == year}
+        home_leagues = resolve_home_leagues(df, preferred=set(load_league_elos(year)) - carry)
     tg = build_team_game_table(df, home_leagues)
     tg_cols = ["gameid", "side", "opp_teamname", "own_league", "opp_league",
                "is_international", "game_label"]
@@ -302,6 +382,18 @@ def build_player_ratings(
                                             force_recompute=force_recompute)
     if rated_only:
         matches = matches[matches["own_league"].isin(rated)]
+
+    # Drop non-scoring minor/secondary tiers (2nd divisions, academy/feeder leagues) so they
+    # don't pad games/win_rate/min_games or get mislabeled as 0-weight tournaments -- but only
+    # where the label isn't a RATED top league this year (PCS/VCS/LJL/LCO are top-tier in some
+    # years, feeders in others; the rated guard keeps the years they count).
+    excl = EXCLUDED_LEAGUES - rated
+    if excl:
+        drop = matches["game_label"].isin(excl)
+        if drop.any():
+            logging.info(f"[leagues] {year}: dropped {int(drop.sum())} games from non-rated "
+                         f"minor tiers {sorted(matches.loc[drop, 'game_label'].unique())}")
+            matches = matches[~drop]
 
     def _mode(s: pd.Series):
         m = s.mode()
