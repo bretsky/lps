@@ -32,7 +32,7 @@ from sklearn.preprocessing import StandardScaler
 from .contribution import ROLES
 from .lp_ingest import load_year
 from .scoring import REFERENCE_ELO, ScoreWeights, load_league_elos
-from .season import _REPLACEMENT_QUANTILE, _SOURCES
+from .season import _CACHE_DIR, _INVARIANT_COLS, _REPLACEMENT_QUANTILE, _SOURCES
 from .team_leagues import build_team_game_table, resolve_home_leagues
 
 logger = logging.getLogger(__name__)
@@ -118,12 +118,20 @@ def _team_features(df: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
     return wide, feature_cols
 
 
-def build_match_scores(year: int, weights: Optional[ScoreWeights] = None,
-                       home_leagues: Optional[dict] = None) -> pd.DataFrame:
-    """Per-(player, match) scored frame for a Leaguepedia gap year, matching the schema of
-    season.build_player_match_scores (so build_player_ratings can consume it). home_leagues
-    overrides the per-team home-league map (default: resolve from this year's LP data)."""
-    weights = weights or ScoreWeights()
+def _lp_features(year: int, home_leagues: Optional[dict] = None,
+                 force_recompute: bool = False) -> pd.DataFrame:
+    """Weight-INVARIANT per-(player, match) features for a Leaguepedia gap year (net
+    contribution, sources, baseline, p_model, phase, league context). This is the expensive
+    part (Model 2 + the quantile-regression replacement), so it's cached to disk like the
+    Oracle _match_features; scaling/weight changes reuse it. A caller-supplied home_leagues
+    map (the merge-year case) is cached under a distinct '_merged' key so it doesn't collide
+    with the standalone map."""
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    tag = "_merged" if home_leagues is not None else ""
+    path = _CACHE_DIR / f"lp_features_{year}{tag}.pkl"
+    if path.exists() and not force_recompute:
+        return pd.read_pickle(path)
+
     df = load_year(year)
     leagues = GAP_LEAGUES.get(year)
     if leagues is not None:
@@ -206,8 +214,19 @@ def build_match_scores(year: int, weights: Optional[ScoreWeights] = None,
     rated = set(elos)
     long["phase"] = np.where(long["game_label"].isin(rated), "regular", "tournament")
     long = long.dropna(subset=["baseline", "playername"])
+    inv = long[[c for c in _INVARIANT_COLS if c in long.columns]].reset_index(drop=True)
+    inv.to_pickle(path)
+    return inv
 
-    # Apply weights (same arithmetic as build_player_match_scores).
+
+def build_match_scores(year: int, weights: Optional[ScoreWeights] = None,
+                       home_leagues: Optional[dict] = None,
+                       force_recompute: bool = False) -> pd.DataFrame:
+    """Per-(player, match) scored frame for a Leaguepedia gap year, matching the schema of
+    season.build_player_match_scores. Reads the cached weight-invariant features and applies
+    the (cheap) weights. home_leagues overrides the per-team home-league map."""
+    weights = weights or ScoreWeights()
+    long = _lp_features(year, home_leagues=home_leagues, force_recompute=force_recompute).copy()
     long["baseline_term"] = weights.alpha * long["baseline"]
     long["contribution_term"] = weights.lam * long["net_contribution"]
     long["win_bonus"] = weights.beta * (long["result"] - long["p_model"])

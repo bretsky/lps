@@ -123,12 +123,14 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
     home_leagues overrides the per-team home-league map (default: resolve from this year's
     Oracle data). Pass a map resolved across MULTIPLE sources (e.g. Oracle + Leaguepedia) so
     a team whose only Oracle games are an international event still gets its real domestic
-    home -- otherwise its games baseline as NaN and drop. When provided, the disk cache is
-    bypassed (the labelling is source-set-specific).
+    home -- otherwise its games baseline as NaN and drop. When provided, the result is cached
+    under a distinct '_merged' key (the labelling is source-set-specific) so it doesn't
+    collide with the default map but is still reused across runs.
     """
     _CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    path = _CACHE_DIR / f"match_features_{year}_m1{int(use_model1)}.pkl"
-    if path.exists() and not force_recompute and home_leagues is None:
+    tag = "_merged" if home_leagues is not None else ""
+    path = _CACHE_DIR / f"match_features_{year}_m1{int(use_model1)}{tag}.pkl"
+    if path.exists() and not force_recompute:
         return pd.read_pickle(path)
 
     cfg = WinProbabilityConfig(years=(year,))
@@ -212,8 +214,7 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
     # Keep only scorable rows (baseline computable + player known).
     long = long.dropna(subset=["baseline", "playername"])
     inv = long[[c for c in _INVARIANT_COLS if c in long.columns]].reset_index(drop=True)
-    if home_leagues is None:            # don't pollute the default cache with a custom map
-        inv.to_pickle(path)
+    inv.to_pickle(path)                  # default or '_merged' path per the tag above
     return inv
 
 

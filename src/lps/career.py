@@ -95,7 +95,7 @@ def run_year_frames(
             if lp_ok:
                 logger.info(f"[career] {year} [lp]: building reduced model ...")
                 srcs.append(("lp", lp_reduced.build_match_scores(
-                    year, weights=weights, home_leagues=home)))
+                    year, weights=weights, home_leagues=home, force_recompute=force_recompute)))
             if not srcs:
                 continue
             combined = srcs[0][1] if len(srcs) == 1 else _combine_matches(
