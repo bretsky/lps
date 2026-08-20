@@ -151,15 +151,16 @@ def build_export_frame(
     weights: ScoreWeights,
     min_games: int,
     intl_weight: float,
+    force_recompute: bool = False,
 ) -> tuple[pd.DataFrame, list[str], dict]:
     """
     Full per-player ratings enriched with per-game rate/quality stats.
 
     Returns (frame, tournament_cols, meta) where frame has one row per player (all lanes),
     tournament_cols is the ordered list of per-tournament point columns, and meta carries
-    run parameters for the About sheet.
+    run parameters for the About sheet. force_recompute rebuilds that year's model cache.
     """
-    matches = build_player_match_scores(year, weights=weights)
+    matches = build_player_match_scores(year, weights=weights, force_recompute=force_recompute)
     ratings = build_player_ratings(
         year, weights=weights, matches=matches, min_games=min_games, intl_weight=intl_weight,
     )
@@ -338,33 +339,25 @@ def _write_glossary(writer) -> None:
         ws.cell(row=row, column=2).alignment = Alignment(wrap_text=True, vertical="top")
 
 
-def export_excel(
-    year: int = 2024,
-    out: Optional[Path] = None,
-    weights: Optional[ScoreWeights] = None,
-    min_games: int = 15,
-    intl_weight: float = 2.0,
-) -> Path:
-    """Build ratings and write the formatted workbook. Returns the output path."""
-    weights = weights or _DEMO_WEIGHTS
-    out = Path(out) if out is not None else PROJECT_ROOT / f"player_ratings_{year}.xlsx"
-
-    frame, tourn_cols, meta = build_export_frame(year, weights, min_games, intl_weight)
-    layout = _ordered_columns(tourn_cols)
-
-    # Overview: everyone across all lanes, ranked together (a compact column subset).
+def _overview_layout(layout: list[tuple[str, str, Optional[str], int]]) -> list[tuple]:
+    """The compact Overview column subset (all lanes ranked together), with a Lane column."""
     overview_cols = ["rank", "playername", "team", "league", "region_elo", "position", "games",
                      "win_rate", "total_score", "pts_per_game", "pts_per_game_w", "clutch_gap",
                      "contrib_pg", "contrib_pg_w", "reg_pts", "playoff_pts", "tourn_pts",
-                     "base_pts", "contrib_pts", "wbonus_pts"] + tourn_cols
-    overview_layout = [(c, h, f, w) for (c, h, f, w) in layout if c in overview_cols]
-    # add position header explicitly (not in _COLUMNS layout)
-    overview_layout = ([("rank", "Rank", _INT, 6), ("playername", "Player", None, 16),
-                        ("team", "Team", None, 18), ("league", "League", None, 8),
-                        ("position", "Lane", None, 8)]
-                       + [x for x in overview_layout if x[0] not in
-                          ("rank", "playername", "team", "league", "position")])
+                     "base_pts", "contrib_pts", "wbonus_pts"]
+    ov = [(c, h, f, w) for (c, h, f, w) in layout if c in overview_cols
+          or c.endswith("_pts")]  # include per-tournament cols
+    return ([("rank", "Rank", _INT, 6), ("playername", "Player", None, 16),
+             ("team", "Team", None, 18), ("league", "League", None, 8),
+             ("position", "Lane", None, 8)]
+            + [x for x in ov if x[0] not in ("rank", "playername", "team", "league", "position")])
 
+
+def write_workbook(out: Path, frame: pd.DataFrame, tourn_cols: list[str],
+                   meta: dict) -> Path:
+    """Write the formatted workbook from a pre-built enriched frame (no recompute)."""
+    layout = _ordered_columns(tourn_cols)
+    overview_layout = _overview_layout(layout)
     with pd.ExcelWriter(out, engine="openpyxl") as writer:
         _write_about(writer, meta)
         _write_regions(writer, meta)
@@ -380,8 +373,21 @@ def export_excel(
             _write_sheet(writer, _LANE_NAMES[lane], sub, layout)
 
         _write_glossary(writer)
-
     return out
+
+
+def export_excel(
+    year: int = 2024,
+    out: Optional[Path] = None,
+    weights: Optional[ScoreWeights] = None,
+    min_games: int = 15,
+    intl_weight: float = 2.0,
+) -> Path:
+    """Build ratings and write the formatted workbook. Returns the output path."""
+    weights = weights or _DEMO_WEIGHTS
+    out = Path(out) if out is not None else PROJECT_ROOT / f"player_ratings_{year}.xlsx"
+    frame, tourn_cols, meta = build_export_frame(year, weights, min_games, intl_weight)
+    return write_workbook(out, frame, tourn_cols, meta)
 
 
 def main() -> None:
