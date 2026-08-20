@@ -315,13 +315,19 @@ def build_player_ratings(
     m["seriesid"] = _day + "@" + m["game_label"].astype(str) + "@" + _pair
 
     def _to_series(phase_df: pd.DataFrame) -> pd.DataFrame:
-        """One row per (player, series): the comps AVERAGED over the series' games."""
+        """One row per (player, series): comps AVERAGED over the series' games, except the
+        league baseline, which is awarded ONLY on SERIES WINS (won the match) rather than for
+        every game -- so winning more in a weaker region stays comparable to average results
+        in a stronger one. The per-region match normalization (below) keeps regions with more
+        matches from being overweighted."""
         if phase_df.empty:
             return pd.DataFrame(columns=["playername", "seriesid", "own_league", "game_label"] + comps)
         agg = {c: (c, "mean") for c in comps}
         agg.update(own_league=("own_league", "first"), game_label=("game_label", "first"),
-                   teamname=("teamname", "first"))
-        return phase_df.groupby(["playername", "seriesid"], as_index=False).agg(**agg)
+                   teamname=("teamname", "first"), _res=("result", "mean"))
+        d = phase_df.groupby(["playername", "seriesid"], as_index=False).agg(**agg)
+        d["baseline_term"] = d["baseline_term"] * (d["_res"] > 0.5).astype(float)  # win-gated
+        return d.drop(columns="_res")
 
     reg = _to_series(m[m["phase"] == "regular"])
     plf = _to_series(m[m["phase"] == "playoff"])
