@@ -152,6 +152,7 @@ def build_export_frame(
     min_games: int,
     intl_weight: float,
     force_recompute: bool = False,
+    matches: Optional[pd.DataFrame] = None,
 ) -> tuple[pd.DataFrame, list[str], dict]:
     """
     Full per-player ratings enriched with per-game rate/quality stats.
@@ -159,8 +160,11 @@ def build_export_frame(
     Returns (frame, tournament_cols, meta) where frame has one row per player (all lanes),
     tournament_cols is the ordered list of per-tournament point columns, and meta carries
     run parameters for the About sheet. force_recompute rebuilds that year's model cache.
+    `matches` injects a pre-scored per-(player,match) frame (e.g. the reduced Leaguepedia
+    model, lp_reduced) instead of building from Oracle.
     """
-    matches = build_player_match_scores(year, weights=weights, force_recompute=force_recompute)
+    if matches is None:
+        matches = build_player_match_scores(year, weights=weights, force_recompute=force_recompute)
     ratings = build_player_ratings(
         year, weights=weights, matches=matches, min_games=min_games, intl_weight=intl_weight,
     )

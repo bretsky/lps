@@ -40,7 +40,7 @@ from .season import _DEMO_WEIGHTS, _LANE_NAMES
 
 logger = logging.getLogger(__name__)
 
-YEARS_DEFAULT = tuple(range(2014, 2026))  # Oracle box-score coverage (2014-2025)
+YEARS_DEFAULT = tuple(range(2013, 2026))  # 2013 via reduced Leaguepedia model; 2014-2025 Oracle
 
 # Columns that ACCUMULATE across years (summed).
 _SUM_COLS = [
@@ -64,52 +64,81 @@ def run_year_frames(
     intl_weight: float,
     force_recompute: bool,
     write_yearly: bool,
-) -> tuple[dict[int, pd.DataFrame], list[str]]:
-    """Build (and optionally write) the enriched frame for each year. Returns frames + the
-    union of per-tournament columns seen across years."""
+) -> tuple[list[dict], list[str]]:
+    """Build (and optionally write) enriched frames for each year. A year can yield more than
+    one frame: the Oracle model (2014+) and/or the reduced Leaguepedia model (gap years
+    2013-2015). Returns a list of {year, source, frame, n_ref} records + the union of
+    per-tournament columns."""
     from .export_excel import write_workbook
+    from . import lp_reduced
 
-    frames: dict[int, pd.DataFrame] = {}
+    records: list[dict] = []
     all_tourn: list[str] = []
-    nref: dict[int, float] = {}
-    failed: list[int] = []
-    for year in years:
-        logger.info(f"[career] {year}: building ratings (force_recompute={force_recompute}) ...")
-        try:
-            frame, tourn_cols, meta = build_export_frame(
-                year, weights, min_games, intl_weight, force_recompute=force_recompute)
-        except Exception as e:  # a bad/incomplete year shouldn't kill the whole run
-            logger.warning(f"[career] {year}: SKIPPED ({type(e).__name__}: {e})")
-            failed.append(year)
-            continue
-        frames[year] = frame
-        nref[year] = float(meta.get("n_ref", 0.0) or 0.0)
+    failed: list[str] = []
+
+    def _add(year, source, frame, tourn_cols, meta, out_name):
+        records.append({"year": year, "source": source, "frame": frame,
+                        "n_ref": float(meta.get("n_ref", 0.0) or 0.0)})
         for c in tourn_cols:
             if c not in all_tourn:
                 all_tourn.append(c)
-        if write_yearly:
-            out = PROJECT_ROOT / f"player_ratings_{year}.xlsx"
+        if write_yearly and out_name:
+            out = PROJECT_ROOT / out_name
             write_workbook(out, frame, tourn_cols, meta)
-            logger.info(f"[career] {year}: wrote {out.name}  ({len(frame)} players)")
+            logger.info(f"[career] {year} [{source}]: wrote {out.name}  ({len(frame)} players)")
+
+    for year in years:
+        oracle_ok = 2014 <= year <= 2025
+        lp_ok = year in lp_reduced.GAP_LEAGUES
+        if oracle_ok:
+            logger.info(f"[career] {year} [oracle]: building (force_recompute={force_recompute}) ...")
+            try:
+                frame, tc, meta = build_export_frame(
+                    year, weights, min_games, intl_weight, force_recompute=force_recompute)
+                _add(year, "oracle", frame, tc, meta, f"player_ratings_{year}.xlsx")
+            except Exception as e:
+                logger.warning(f"[career] {year} [oracle]: SKIPPED ({type(e).__name__}: {e})")
+                failed.append(f"{year}/oracle")
+        if lp_ok:
+            logger.info(f"[career] {year} [lp]: building reduced model ...")
+            try:
+                m = lp_reduced.build_match_scores(year, weights=weights)
+                frame, tc, meta = build_export_frame(
+                    year, weights, min_games, intl_weight, matches=m)
+                # Standalone workbook only when LP is the sole source (2013); else it just
+                # feeds the career sum (2014/2015 East, alongside Oracle).
+                name = f"player_ratings_{year}.xlsx" if not oracle_ok else f"player_ratings_{year}_lp.xlsx"
+                _add(year, "lp", frame, tc, meta, name)
+            except Exception as e:
+                logger.warning(f"[career] {year} [lp]: SKIPPED ({type(e).__name__}: {e})")
+                failed.append(f"{year}/lp")
     if failed:
-        logger.warning(f"[career] skipped years: {failed}")
-    return frames, all_tourn, nref
+        logger.warning(f"[career] skipped: {failed}")
+    return records, all_tourn
 
 
-def _stack(frames: dict[int, pd.DataFrame], all_tourn: list[str]) -> pd.DataFrame:
-    """Concatenate per-year frames into one long frame (row = player-year)."""
+def _stack(records: list[dict], all_tourn: list[str]) -> pd.DataFrame:
+    """Concatenate all frames into one long frame (row = player-year-source), carrying the
+    year and that frame's n_ref (for per-frame schedule normalization)."""
     parts = []
-    for year, f in frames.items():
-        d = f.copy()
+    for rec in records:
+        d = rec["frame"].copy()
         if "playername" not in d.columns:      # index holds the player name
             d = d.reset_index().rename(columns={d.columns[0]: "playername"})
-        d["year"] = year
+        d["year"] = rec["year"]
+        d["_nref"] = rec["n_ref"]
         for c in all_tourn:                       # ensure every tournament col exists
             if c not in d.columns:
                 d[c] = 0.0
         parts.append(d)
     allyears = pd.concat(parts, ignore_index=True)
     allyears[all_tourn] = allyears[all_tourn].fillna(0.0)
+    # Canonicalize player names case-insensitively (Leaguepedia "MaRin" vs Oracle "Marin",
+    # etc.) so the same player merges across sources. Display = most common original spelling.
+    key = allyears["playername"].astype(str).str.lower()
+    canon = (allyears.assign(_k=key).groupby("_k")["playername"]
+             .agg(lambda s: s.mode().iat[0] if not s.mode().empty else s.iloc[0]))
+    allyears["playername"] = key.map(canon)
     return allyears
 
 
@@ -281,21 +310,24 @@ def build_and_write(
     weights = weights or _DEMO_WEIGHTS
     out = Path(out) if out is not None else PROJECT_ROOT / f"player_ratings_career_{years[0]}_{years[-1]}.xlsx"
 
-    frames, all_tourn, nref = run_year_frames(
+    records, all_tourn = run_year_frames(
         years, weights, min_games, intl_weight, force_recompute, write_yearly)
-    if not frames:
+    if not records:
         raise RuntimeError("no years produced ratings; nothing to aggregate")
-    got = tuple(sorted(frames))          # years that actually succeeded
-    allyears = _stack(frames, all_tourn)
+    got = tuple(sorted({r["year"] for r in records}))     # years that actually succeeded
+    allyears = _stack(records, all_tourn)
 
-    # SCHEDULE-LENGTH NORMALIZATION: point accumulations scale with each year's N_ref
-    # (matches/player), which varies ~1.5x (14.5-22.4). Rescale every year's point columns
-    # by REF/N_ref so a full season is worth the same regardless of schedule length, while
-    # keeping the Elo/baseline signal (stronger modern leagues still score higher per game).
-    ref_nref = float(np.mean([nref[y] for y in got if nref.get(y)])) or 1.0
-    mult = allyears["year"].map({y: (ref_nref / nref[y] if nref.get(y) else 1.0) for y in got})
+    # SCHEDULE-LENGTH NORMALIZATION: point accumulations scale with each frame's N_ref
+    # (matches/player), which varies ~1.5x. Rescale every frame's point columns by REF/N_ref
+    # so a full season is worth the same regardless of schedule length, while keeping the
+    # Elo/baseline signal (stronger modern leagues still score higher per game). Applied
+    # per-frame so Oracle and reduced-Leaguepedia frames are each normalized to their own
+    # schedule.
+    nrefs = [r["n_ref"] for r in records if r["n_ref"]]
+    ref_nref = float(np.mean(nrefs)) if nrefs else 1.0
+    mult = np.where(allyears["_nref"].values > 0, ref_nref / allyears["_nref"].values, 1.0)
     accum = [c for c in _SUM_COLS if c not in _COUNT_COLS] + all_tourn
-    allyears[accum] = allyears[accum].mul(mult.values, axis=0)
+    allyears[accum] = allyears[accum].mul(mult, axis=0)
 
     career_all = _aggregate(allyears, ["playername"], all_tourn, got)
     career_lane = _aggregate(allyears, ["playername", "position"], all_tourn, got)
@@ -316,7 +348,7 @@ def _parse_years(s: str) -> tuple[int, ...]:
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     ap = argparse.ArgumentParser(description="Build per-year + cumulative career LPS workbooks.")
-    ap.add_argument("--years", type=str, default="2014-2025")
+    ap.add_argument("--years", type=str, default="2013-2025")
     ap.add_argument("--min-games", type=int, default=15)
     ap.add_argument("--intl-weight", type=float, default=2.0)
     ap.add_argument("--alpha", type=float, default=_DEMO_WEIGHTS.alpha)
