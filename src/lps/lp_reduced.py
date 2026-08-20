@@ -25,6 +25,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 
@@ -37,7 +38,16 @@ from .team_leagues import build_team_game_table, resolve_home_leagues
 logger = logging.getLogger(__name__)
 
 _RSTATS = ("kills", "deaths", "assists", "cs")  # reduced feature set
-_REP_MIN_GROUP = 15  # min games for a per-(position, champion) quantile; else per-position
+
+# Game-state features for the replacement-level quantile regression (mirrors the Oracle
+# Model 1's FEATURE_MAP as closely as the reduced data allows: champion + game length +
+# game total kills + CS share, which stands in for Oracle's gold share).
+_LP_FEATURE_MAP: dict[str, list[str]] = {
+    "kills":   ["cs_share", "game_total_kills", "gamelength", "champion"],
+    "deaths":  ["game_total_kills", "gamelength", "champion"],
+    "assists": ["cs_share", "game_total_kills", "gamelength", "champion"],
+    "cs":      ["gamelength", "game_total_kills", "champion"],
+}
 
 # Leaguepedia leagues to score per year -- only the gaps Oracle lacks, so no double-count
 # when both sources feed the career aggregation. None => use everything present that year.
@@ -52,19 +62,46 @@ def _sigmoid(z):
     return 1.0 / (1.0 + np.exp(-z))
 
 
+def _add_context(df: pd.DataFrame) -> pd.DataFrame:
+    """Add the game-state context features the replacement regression consumes."""
+    d = df.copy()
+    d["game_total_kills"] = d.groupby("gameid")["kills"].transform("sum")
+    team_cs = d.groupby(["gameid", "side"])["cs"].transform("sum")
+    d["cs_share"] = d["cs"] / team_cs.where(team_cs > 0, np.nan)
+    return d
+
+
 def _replacement_reference(df: pd.DataFrame, q: float) -> pd.DataFrame:
     """Per (gameid, side, position) CHAMPION-CONDITIONAL replacement level for each reduced
-    stat: the q-th quantile (1-q for deaths) among games at that (position, champion), falling
-    back to the per-position quantile when a champion has < _REP_MIN_GROUP games that year."""
-    d = df[df["position"].isin(ROLES)].copy()
+    stat, via quantile regression (like the Oracle Model 1): predict the q-th quantile (1-q
+    for deaths) of the stat from champion + game length + game total kills + CS share. Falls
+    back to the per-position empirical quantile where a position/stat has too little data."""
+    d = _add_context(df[df["position"].isin(ROLES)].copy())
     out = d[["gameid", "side", "position"]].copy()
-    keys = list(zip(d["position"], d["champion"]))
     for stat in _RSTATS:
         qeff = 1.0 - q if stat == "deaths" else q
-        gq = d.groupby(["position", "champion"])[stat].quantile(qeff)          # (pos,champ)->val
-        cnt = d.groupby(["position", "champion"])[stat].size()
-        pq = d.groupby("position")[stat].quantile(qeff).to_dict()               # per-position fallback
-        out[stat] = [gq[k] if cnt[k] >= _REP_MIN_GROUP else pq[k[0]] for k in keys]
+        pred = pd.Series(np.nan, index=d.index, dtype=float)
+        for pos in ROLES:
+            pdf = d[d["position"] == pos]
+            if pdf.empty:
+                continue
+            feats = [f for f in _LP_FEATURE_MAP[stat] if f in pdf.columns]
+            cat = [c for c in ("champion",) if c in feats]
+            X = pd.get_dummies(pdf[feats], columns=cat)
+            y = pdf[stat]
+            valid = X.notna().all(axis=1) & y.notna()
+            fallback = y[y.notna()].quantile(qeff) if y.notna().any() else 0.0
+            if valid.sum() < 50:
+                pred.loc[pdf.index] = fallback
+                continue
+            mdl = HistGradientBoostingRegressor(
+                loss="quantile", quantile=qeff, max_iter=150, learning_rate=0.06,
+                max_depth=8, min_samples_leaf=20, early_stopping=True,
+                validation_fraction=0.1, random_state=42)
+            mdl.fit(X[valid], y[valid])
+            pred.loc[pdf.index[valid]] = mdl.predict(X[valid])
+            pred.loc[pdf.index[~valid]] = fallback     # rows with missing context
+        out[stat] = pred.values
     return out
 
 

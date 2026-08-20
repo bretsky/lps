@@ -74,6 +74,18 @@ def _fetch_league_year(lp: LPClient, league: str, year: int) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _fetch_gamelengths(lp: LPClient, league: str, year: int) -> pd.DataFrame:
+    """Per-game length (minutes) from ScoreboardGames, joinable to players by GameId."""
+    league_esc = league.replace("'", "\\'")
+    rows = lp.query(
+        tables="ScoreboardGames=SG, Tournaments=T",
+        join_on="SG.OverviewPage=T.OverviewPage",
+        fields="SG.GameId=gameid, SG.Gamelength_Number=gamelength",
+        where=f"T.League='{league_esc}' AND T.Year={year}",
+    )
+    return pd.DataFrame(rows)
+
+
 def _adapt(df: pd.DataFrame) -> pd.DataFrame:
     """Adapt raw ScoreboardPlayers rows into the pipeline's per-player-game schema."""
     if df.empty:
@@ -107,7 +119,7 @@ def fetch_year(year: int, leagues: Optional[list[str]] = None,
     """Fetch + adapt all gap leagues for a year (defaults to GAP_SPECS[year])."""
     leagues = leagues if leagues is not None else GAP_SPECS.get(year, [])
     lp = lp or LPClient()
-    parts = []
+    parts, lens = [], []
     for lg in leagues:
         raw = _fetch_league_year(lp, lg, year)
         adapted = _adapt(raw)
@@ -116,7 +128,15 @@ def fetch_year(year: int, leagues: Optional[list[str]] = None,
                     f"{LEAGUE_MAP.get(lg, lg)})")
         if len(adapted):
             parts.append(adapted)
-    return pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
+            lens.append(_fetch_gamelengths(lp, lg, year))
+    if not parts:
+        return pd.DataFrame()
+    df = pd.concat(parts, ignore_index=True)
+    # Attach game length (minutes) for the game-state context features (see lp_reduced).
+    gl = pd.concat(lens, ignore_index=True).drop_duplicates("gameid")
+    gl_map = dict(zip(gl["gameid"].astype(str), pd.to_numeric(gl["gamelength"], errors="coerce")))
+    df["gamelength"] = df["gameid"].astype(str).map(gl_map)
+    return df
 
 
 def save_year(year: int, df: pd.DataFrame) -> Path:
