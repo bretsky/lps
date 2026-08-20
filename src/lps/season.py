@@ -42,6 +42,12 @@ from .win_probability import WinProbabilityConfig, build_team_features
 # Cache for the weight-invariant per-match feature frame (trains the models). Scaling /
 # weight changes reuse this instead of retraining. Bust it (force_recompute=True) when
 # the models or features change.
+# Reference level the per-player contribution is measured against (Model 1's conditional
+# prediction). None = conditional MEAN ("vs an average player"); a low quantile (e.g. 0.2) =
+# REPLACEMENT level, so nearly every performance is above it -> contribution is larger and
+# accumulates (WAR-style: value above replacement).
+_REPLACEMENT_QUANTILE: Optional[float] = 0.20
+
 _CACHE_DIR = DATA_DIR / "cache"
 _INVARIANT_COLS = [
     "gameid", "game", "date", "side", "position", "playername", "teamname", "opp_teamname",
@@ -131,7 +137,8 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
     # Model 2 + per-team-game contributions, referenced against Model 1 expected values.
     bundle = train_win_prob_bundle(cfg)
     team_df = build_team_features(df, cfg).reset_index(drop=True)
-    expected_df = expected_reference_frame(df, team_df) if use_model1 else None
+    expected_df = (expected_reference_frame(df, team_df, quantile=_REPLACEMENT_QUANTILE)
+                   if use_model1 else None)
     contrib = contributions_for_frame(team_df, bundle, expected_df=expected_df)
 
     # Long form: one row per (team-game, lane). net_contribution is that lane's per-lane

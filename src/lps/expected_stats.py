@@ -58,23 +58,33 @@ def _decompose_kda(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+# Stats where a LOWER value is better -- their replacement-level reference is a HIGH quantile
+# (a replacement player dies a lot), unlike kills/assists/damage (low quantile).
+_LOWER_IS_BETTER = {"deaths_nonfb"}
+
+
 def compute_expected_stats(
     df: pd.DataFrame,
     roles: Sequence[str] = ROLES,
     max_iter: int = 150,
+    quantile: Optional[float] = None,
 ) -> pd.DataFrame:
     """
-    Expected (mean) value of each lane stat per player-game, from Model 1.
+    Expected value of each lane stat per player-game, from Model 1, given game context.
 
     Args:
         df: raw Oracle rows (one year).
         roles: positions to model.
         max_iter: HistGradientBoostingRegressor boosting iterations.
+        quantile: if None, predict the conditional MEAN (squared-error). If set (e.g. 0.2),
+            predict a conditional REPLACEMENT level -- the q-th quantile for higher-is-better
+            stats and the (1-q)-th for deaths -- so contribution is measured vs a replacement
+            player (WAR-style: nearly everyone is above replacement, so it accumulates).
 
     Returns:
         Long table: one row per (gameid, side, position) with columns
-        exp_kills_nonfb, exp_deaths_nonfb, exp_assists_nonfb, exp_damagetochampions,
-        exp_csdiffat15. Values are NaN where a position/stat had too little data.
+        exp_kills_nonfb, exp_deaths_nonfb, exp_assists_nonfb, exp_damagetochampions.
+        Values are NaN where a position/stat had too little data.
     """
     df = _decompose_kda(df)
 
@@ -105,10 +115,14 @@ def compute_expected_stats(
             if valid.sum() < 50:
                 continue
 
-            # Mean-prediction model (squared-error loss). In-sample prediction: the exact
-            # one-hot columns are reused, so no column alignment is needed.
+            # Conditional MEAN (squared-error) or REPLACEMENT level (quantile loss). For
+            # deaths a replacement player is a high-quantile (dies a lot), so mirror q.
+            if quantile is None:
+                loss_kwargs = dict(loss="squared_error")
+            else:
+                q = 1.0 - quantile if stat in _LOWER_IS_BETTER else quantile
+                loss_kwargs = dict(loss="quantile", quantile=q)
             model = HistGradientBoostingRegressor(
-                loss="squared_error",
                 max_iter=max_iter,
                 learning_rate=0.06,
                 max_depth=8,
@@ -116,6 +130,7 @@ def compute_expected_stats(
                 early_stopping=True,
                 validation_fraction=0.1,
                 random_state=42,
+                **loss_kwargs,
             )
             model.fit(X[valid], y[valid])
             expected.loc[pos_df.index[valid]] = model.predict(X[valid])
@@ -131,15 +146,17 @@ def expected_reference_frame(
     team_df: pd.DataFrame,
     roles: Sequence[str] = ROLES,
     max_iter: int = 150,
+    quantile: Optional[float] = None,
 ) -> pd.DataFrame:
     """
     Model 1 expected values reshaped to team-game rows, aligned to `team_df`.
 
     Produces one row per (gameid, side) with columns named like Model 2's features
     ({role}_{stat}), row-aligned to team_df, ready to pass as `expected_df` to
-    contribution.contributions_for_frame.
+    contribution.contributions_for_frame. `quantile` selects the mean (None) or a
+    replacement-level (e.g. 0.2) reference (see compute_expected_stats).
     """
-    exp_long = compute_expected_stats(df, roles=roles, max_iter=max_iter)
+    exp_long = compute_expected_stats(df, roles=roles, max_iter=max_iter, quantile=quantile)
 
     piv = exp_long.pivot_table(
         index=["gameid", "side"],

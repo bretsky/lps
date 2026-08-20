@@ -31,7 +31,7 @@ from sklearn.preprocessing import StandardScaler
 from .contribution import ROLES
 from .lp_ingest import load_year
 from .scoring import REFERENCE_ELO, ScoreWeights, load_league_elos
-from .season import _SOURCES
+from .season import _REPLACEMENT_QUANTILE, _SOURCES
 from .team_leagues import build_team_game_table, resolve_home_leagues
 
 logger = logging.getLogger(__name__)
@@ -89,8 +89,18 @@ def build_match_scores(year: int, weights: Optional[ScoreWeights] = None,
     coef = model.coef_[0]
     mu, sigma = scaler.mean_, scaler.scale_
 
-    # Per-feature log-odds deviation from the global mean; per-lane leave-one-out contribution.
-    Dz = coef[None, :] * (Xs - 0.0)          # Xs already centered on mu, so (x-mu)/sigma
+    # Reference each feature against a REPLACEMENT level (a global per-position-stat quantile;
+    # low for higher-is-better stats, high (1-q) for deaths) instead of the mean, so nearly
+    # every performance is above it and contribution accumulates (WAR-style). q=None -> mean.
+    if _REPLACEMENT_QUANTILE is None:
+        Es = np.zeros(len(feature_cols))
+    else:
+        q = _REPLACEMENT_QUANTILE
+        r = np.array([np.quantile(X[:, i], 1 - q if feature_cols[i].endswith("_deaths") else q)
+                      for i in range(len(feature_cols))])
+        Es = (r - mu) / sigma                # replacement level in standardized space
+    # Per-feature log-odds deviation from replacement; per-lane leave-one-out contribution.
+    Dz = coef[None, :] * (Xs - Es[None, :])
     z = Xs @ coef
     p = _sigmoid(z)
     idx_of = {f: i for i, f in enumerate(feature_cols)}
