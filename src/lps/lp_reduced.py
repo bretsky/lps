@@ -37,6 +37,7 @@ from .team_leagues import build_team_game_table, resolve_home_leagues
 logger = logging.getLogger(__name__)
 
 _RSTATS = ("kills", "deaths", "assists", "cs")  # reduced feature set
+_REP_MIN_GROUP = 15  # min games for a per-(position, champion) quantile; else per-position
 
 # Leaguepedia leagues to score per year -- only the gaps Oracle lacks, so no double-count
 # when both sources feed the career aggregation. None => use everything present that year.
@@ -49,6 +50,22 @@ GAP_LEAGUES: dict[int, Optional[list[str]]] = {
 
 def _sigmoid(z):
     return 1.0 / (1.0 + np.exp(-z))
+
+
+def _replacement_reference(df: pd.DataFrame, q: float) -> pd.DataFrame:
+    """Per (gameid, side, position) CHAMPION-CONDITIONAL replacement level for each reduced
+    stat: the q-th quantile (1-q for deaths) among games at that (position, champion), falling
+    back to the per-position quantile when a champion has < _REP_MIN_GROUP games that year."""
+    d = df[df["position"].isin(ROLES)].copy()
+    out = d[["gameid", "side", "position"]].copy()
+    keys = list(zip(d["position"], d["champion"]))
+    for stat in _RSTATS:
+        qeff = 1.0 - q if stat == "deaths" else q
+        gq = d.groupby(["position", "champion"])[stat].quantile(qeff)          # (pos,champ)->val
+        cnt = d.groupby(["position", "champion"])[stat].size()
+        pq = d.groupby("position")[stat].quantile(qeff).to_dict()               # per-position fallback
+        out[stat] = [gq[k] if cnt[k] >= _REP_MIN_GROUP else pq[k[0]] for k in keys]
+    return out
 
 
 def _team_features(df: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
@@ -89,18 +106,21 @@ def build_match_scores(year: int, weights: Optional[ScoreWeights] = None,
     coef = model.coef_[0]
     mu, sigma = scaler.mean_, scaler.scale_
 
-    # Reference each feature against a REPLACEMENT level (a global per-position-stat quantile;
-    # low for higher-is-better stats, high (1-q) for deaths) instead of the mean, so nearly
-    # every performance is above it and contribution accumulates (WAR-style). q=None -> mean.
+    # Reference each feature against a CHAMPION-CONDITIONAL REPLACEMENT level (per-(position,
+    # champion) quantile; low for higher-is-better stats, high (1-q) for deaths) instead of the
+    # mean, so nearly every performance is above it and contribution accumulates (WAR-style),
+    # while a champion's role (e.g. a tank's low kills) isn't penalized. q=None -> mean.
     if _REPLACEMENT_QUANTILE is None:
-        Es = np.zeros(len(feature_cols))
+        Es = np.zeros((len(team_df), len(feature_cols)))
     else:
-        q = _REPLACEMENT_QUANTILE
-        r = np.array([np.quantile(X[:, i], 1 - q if feature_cols[i].endswith("_deaths") else q)
-                      for i in range(len(feature_cols))])
-        Es = (r - mu) / sigma                # replacement level in standardized space
+        rep = _replacement_reference(df, _REPLACEMENT_QUANTILE)
+        piv = rep.pivot_table(index=["gameid", "side"], columns="position", values=list(_RSTATS))
+        piv.columns = [f"{pos}_{stat}" for (stat, pos) in piv.columns]
+        piv = piv.reindex(columns=feature_cols).reset_index()
+        E = team_df[["gameid", "side"]].merge(piv, on=["gameid", "side"], how="left")[feature_cols]
+        Es = np.nan_to_num((E.to_numpy(dtype=float) - mu[None, :]) / sigma[None, :], nan=0.0)
     # Per-feature log-odds deviation from replacement; per-lane leave-one-out contribution.
-    Dz = coef[None, :] * (Xs - Es[None, :])
+    Dz = coef[None, :] * (Xs - Es)
     z = Xs @ coef
     p = _sigmoid(z)
     idx_of = {f: i for i, f in enumerate(feature_cols)}
