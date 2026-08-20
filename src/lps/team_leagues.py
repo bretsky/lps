@@ -31,11 +31,20 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 _SIDE_OPPOSITE = {"Blue": "Red", "Red": "Blue"}
 
 
-def resolve_home_leagues(df: pd.DataFrame) -> dict[str, str]:
+def resolve_home_leagues(
+    df: pd.DataFrame,
+    preferred: Optional[set[str]] = None,
+) -> dict[str, str]:
     """
     Map each teamname to its home league = the league it plays in most often.
 
     Ties are broken by the highest game count (arbitrary among exact ties).
+
+    If `preferred` (e.g. the set of rated leagues) is given, a team's home league is the
+    most-played league AMONG its preferred leagues when it has any -- otherwise the overall
+    mode. This matters for teams that span an unrated and a rated league: e.g. Fukuoka
+    SoftBank HAWKS played more LJL (unrated) than PCS (rated) games, but their scoreable
+    identity is PCS, so their PCS + Worlds games should count instead of being dropped.
     """
     pair_counts = (
         df.dropna(subset=["teamname", "league"])
@@ -43,12 +52,21 @@ def resolve_home_leagues(df: pd.DataFrame) -> dict[str, str]:
         .size()
         .reset_index(name="n")
     )
-    # Most-played league per team.
-    home = (
-        pair_counts.sort_values("n", ascending=False)
-        .drop_duplicates("teamname")
-        .set_index("teamname")["league"]
-    )
+    if preferred:
+        # Preferred (rated) leagues sort first, then by game count -- so a team with any
+        # rated games takes its most-played rated league; teams with none fall back to mode.
+        pair_counts = pair_counts.assign(_pref=pair_counts["league"].isin(preferred))
+        home = (
+            pair_counts.sort_values(["_pref", "n"], ascending=[False, False])
+            .drop_duplicates("teamname")
+            .set_index("teamname")["league"]
+        )
+    else:
+        home = (
+            pair_counts.sort_values("n", ascending=False)
+            .drop_duplicates("teamname")
+            .set_index("teamname")["league"]
+        )
     return home.to_dict()
 
 

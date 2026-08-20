@@ -156,7 +156,11 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
     fbv = long["firstbloodvictim"].fillna(0).to_numpy() if "firstbloodvictim" in long.columns else np.zeros(len(long))
     long["c_fb"] = np.where((fbk == 1) | (fbv == 1), long["team_fb"].to_numpy(), 0.0)
     long["net_contribution"] = long["net_contribution"] + long["c_fb"]
-    tg = build_team_game_table(df, resolve_home_leagues(df))
+    # Resolve home leagues preferring RATED leagues, so teams that span an unrated + rated
+    # league (e.g. Fukuoka SoftBank HAWKS: LJL + PCS) are scored on their rated + international
+    # games instead of being dropped for having an unrated home league.
+    home_leagues = resolve_home_leagues(df, preferred=set(load_league_elos(year)))
+    tg = build_team_game_table(df, home_leagues)
     tg_cols = ["gameid", "side", "opp_teamname", "own_league", "opp_league",
                "is_international", "game_label"]
     if "playoffs" in tg.columns:
