@@ -234,7 +234,7 @@ def _ordered_columns(tourn_cols: list[str]) -> list[tuple[str, str, Optional[str
     """Full (col, header, fmt, width) layout, inserting per-tournament cols before rates."""
     out: list[tuple[str, str, Optional[str], int]] = []
     for col, hdr, fmt, width, group in _COLUMNS:
-        if group == "rate" and not any(o[0] == tourn_cols[0] for o in out) and tourn_cols:
+        if group == "rate" and tourn_cols and not any(o[0] == tourn_cols[0] for o in out):
             for tc in tourn_cols:
                 out.append((tc, tc.replace("_pts", ""), _TOURN_FMT, _TOURN_WIDTH))
         out.append((col, hdr, fmt, width))
