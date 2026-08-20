@@ -26,6 +26,7 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+import numpy as np
 import pandas as pd
 
 from .config import PROJECT_ROOT
@@ -103,9 +104,10 @@ _GLOSSARY: list[tuple[str, str]] = [
     ("Rank", "Rank within the lane by LPS (Overview sheet: rank across all lanes)."),
     ("LPS", "League Performance Score: total_score = Baseline + Contribution + WinBonus, "
             "accumulated across regular season, playoffs and tournaments (more games help)."),
-    ("LPS/Gm", "Pure mean per-game score (baseline + contribution + win-bonus), every game "
-               "weighted equally, before the accumulation weighting -- schedule-length "
-               "invariant, so leagues with more games aren't penalized."),
+    ("LPS/Gm", "Pure mean per-game score (contribution + win-bonus + win-gated baseline), "
+               "every game weighted equally, before the accumulation weighting -- schedule-"
+               "length invariant and consistent with CareerLPS (baseline counts only on "
+               "series wins)."),
     ("LPS/Gm·wt", "WEIGHTED mean per-game score: total_score / total accumulation weight. "
                "Weights each game by its stakes (playoff/tournament games count more) but "
                "divides by the total weight, so it stays comparable across leagues. Above the "
@@ -173,15 +175,23 @@ def build_export_frame(
     # Per-player rate/quality stats from the per-match frame.
     matches = matches.copy()
     matches["_resid"] = matches["result"] - matches["p_model"]
+    # Win-gate the baseline in the per-game score (baseline only on SERIES wins), matching how
+    # the accumulation awards it, so LPS/Gm is consistent with CareerLPS. Series = same day +
+    # event + team pair; a series is won if the player's mean game result > 0.5.
+    _day = pd.to_datetime(matches["date"]).dt.date.astype(str)
+    _a, _b = matches["teamname"].astype(str), matches["opp_teamname"].astype(str)
+    _pair = np.where(_a.values < _b.values, _a + "|" + _b, _b + "|" + _a)
+    matches["_sid"] = _day + "@" + matches["game_label"].astype(str) + "@" + _pair
+    _swon = (matches.groupby(["playername", "_sid"])["result"].transform("mean") > 0.5).astype(float)
+    matches["_gscore"] = (matches["contribution_term"] + matches["win_bonus"]
+                          + matches["baseline_term"] * _swon)
     g = matches.groupby("playername")
     extra = pd.DataFrame({
         "wins": g["result"].sum().astype(int),
-        # LPS/Game is the mean RAW per-game score (baseline + contribution + win-bonus,
-        # BEFORE the accumulation weighting). total_score carries the per-league N_ref/run
-        # downweighting so full runs equalize across regions -- but that normalization must
-        # NOT leak into a per-game number, or a long-schedule league would look worse per
-        # game at equal quality. The raw mean cancels it out (it's schedule-length invariant).
-        "pts_per_game": g["score"].mean(),
+        # LPS/Game is the mean per-game score with the baseline win-gated (as in CareerLPS),
+        # BEFORE the accumulation weighting -- so it's schedule-length invariant (a long-
+        # schedule league isn't penalized per game) yet consistent with the cumulative total.
+        "pts_per_game": g["_gscore"].mean(),
         # Contribution per game, same treatment as LPS/Gm (on the LPS/point scale, i.e.
         # lam-weighted contribution_term) so you can read how much per-game value is
         # contribution. Pure mean here; weighted variant added after the join.

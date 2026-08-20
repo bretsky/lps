@@ -124,9 +124,13 @@ def run_year_frames(
 
 def _global_home_leagues(year: int) -> Optional[dict]:
     """Resolve each team's home league across BOTH Oracle and Leaguepedia raw data for a
-    year, preferring rated leagues. Lets a team seen only at an international event in one
-    source pick up its real domestic home from the other."""
+    year, preferring rated leagues, then back-fill from the authoritative team->region map
+    (info/team_regions_<year>.csv, the same mapping the Elos are built from). The back-fill
+    fixes teams that appear only at an international event in our box-score data (e.g. Worlds
+    wildcards KaBuM->CBLOL, Dark Passage->TCL, ahq/TPA->LNL) so their games baseline instead
+    of dropping -- without needing to ingest those minor regions' domestic scoreboards."""
     from . import lp_ingest
+    from .team_regions import load_team_regions
     parts = []
     try:
         o = load_oracle_years((year,))
@@ -139,8 +143,18 @@ def _global_home_leagues(year: int) -> Optional[dict]:
         pass
     if not parts:
         return None
+    rated = set(load_league_elos(year))
     both = pd.concat(parts, ignore_index=True).dropna(subset=["teamname", "league"])
-    return resolve_home_leagues(both, preferred=set(load_league_elos(year)))
+    home = resolve_home_leagues(both, preferred=rated)
+    # Back-fill unresolved/unrated homes from the team->region mapping (case-insensitive, since
+    # e.g. team_regions has "Ahq eSports Club" but the box scores have "ahq eSports Club").
+    tr = {t.lower(): r for t, r in load_team_regions(year).items()}
+    for team in both["teamname"].unique():
+        if home.get(team) not in rated:
+            region = tr.get(str(team).lower())
+            if region in rated:
+                home[team] = region
+    return home
 
 
 def _combine_matches(frames: list[pd.DataFrame], year: int,
