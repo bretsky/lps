@@ -458,10 +458,13 @@ def _print_outliers(matches: pd.DataFrame, n: int = 5) -> None:
     show(wb.nsmallest(n, "win_bonus"), "win_bonus")
 
 
-# Default demo weights: baseline down-weighted (alpha) so contribution/win-bonus matter more.
-# lam=2 (vs 3) gives the league-strength baseline more relative weight, lifting the premier
-# leagues (LCK/LPL) over LEC/LCS players who post strong individual contribution domestically.
-_DEMO_WEIGHTS = ScoreWeights(alpha=0.5, lam=2.0, beta=1.0)
+# Default weights, tuned to best match a fan consensus of 2024's best players across all five
+# lanes (grid search over alpha/lambda/beta/intl_weight; mean Spearman ~0.79, Pearson ~0.76):
+#   - beta=0: the win-bonus (rewarding wins the model rated as upsets) adds team-level noise
+#     that fans don't weight -- zeroing it improved every combo.
+#   - alpha=1, lam=2: baseline vs contribution ratio in the broad optimum (fit is flat over
+#     ratios ~0.5-2 once beta=0). intl_weight=2 (the build_player_ratings default) was optimal.
+_DEMO_WEIGHTS = ScoreWeights(alpha=1.0, lam=2.0, beta=0.0)
 _MAJOR = {"LCK", "LPL", "LEC", "LCS"}
 
 
