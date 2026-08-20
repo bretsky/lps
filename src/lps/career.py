@@ -160,8 +160,9 @@ def _combine_matches(frames: list[pd.DataFrame], year: int,
     m["opp_league"] = m["opp_teamname"].map(home).fillna(m["opp_league"])
     m["is_international"] = (m["own_league"].notna() & m["opp_league"].notna()
                             & (m["own_league"] != m["opp_league"]))
+    peak = max(elos.values()) if elos else REFERENCE_ELO   # baseline vs the year's peak region
     opp_elo = m["opp_league"].map(elos)
-    m["baseline"] = 1.0 / (1.0 + 10 ** ((REFERENCE_ELO - opp_elo) / 400.0))
+    m["baseline"] = 1.0 / (1.0 + 10 ** ((peak - opp_elo) / 400.0))
     m["baseline_term"] = weights.alpha * m["baseline"]
     m["score"] = m["baseline_term"] + m["contribution_term"] + m["win_bonus"]
     return m.dropna(subset=["baseline"]).reset_index(drop=True)

@@ -230,6 +230,12 @@ def build_player_match_scores(
 
     m = _match_features(year, use_model1=use_model1, force_recompute=force_recompute,
                         home_leagues=home_leagues).copy()
+    # Baseline is measured against the year's PEAK region (not a fixed 1000), so each era's
+    # best region anchors at 0.5. Recomputed here from opp_league so it's a cheap post-cache
+    # transform -- no model retraining needed when the reference changes.
+    elos = load_league_elos(year)
+    peak = max(elos.values()) if elos else REFERENCE_ELO
+    m["baseline"] = 1.0 / (1.0 + 10 ** ((peak - m["opp_league"].map(elos)) / 400.0))
     m["baseline_term"] = weights.alpha * m["baseline"]
     m["contribution_term"] = weights.lam * m["net_contribution"]
     m["win_bonus"] = weights.beta * (m["result"] - m["p_model"])

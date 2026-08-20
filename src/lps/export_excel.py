@@ -309,7 +309,8 @@ def _write_regions(writer, meta: dict) -> None:
     elos = meta.get("elos", {})
     if not elos:
         return
-    rows = [(lg, elo, expected_score(elo, REFERENCE_ELO))
+    _peak = max(elos.values()) if elos else REFERENCE_ELO
+    rows = [(lg, elo, expected_score(elo, _peak))
             for lg, elo in sorted(elos.items(), key=lambda kv: -kv[1])]
     reg = pd.DataFrame(rows, columns=["League", "Elo", "Baseline"])
     reg.to_excel(writer, sheet_name="Regions", index=False)

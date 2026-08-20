@@ -66,6 +66,12 @@ def expected_score(elo_a: float, elo_b: float) -> float:
     return 1.0 / (1.0 + 10 ** ((elo_b - elo_a) / 400.0))
 
 
+def peak_elo(elos: dict[str, float]) -> float:
+    """The strongest region's Elo that year -- the reference the baseline is measured against
+    (so each era's best region anchors at 0.5, rewarding it equally despite Elo inflation)."""
+    return max(elos.values()) if elos else REFERENCE_ELO
+
+
 def load_league_elos(year: int, info_dir: Optional[Path] = None) -> dict[str, float]:
     """
     Load ending Elos for a year as {league: elo}.
@@ -105,9 +111,13 @@ def league_baseline(
 ) -> Optional[float]:
     """
     Baseline points for a match = the OPPONENT league's strength, i.e. that league's
-    expected win rate against a neutral REFERENCE_ELO (1000) league:
+    expected win rate against the year's PEAK (strongest) region:
 
-        baseline = expected_score(R_opponent, 1000)
+        baseline = expected_score(R_opponent, R_peak)
+
+    Measuring against the peak region (rather than a fixed 1000) anchors each era's best
+    region at 0.5, so players are rewarded for competing in the best region of their era
+    even when absolute Elos are lower/higher across eras.
 
     The baseline reflects the QUALITY OF COMPETITION faced, not your own league: facing
     a strong league yields a high baseline, a weak league a low one -- which is what
@@ -129,7 +139,7 @@ def league_baseline(
     opp_elo = elos.get(opp)
     if opp_elo is None:
         return None
-    return expected_score(opp_elo, REFERENCE_ELO)
+    return expected_score(opp_elo, peak_elo(elos))
 
 
 def score_player_match(
@@ -191,11 +201,12 @@ def _demo(year: int = 2024) -> None:
         logging.info(f"No Elos found for {year}; nothing to show.")
         return
 
-    logging.info(f"League baselines for {year} (expected win rate vs a {int(REFERENCE_ELO)}-Elo league):")
+    peak = peak_elo(elos)
+    logging.info(f"League baselines for {year} (expected win rate vs the peak region, Elo {int(peak)}):")
     logging.info(f"  {'League':<8} {'Elo':<10} {'Baseline':<10}")
     logging.info("  " + "-" * 30)
     for league, elo in sorted(elos.items(), key=lambda kv: kv[1], reverse=True):
-        b = expected_score(elo, REFERENCE_ELO)
+        b = expected_score(elo, peak)
         logging.info(f"  {league:<8} {elo:<10.1f} {b:<10.3f}")
 
     # Worked example: your -0.05 contribution in a 0.75-ish league, won a game the

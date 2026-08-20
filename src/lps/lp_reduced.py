@@ -131,8 +131,9 @@ def build_match_scores(year: int, weights: Optional[ScoreWeights] = None,
     long["game"] = np.nan  # in-series game number unknown from ScoreboardPlayers
 
     elos = load_league_elos(year)
+    peak = max(elos.values()) if elos else REFERENCE_ELO   # baseline vs the year's peak region
     opp_elo = long["opp_league"].map(elos)
-    long["baseline"] = 1.0 / (1.0 + 10 ** ((REFERENCE_ELO - opp_elo) / 400.0))
+    long["baseline"] = 1.0 / (1.0 + 10 ** ((peak - opp_elo) / 400.0))
 
     # Phase: rated domestic label -> regular (no playoff flag in source); else tournament.
     rated = set(elos)
