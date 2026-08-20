@@ -35,8 +35,10 @@ from .export_excel import (
     _INT, _PCT, _PTS, _SIGNED, _GLOSSARY, _write_glossary, _write_sheet,
     build_export_frame,
 )
-from .scoring import ScoreWeights
-from .season import _DEMO_WEIGHTS, _LANE_NAMES
+from .io_oracle import load_oracle_years
+from .scoring import REFERENCE_ELO, ScoreWeights, load_league_elos
+from .season import _DEMO_WEIGHTS, _LANE_NAMES, build_player_match_scores
+from .team_leagues import resolve_home_leagues
 
 logger = logging.getLogger(__name__)
 
@@ -65,56 +67,104 @@ def run_year_frames(
     force_recompute: bool,
     write_yearly: bool,
 ) -> tuple[list[dict], list[str]]:
-    """Build (and optionally write) enriched frames for each year. A year can yield more than
-    one frame: the Oracle model (2014+) and/or the reduced Leaguepedia model (gap years
-    2013-2015). Returns a list of {year, source, frame, n_ref} records + the union of
-    per-tournament columns."""
+    """Build (and optionally write) one enriched frame per year. Where both sources exist
+    (Oracle 2014+ and the reduced Leaguepedia model for gap years 2013-2015) their per-match
+    frames are MERGED and home leagues re-resolved across the union, so e.g. an Eastern team
+    whose only Oracle games are Worlds (home would wrongly resolve to 'WLDs') picks up its
+    real domestic home from Leaguepedia and its Worlds games are credited. Returns a list of
+    {year, source, frame, n_ref} records + the union of per-tournament columns."""
     from .export_excel import write_workbook
     from . import lp_reduced
 
     records: list[dict] = []
     all_tourn: list[str] = []
     failed: list[str] = []
-
-    def _add(year, source, frame, tourn_cols, meta, out_name):
-        records.append({"year": year, "source": source, "frame": frame,
-                        "n_ref": float(meta.get("n_ref", 0.0) or 0.0)})
-        for c in tourn_cols:
-            if c not in all_tourn:
-                all_tourn.append(c)
-        if write_yearly and out_name:
-            out = PROJECT_ROOT / out_name
-            write_workbook(out, frame, tourn_cols, meta)
-            logger.info(f"[career] {year} [{source}]: wrote {out.name}  ({len(frame)} players)")
-
     for year in years:
         oracle_ok = 2014 <= year <= 2025
         lp_ok = year in lp_reduced.GAP_LEAGUES
-        if oracle_ok:
-            logger.info(f"[career] {year} [oracle]: building (force_recompute={force_recompute}) ...")
-            try:
-                frame, tc, meta = build_export_frame(
-                    year, weights, min_games, intl_weight, force_recompute=force_recompute)
-                _add(year, "oracle", frame, tc, meta, f"player_ratings_{year}.xlsx")
-            except Exception as e:
-                logger.warning(f"[career] {year} [oracle]: SKIPPED ({type(e).__name__}: {e})")
-                failed.append(f"{year}/oracle")
-        if lp_ok:
-            logger.info(f"[career] {year} [lp]: building reduced model ...")
-            try:
-                m = lp_reduced.build_match_scores(year, weights=weights)
-                frame, tc, meta = build_export_frame(
-                    year, weights, min_games, intl_weight, matches=m)
-                # Standalone workbook only when LP is the sole source (2013); else it just
-                # feeds the career sum (2014/2015 East, alongside Oracle).
-                name = f"player_ratings_{year}.xlsx" if not oracle_ok else f"player_ratings_{year}_lp.xlsx"
-                _add(year, "lp", frame, tc, meta, name)
-            except Exception as e:
-                logger.warning(f"[career] {year} [lp]: SKIPPED ({type(e).__name__}: {e})")
-                failed.append(f"{year}/lp")
+        # When both sources exist, resolve home leagues across their UNION so an Eastern team
+        # whose only Oracle games are Worlds (home would be 'WLDs' -> games drop) inherits its
+        # real domestic home from Leaguepedia and its international games are scored.
+        home = _global_home_leagues(year) if (oracle_ok and lp_ok) else None
+        srcs: list[tuple[str, pd.DataFrame]] = []
+        try:
+            if oracle_ok:
+                logger.info(f"[career] {year} [oracle]: building (force_recompute={force_recompute}) ...")
+                srcs.append(("oracle", build_player_match_scores(
+                    year, weights=weights, force_recompute=force_recompute, home_leagues=home)))
+            if lp_ok:
+                logger.info(f"[career] {year} [lp]: building reduced model ...")
+                srcs.append(("lp", lp_reduced.build_match_scores(
+                    year, weights=weights, home_leagues=home)))
+            if not srcs:
+                continue
+            combined = srcs[0][1] if len(srcs) == 1 else _combine_matches(
+                [f for _, f in srcs], year, weights)
+            frame, tc, meta = build_export_frame(
+                year, weights, min_games, intl_weight, matches=combined)
+        except Exception as e:  # a bad/incomplete year shouldn't kill the whole run
+            logger.warning(f"[career] {year}: SKIPPED ({type(e).__name__}: {e})")
+            failed.append(str(year))
+            continue
+
+        records.append({"year": year, "source": "+".join(s for s, _ in srcs),
+                        "frame": frame, "n_ref": float(meta.get("n_ref", 0.0) or 0.0)})
+        for c in tc:
+            if c not in all_tourn:
+                all_tourn.append(c)
+        if write_yearly:
+            out = PROJECT_ROOT / f"player_ratings_{year}.xlsx"
+            write_workbook(out, frame, tc, meta)
+            logger.info(f"[career] {year} [{records[-1]['source']}]: wrote {out.name}  "
+                        f"({len(frame)} players)")
     if failed:
         logger.warning(f"[career] skipped: {failed}")
     return records, all_tourn
+
+
+def _global_home_leagues(year: int) -> Optional[dict]:
+    """Resolve each team's home league across BOTH Oracle and Leaguepedia raw data for a
+    year, preferring rated leagues. Lets a team seen only at an international event in one
+    source pick up its real domestic home from the other."""
+    from . import lp_ingest
+    parts = []
+    try:
+        o = load_oracle_years((year,))
+        parts.append(o[o["position"] != "team"][["teamname", "league"]])
+    except Exception:
+        pass
+    try:
+        parts.append(lp_ingest.load_year(year)[["teamname", "league"]])
+    except Exception:
+        pass
+    if not parts:
+        return None
+    both = pd.concat(parts, ignore_index=True).dropna(subset=["teamname", "league"])
+    return resolve_home_leagues(both, preferred=set(load_league_elos(year)))
+
+
+def _combine_matches(frames: list[pd.DataFrame], year: int,
+                     weights: ScoreWeights) -> pd.DataFrame:
+    """Concatenate per-source match frames for a year and re-resolve home leagues + baseline
+    across the union, so a team whose only games in one source were an international event
+    (home would resolve to that event) inherits its real domestic home from the other source
+    and keeps those international games. Sources cover disjoint leagues, so no game overlaps."""
+    m = pd.concat(frames, ignore_index=True)
+    elos = load_league_elos(year)
+    rated = set(elos)
+    # Home league = modal own_league among RATED DOMESTIC games (ignores WLDs/MSI etc.).
+    dom = m[m["own_league"].isin(rated)]
+    home = (dom.groupby("teamname")["own_league"]
+            .agg(lambda s: s.mode().iat[0] if not s.mode().empty else None))
+    m["own_league"] = m["teamname"].map(home).fillna(m["own_league"])
+    m["opp_league"] = m["opp_teamname"].map(home).fillna(m["opp_league"])
+    m["is_international"] = (m["own_league"].notna() & m["opp_league"].notna()
+                            & (m["own_league"] != m["opp_league"]))
+    opp_elo = m["opp_league"].map(elos)
+    m["baseline"] = 1.0 / (1.0 + 10 ** ((REFERENCE_ELO - opp_elo) / 400.0))
+    m["baseline_term"] = weights.alpha * m["baseline"]
+    m["score"] = m["baseline_term"] + m["contribution_term"] + m["win_bonus"]
+    return m.dropna(subset=["baseline"]).reset_index(drop=True)
 
 
 def _stack(records: list[dict], all_tourn: list[str]) -> pd.DataFrame:

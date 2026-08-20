@@ -106,16 +106,23 @@ def _player_lane_table(df: pd.DataFrame) -> pd.DataFrame:
     return d.groupby(["gameid", "side", "position"], as_index=False).agg(**agg)
 
 
-def _match_features(year: int, use_model1: bool = True, force_recompute: bool = False) -> pd.DataFrame:
+def _match_features(year: int, use_model1: bool = True, force_recompute: bool = False,
+                    home_leagues: Optional[dict] = None) -> pd.DataFrame:
     """
     Weight-INVARIANT per-(player, match) features: net_contribution, baseline, p_model,
     phase, league context. This is the expensive part (trains Model 1 + Model 2), so it's
     cached to disk; scaling/weight changes reuse it. Set force_recompute=True after any
     model/feature change.
+
+    home_leagues overrides the per-team home-league map (default: resolve from this year's
+    Oracle data). Pass a map resolved across MULTIPLE sources (e.g. Oracle + Leaguepedia) so
+    a team whose only Oracle games are an international event still gets its real domestic
+    home -- otherwise its games baseline as NaN and drop. When provided, the disk cache is
+    bypassed (the labelling is source-set-specific).
     """
     _CACHE_DIR.mkdir(parents=True, exist_ok=True)
     path = _CACHE_DIR / f"match_features_{year}_m1{int(use_model1)}.pkl"
-    if path.exists() and not force_recompute:
+    if path.exists() and not force_recompute and home_leagues is None:
         return pd.read_pickle(path)
 
     cfg = WinProbabilityConfig(years=(year,))
@@ -158,8 +165,10 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
     long["net_contribution"] = long["net_contribution"] + long["c_fb"]
     # Resolve home leagues preferring RATED leagues, so teams that span an unrated + rated
     # league (e.g. Fukuoka SoftBank HAWKS: LJL + PCS) are scored on their rated + international
-    # games instead of being dropped for having an unrated home league.
-    home_leagues = resolve_home_leagues(df, preferred=set(load_league_elos(year)))
+    # games instead of being dropped for having an unrated home league. A caller-supplied map
+    # (resolved across Oracle + Leaguepedia) takes precedence for the gap years.
+    if home_leagues is None:
+        home_leagues = resolve_home_leagues(df, preferred=set(load_league_elos(year)))
     tg = build_team_game_table(df, home_leagues)
     tg_cols = ["gameid", "side", "opp_teamname", "own_league", "opp_league",
                "is_international", "game_label"]
@@ -196,7 +205,8 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
     # Keep only scorable rows (baseline computable + player known).
     long = long.dropna(subset=["baseline", "playername"])
     inv = long[[c for c in _INVARIANT_COLS if c in long.columns]].reset_index(drop=True)
-    inv.to_pickle(path)
+    if home_leagues is None:            # don't pollute the default cache with a custom map
+        inv.to_pickle(path)
     return inv
 
 
@@ -205,6 +215,7 @@ def build_player_match_scores(
     weights: Optional[ScoreWeights] = None,
     use_model1: bool = True,
     force_recompute: bool = False,
+    home_leagues: Optional[dict] = None,
 ) -> pd.DataFrame:
     """
     One row per (player, match) with the full score decomposition. Applies the (cheap)
@@ -217,7 +228,8 @@ def build_player_match_scores(
     if weights is None:
         weights = ScoreWeights()
 
-    m = _match_features(year, use_model1=use_model1, force_recompute=force_recompute).copy()
+    m = _match_features(year, use_model1=use_model1, force_recompute=force_recompute,
+                        home_leagues=home_leagues).copy()
     m["baseline_term"] = weights.alpha * m["baseline"]
     m["contribution_term"] = weights.lam * m["net_contribution"]
     m["win_bonus"] = weights.beta * (m["result"] - m["p_model"])

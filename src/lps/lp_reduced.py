@@ -64,9 +64,11 @@ def _team_features(df: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
     return wide, feature_cols
 
 
-def build_match_scores(year: int, weights: Optional[ScoreWeights] = None) -> pd.DataFrame:
+def build_match_scores(year: int, weights: Optional[ScoreWeights] = None,
+                       home_leagues: Optional[dict] = None) -> pd.DataFrame:
     """Per-(player, match) scored frame for a Leaguepedia gap year, matching the schema of
-    season.build_player_match_scores (so build_player_ratings can consume it)."""
+    season.build_player_match_scores (so build_player_ratings can consume it). home_leagues
+    overrides the per-team home-league map (default: resolve from this year's LP data)."""
     weights = weights or ScoreWeights()
     df = load_year(year)
     leagues = GAP_LEAGUES.get(year)
@@ -119,7 +121,8 @@ def build_match_scores(year: int, weights: Optional[ScoreWeights] = None) -> pd.
     long = long.merge(ids, on=["gameid", "side", "position"], how="left")
 
     # Opponent / league labelling + baseline (opponent-league Elo), like season._match_features.
-    home = resolve_home_leagues(df, preferred=set(load_league_elos(year)))
+    home = home_leagues if home_leagues is not None else resolve_home_leagues(
+        df, preferred=set(load_league_elos(year)))
     tg = build_team_game_table(df, home)
     tg_cols = ["gameid", "side", "opp_teamname", "own_league", "opp_league",
                "is_international", "game_label"]
