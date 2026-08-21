@@ -12,10 +12,12 @@ Run:
     poetry run python -m lps.career --no-recompute        # reuse cached per-year models
     poetry run python -m lps.career --no-yearly           # only the career workbook
 
-Cross-year note: each year's LPS is normalized to that year's own N_ref (matches) and Elos,
-so an LPS point is roughly comparable across years; summing gives a career/longevity metric
-(more seasons + higher peaks both help). Recent years offer more international events, so
-modern players have marginally more to accumulate -- an intended "more opportunity" effect.
+Cross-year note: each year's point totals are schedule-normalized (scaled by REF/N_ref, where
+REF is the cross-year mean matches per player) so a full season is worth the same across eras;
+the SAME normalized numbers are written to each per-year workbook, so per-year LPS totals SUM
+to CareerLPS. Summing gives a career/longevity metric (more seasons + higher peaks both help).
+Recent years offer more international events, so modern players have marginally more to
+accumulate -- an intended "more opportunity" effect.
 """
 
 from __future__ import annotations
@@ -51,8 +53,9 @@ _SUM_COLS = [
     "kills_pts", "deaths_pts", "assists_pts", "damage_pts", "fb_pts",
     "reg_pts", "playoff_pts", "tourn_pts", "total_weight",
 ]
-# Counts don't scale with schedule length; every other summed column (the point
-# accumulations) is proportional to that year's N_ref, so it gets schedule-normalized.
+# Counts don't scale with schedule length; every other summed column (the point accumulations)
+# is proportional to that year's N_ref, so it gets schedule-normalized -- see
+# export_excel._ACCUM_BASE_COLS, which is the point-column list actually rescaled per year.
 _COUNT_COLS = ["games", "wins", "reg_games", "playoff_games", "tourn_games", "n_tourneys"]
 # Columns averaged across years weighted by that year's games.
 _GW_COLS = ["pts_per_game", "contrib_pg", "avg_contrib", "avg_resid", "avg_p_model",
@@ -65,15 +68,14 @@ def run_year_frames(
     min_games: int,
     intl_weight: float,
     force_recompute: bool,
-    write_yearly: bool,
 ) -> tuple[list[dict], list[str]]:
-    """Build (and optionally write) one enriched frame per year. Where both sources exist
-    (Oracle 2014+ and the reduced Leaguepedia model for gap years 2013-2015) their per-match
-    frames are MERGED and home leagues re-resolved across the union, so e.g. an Eastern team
-    whose only Oracle games are Worlds (home would wrongly resolve to 'WLDs') picks up its
-    real domestic home from Leaguepedia and its Worlds games are credited. Returns a list of
-    {year, source, frame, n_ref} records + the union of per-tournament columns."""
-    from .export_excel import write_workbook
+    """Build one enriched frame per year. Where both sources exist (Oracle 2014+ and the
+    reduced Leaguepedia model for gap years 2013-2015) their per-match frames are MERGED and
+    home leagues re-resolved across the union, so e.g. an Eastern team whose only Oracle games
+    are Worlds (home would wrongly resolve to 'WLDs') picks up its real domestic home from
+    Leaguepedia and its Worlds games are credited. Returns a list of
+    {year, source, frame, tc, meta, n_ref} records + the union of per-tournament columns.
+    Per-year workbooks are written by the caller AFTER schedule normalization is applied."""
     from . import lp_reduced
 
     records: list[dict] = []
@@ -108,15 +110,11 @@ def run_year_frames(
             continue
 
         records.append({"year": year, "source": "+".join(s for s, _ in srcs),
-                        "frame": frame, "n_ref": float(meta.get("n_ref", 0.0) or 0.0)})
+                        "frame": frame, "tc": tc, "meta": meta,
+                        "n_ref": float(meta.get("n_ref", 0.0) or 0.0)})
         for c in tc:
             if c not in all_tourn:
                 all_tourn.append(c)
-        if write_yearly:
-            out = PROJECT_ROOT / f"player_ratings_{year}.xlsx"
-            write_workbook(out, frame, tc, meta)
-            logger.info(f"[career] {year} [{records[-1]['source']}]: wrote {out.name}  "
-                        f"({len(frame)} players)")
     if failed:
         logger.warning(f"[career] skipped: {failed}")
     return records, all_tourn
@@ -386,24 +384,35 @@ def build_and_write(
     # Per-year frames reuse the raw caches the prebuild just refreshed (gap-year '_merged'
     # variants build on demand), so the loop itself doesn't need to force a rebuild.
     records, all_tourn = run_year_frames(
-        years, weights, min_games, intl_weight, False, write_yearly)
+        years, weights, min_games, intl_weight, False)
     if not records:
         raise RuntimeError("no years produced ratings; nothing to aggregate")
     got = tuple(sorted({r["year"] for r in records}))     # years that actually succeeded
-    allyears = _stack(records, all_tourn)
 
     # SCHEDULE-LENGTH NORMALIZATION: point accumulations scale with each frame's N_ref
-    # (matches/player), which varies ~1.5x. Rescale every frame's point columns by REF/N_ref
-    # so a full season is worth the same regardless of schedule length, while keeping the
-    # Elo/baseline signal (stronger modern leagues still score higher per game). Applied
-    # per-frame so Oracle and reduced-Leaguepedia frames are each normalized to their own
-    # schedule.
+    # (matches/player), which varies ~1.5x. Rescale every year's point columns by REF/N_ref so
+    # a full season is worth the same regardless of schedule length, while keeping the Elo/
+    # baseline signal (stronger modern leagues still score higher per game). Applied to each
+    # year's FRAME up front so the per-year workbooks and the career sum share the exact same
+    # normalized numbers -- per-year LPS totals therefore sum to CareerLPS.
+    from .export_excel import apply_schedule_norm, write_workbook
     nrefs = [r["n_ref"] for r in records if r["n_ref"]]
     ref_nref = float(np.mean(nrefs)) if nrefs else 1.0
-    mult = np.where(allyears["_nref"].values > 0, ref_nref / allyears["_nref"].values, 1.0)
-    accum = [c for c in _SUM_COLS if c not in _COUNT_COLS] + all_tourn
-    allyears[accum] = allyears[accum].mul(mult, axis=0)
+    for rec in records:
+        rec["mult"] = ref_nref / rec["n_ref"] if rec["n_ref"] else 1.0
+        rec["frame"] = apply_schedule_norm(rec["frame"], rec["mult"], rec["tc"])
 
+    if write_yearly:
+        for rec in records:
+            ymeta = dict(rec["meta"])
+            ymeta["ref_nref"] = ref_nref
+            ymeta["sched_mult"] = rec["mult"]
+            out_y = PROJECT_ROOT / f"player_ratings_{rec['year']}.xlsx"
+            write_workbook(out_y, rec["frame"], rec["tc"], ymeta)
+            logger.info(f"[career] {rec['year']} [{rec['source']}]: wrote {out_y.name}  "
+                        f"({len(rec['frame'])} players, x{rec['mult']:.3f})")
+
+    allyears = _stack(records, all_tourn)   # frames already schedule-normalized
     career_all = _aggregate(allyears, ["playername"], all_tourn, got)
     career_lane = _aggregate(allyears, ["playername", "position"], all_tourn, got)
 

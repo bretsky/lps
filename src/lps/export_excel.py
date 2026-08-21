@@ -51,6 +51,28 @@ _PTS = "0.00"
 _INT = "0"
 _SIGNED = "+0.000;-0.000;0.000"
 
+# Point-accumulation columns that scale with schedule length -- these get schedule-normalized
+# (multiplied by REF/N_ref). Counts and per-game ratios are deliberately excluded: rescaling
+# total_score and total_weight together leaves the weighted per-game value unchanged.
+_ACCUM_BASE_COLS = [
+    "total_score", "base_pts", "contrib_pts", "wbonus_pts",
+    "kills_pts", "deaths_pts", "assists_pts", "damage_pts", "fb_pts",
+    "reg_pts", "playoff_pts", "tourn_pts", "total_weight",
+]
+
+
+def apply_schedule_norm(frame: pd.DataFrame, mult: float,
+                        tourn_cols: list[str]) -> pd.DataFrame:
+    """Rescale a year's point-accumulation columns by `mult` (= REF/N_ref) so a full season is
+    worth the same regardless of schedule length. Returns a copy; counts and per-game ratios
+    are untouched (scaling total_score and total_weight together leaves per-game values fixed)."""
+    if abs(mult - 1.0) < 1e-12:
+        return frame
+    cols = [c for c in _ACCUM_BASE_COLS + list(tourn_cols) if c in frame.columns]
+    frame = frame.copy()
+    frame[cols] = frame[cols] * mult
+    return frame
+
 _COLUMNS: list[tuple[str, str, str, int, str]] = [
     ("rank",          "Rank",        _INT, 6,  "id"),
     ("playername",    "Player",      None, 16, "id"),
@@ -103,7 +125,9 @@ _TOURN_FMT, _TOURN_WIDTH = _PTS, 8
 _GLOSSARY: list[tuple[str, str]] = [
     ("Rank", "Rank within the lane by LPS (Overview sheet: rank across all lanes)."),
     ("LPS", "League Performance Score: total_score = Baseline + Contribution + WinBonus, "
-            "accumulated across regular season, playoffs and tournaments (more games help)."),
+            "accumulated across regular season, playoffs and tournaments (more games help). "
+            "Schedule-length normalized (see About) so a full season is worth the same across "
+            "years and these per-year totals sum to CareerLPS."),
     ("LPS/Gm", "Pure mean per-game score (contribution + win-bonus + win-gated baseline), "
                "every game weighted equally, before the accumulation weighting -- schedule-"
                "length invariant and consistent with CareerLPS (baseline counts only on "
@@ -306,6 +330,26 @@ def _write_about(writer, meta: dict) -> None:
         ("  intl_weight (tournament phase)", meta["intl_weight"]),
         ("  min games", meta["min_games"]),
         ("  N_ref (per-phase reference MATCHES)", round(float(meta["n_ref"]), 1)),
+        ("", ""),
+        ("Schedule-length normalization", ""),
+    ]
+    _mult = float(meta.get("sched_mult", 1.0))
+    _ref = meta.get("ref_nref")
+    if _ref is not None and abs(_mult - 1.0) > 1e-9:
+        rows += [
+            ("  REF (cross-year mean N_ref)", round(float(_ref), 1)),
+            ("  Scaling factor applied (REF/N_ref)", round(_mult, 4)),
+            ("  Effect", "Every point-accumulation column (LPS, phase, component, per-"),
+            ("", "tournament) is multiplied by this factor so a full season is worth the"),
+            ("", "same regardless of schedule length -- per-year totals sum to CareerLPS."),
+        ]
+    else:
+        rows += [
+            ("  Scaling factor applied (REF/N_ref)", 1.0),
+            ("  Note", "Single-year export -- NOT cross-year normalized. Run via"),
+            ("", "lps.career to get per-season sheets whose totals sum to CareerLPS."),
+        ]
+    rows += [
         ("", ""),
         ("Tournament weights (sqrt avg viewership, Worlds=1)", ""),
     ]
