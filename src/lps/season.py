@@ -287,6 +287,9 @@ EXCLUDED_LEAGUES = {
     "NEST",                                  # domestic minor multi-title event (CN)
     "Asia Master",                           # regional invitational feeder
     "LRN", "LRS",                            # LTA North/South regional feeders (below LTA N/S)
+    "GPL",                                   # rest-of-SEA minor circuit 2016-2018 after Vietnam
+                                             # (VCS) + Taiwan (LMS) split off; no intl slot, so
+                                             # unrated -- rated guard keeps its rated 2013 season
     "PCS", "VCS", "LJL", "LCO",              # top-tier in their years (rated guard keeps those)
 }
 
