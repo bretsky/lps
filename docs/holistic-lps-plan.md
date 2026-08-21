@@ -6,14 +6,19 @@ Status: **draft plan** (no code yet). Owner decisions locked so far:
 - First build target: **plan only**; implementation phases below are sequenced for later.
 
 ### Locked parameters
-- **Peak term** = mean of a player's **top-3** schedule-normalized seasons. Feeds `ResumeScore`.
+- **Peak term** = a player's best-season peak. **Open sub-decision (see §6):** whether this is the
+  **single max season**, the **mean of top-3** seasons, or a **blend** of both. Leaning toward
+  including the single max (possibly the primary peak signal), because many great LoL careers were
+  short with one very sharp peak (Marin the canonical example) — top-3 averaging dilutes exactly
+  that profile. Whatever is chosen feeds `ResumeScore`.
 - **High Noon** (rolling-3-yr positional peer rank) = **companion column, NOT summed** into the
   score (avoids double-counting peak). May be promoted to a small dominance bonus later if
   results warrant.
 - **Career divisor D = 7.5** (avg career length of retired top-100-by-CareerLPS players). Long
   careers (e.g. Faker, ~2×) intentionally earn a proportionally larger career term; Pace and
   Peak are length-neutral counterweights so bulk alone can't win.
-- **Top-N peak = 3** (LoL careers, and peaks, are short).
+- **Top-N peak = 3** (LoL careers, and peaks, are short) — *provisional*; see the peak
+  sub-decision above about also/instead using the single max season.
 - **Eras (three):** Era 1 = start–2014 · Era 2 = 2015–2017 (League graphics overhaul) ·
   Era 3 = 2018–present (Runes Reforged = "modern" LoL). NB: Era 1 is almost entirely
   reduced-model / Leaguepedia data (Oracle box scores start 2014, East is LP-filled through 2015).
@@ -95,7 +100,11 @@ stays as a component column; the workbook's default sort switches to `ResumeScor
 - **CareerValue** = `CareerLPS / 7.5`.
 - **PaceValue** = length-robust rate (`LPS/Gm·wt`) shrunk toward the mean via an empirical-Bayes
   prior on games, so small samples don't top the board.
-- **PeakValue** = JAWS-style mean of **top-3** seasons (not the single max stored now).
+- **PeakValue** = best-season peak. Candidate forms (decide by calibration, §6):
+  - **single max** — the one best schedule-normalized season (rewards short, sharp peaks like Marin);
+  - **top-3 mean** — JAWS-style, rewards sustained excellence over dilution of one-year spikes;
+  - **blend** — e.g. `max(single, top-3 mean)` or a weighted combo, to reward both without
+    letting a lone outlier season fully define a career.
 - **High Noon** = rolling-3-yr best positional peer rank — **companion column**, not summed in.
 
 ## 5. Implementation phases (sequenced for later)
@@ -135,6 +144,11 @@ all-time players (how PPS/JAWS were tuned), via a dedicated calibration script �
   rates; extend `GAP_SPECS` only if coverage is adequate (Worlds S1/S2 + OGN 2012).
 - Bonuses are uncapped to start (locked); revisit only if title/award terms distort results.
 - Whether to later promote **High Noon** from companion column to a small dominance bonus.
+- **Peak form (single max vs top-3 vs blend).** Short LoL careers with one dominant season
+  (e.g. Marin) argue for including the single max so sharp peaks aren't averaged away; sustained
+  primes argue for top-3. Resolve empirically against the consensus list — try all three peak
+  forms and keep whichever best reproduces the hand-ranked ordering (and consider exposing single
+  max and top-3 as separate columns regardless of which feeds the score).
 
 ## 7. Sources
 - Adjusted Hockey — HHOF Methodology / Career / Pace / Peak / Inspiration pages (adjustedhockey.com)
