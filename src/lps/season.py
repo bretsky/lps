@@ -73,6 +73,22 @@ _INVARIANT_COLS = [
 # from the lane, plus first blood (credited to the kill-getter / victim).
 _SOURCES = ["c_kills", "c_deaths", "c_assists", "c_damage", "c_fb"]
 
+# --- Series credit for partial appearances / substitutes ----------------------------------
+# A Bo3/Bo5 is ONE match but N games, and a player may play only some of them. Each
+# (player, series) is credited fractionally:
+#   - VOLUME (contribution, win-bonus, source terms): scaled by games_played / series_games,
+#     so a sub who played 1 of 3 games accumulates 1/3 of the match's individual value.
+#   - BASELINE (the "you beat competition of this quality" win reward): distributed by the
+#     share of the series' WINNING games the player was present for.
+# _BASELINE_SERIES_SHARE selects how the baseline is split:
+#   - False (default, WINNER-TAKE-ALL): 0 if the team LOST the series; else wins_present /
+#     wins_needed. Sums to 1.0 across the winning team's lane, so the total baseline per
+#     series win is preserved. For a full-time starter this reduces EXACTLY to the old
+#     series win-gate (wins_present == wins_needed => factor 1), so only subs are affected.
+#   - True (GAME-SHARE): both teams earn wins_present / series_games, so a team that goes 2-3
+#     in a Bo5 keeps 2/5 of the baseline and the winner 3/5 (total across both teams = 1.0).
+_BASELINE_SERIES_SHARE: bool = False
+
 # Cross-year per-lane contribution normalization ------------------------------------------
 # Model 2 sees only KDA + damage (+ CS in the reduced model), which capture a carry's impact
 # well but structurally UNDER-MEASURE a support's (vision, roams, engage/peel) and, to a lesser
@@ -614,20 +630,52 @@ def build_player_ratings(
     _pair = np.where(_a.values < _b.values, _a + "|" + _b, _b + "|" + _a)
     m["seriesid"] = _day + "@" + m["game_label"].astype(str) + "@" + _pair
 
+    # Per-(player, series) fractional credit for partial appearances. Series totals (games,
+    # wins) must come from the FULL game set -- a sub's own rows cover only the games they
+    # played -- so aggregate every player's rows per (series, team) first, then per player.
+    _team = (m.drop_duplicates(["seriesid", "teamname", "gameid"])
+             .groupby(["seriesid", "teamname"])
+             .agg(team_games=("gameid", "nunique"), team_wins=("result", "sum"))
+             .reset_index())
+    _team["team_won"] = _team["team_wins"] > (_team["team_games"] - _team["team_wins"])
+    _play = (m.drop_duplicates(["playername", "seriesid", "teamname", "gameid"])
+             .groupby(["playername", "seriesid", "teamname"])
+             .agg(games_played=("gameid", "nunique"), wins_present=("result", "sum"))
+             .reset_index()
+             .merge(_team, on=["seriesid", "teamname"], how="left"))
+    _tg = _play["team_games"].replace(0, np.nan)
+    _play["part_frac"] = (_play["games_played"] / _tg).fillna(1.0)         # fractional VOLUME
+    if _BASELINE_SERIES_SHARE:                        # GAME-SHARE: both teams, by games won
+        _play["base_frac"] = (_play["wins_present"] / _tg).fillna(0.0)
+    else:                                             # WINNER-TAKE-ALL: winners, by wins present
+        _need = _play["team_wins"].where(_play["team_won"]).replace(0, np.nan)
+        _play["base_frac"] = np.where(
+            _play["team_won"], (_play["wins_present"] / _need).fillna(0.0), 0.0)
+    _credit = _play[["playername", "seriesid", "part_frac", "base_frac"]]
+    _vol_cols = [c for c in comps if c != "baseline_term"]   # scaled by participation fraction
+
     def _to_series(phase_df: pd.DataFrame) -> pd.DataFrame:
-        """One row per (player, series): comps AVERAGED over the series' games, except the
-        league baseline, which is awarded ONLY on SERIES WINS (won the match) rather than for
-        every game -- so winning more in a weaker region stays comparable to average results
-        in a stronger one. The per-region match normalization (below) keeps regions with more
-        matches from being overweighted."""
+        """One row per (player, series): comps AVERAGED over the games the player played, then
+        credited fractionally for partial appearances -- VOLUME (contribution/win-bonus/source)
+        by games played, and the league BASELINE by the share of the series' winning games the
+        player was present for (see _BASELINE_SERIES_SHARE). This preserves the total points per
+        series while distributing them to who actually played; a full-time starter is unchanged.
+        The per-region match normalization (below) keeps regions with more matches from being
+        overweighted."""
+        cols = ["playername", "seriesid", "own_league", "game_label", "teamname",
+                "part_frac", "base_frac"]
         if phase_df.empty:
-            return pd.DataFrame(columns=["playername", "seriesid", "own_league", "game_label"] + comps)
+            return pd.DataFrame(columns=cols + comps)
         agg = {c: (c, "mean") for c in comps}
         agg.update(own_league=("own_league", "first"), game_label=("game_label", "first"),
-                   teamname=("teamname", "first"), _res=("result", "mean"))
+                   teamname=("teamname", "first"))
         d = phase_df.groupby(["playername", "seriesid"], as_index=False).agg(**agg)
-        d["baseline_term"] = d["baseline_term"] * (d["_res"] > 0.5).astype(float)  # win-gated
-        return d.drop(columns="_res")
+        d = d.merge(_credit, on=["playername", "seriesid"], how="left")
+        d["part_frac"] = d["part_frac"].fillna(1.0)
+        d["base_frac"] = d["base_frac"].fillna(0.0)
+        d["baseline_term"] = d["baseline_term"] * d["base_frac"]          # win-fraction credit
+        d[_vol_cols] = d[_vol_cols].mul(d["part_frac"], axis=0)           # fractional volume
+        return d
 
     reg = _to_series(m[m["phase"] == "regular"])
     plf = _to_series(m[m["phase"] == "playoff"])
@@ -690,8 +738,11 @@ def build_player_ratings(
             return pd.DataFrame(columns=comps), pd.Series(dtype=float)
         run = d.groupby(["own_league", "playername"]).size().groupby(level="own_league").max()
         d["w"] = n_ref / d["own_league"].map(run)
+        # Comps already carry the fractional credit (baseline x base_frac, volume x part_frac),
+        # so they're summed at full match weight w; the accumulation WEIGHT (the per-game-average
+        # denominator) counts EFFECTIVE matches -- w scaled by participation.
         comp_sums = d[comps].mul(d["w"], axis=0).groupby(d["playername"]).sum()
-        weight_sums = d["w"].groupby(d["playername"]).sum()  # per-player total accumulation weight
+        weight_sums = (d["w"] * d["part_frac"]).groupby(d["playername"]).sum()
         return comp_sums, weight_sums
 
     reg_c, reg_w = _accumulate(reg)
@@ -701,7 +752,7 @@ def build_player_ratings(
     # normalized to the deepest capped-weighted run.
     tourn_weighted = tourn[comps].mul(tourn["w_eff"], axis=0)
     tourn_c = tourn_weighted.groupby(tourn["playername"]).sum() * tourn_scale
-    tourn_w = (tourn["w_eff"] * tourn_scale).groupby(tourn["playername"]).sum()
+    tourn_w = (tourn["w_eff"] * tourn["part_frac"] * tourn_scale).groupby(tourn["playername"]).sum()
 
     # Per-player TOTAL accumulation weight = Σ weight_g over all games (the same weights that
     # built total_score = Σ score_g·weight_g). It's the denominator for a scale-comparable
