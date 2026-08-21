@@ -743,7 +743,10 @@ def build_player_ratings(
     r["total_weight"] = total_weight
     pts = (["base_pts", "contrib_pts", "wbonus_pts", "total_score", "reg_pts", "playoff_pts",
             "tourn_pts", "total_weight"] + [f"{s[2:]}_pts" for s in _SOURCES] + tourn_cols)
-    r[pts] = r[pts].fillna(0.0)
+    # Cast to float BEFORE fillna: all-tournament years (2011-2012) leave the empty regular/
+    # playoff accumulators as object dtype, which would make fillna silently downcast (a pandas
+    # FutureWarning). Coercing first keeps fillna on numeric columns.
+    r[pts] = r[pts].astype("float64").fillna(0.0)
 
     r = r[r["games"] >= min_games].sort_values("total_score", ascending=False)
     r.attrs["n_ref"] = n_ref
