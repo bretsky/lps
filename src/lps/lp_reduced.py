@@ -32,7 +32,9 @@ from sklearn.preprocessing import StandardScaler
 from .contribution import ROLES
 from .lp_ingest import load_year
 from .scoring import REFERENCE_ELO, ScoreWeights, load_league_elos
-from .season import _CACHE_DIR, _INVARIANT_COLS, _REPLACEMENT_QUANTILE, _SOURCES
+from .season import (
+    _CACHE_DIR, _INVARIANT_COLS, _REPLACEMENT_QUANTILE, _SOURCES, apply_lane_remap,
+)
 from .team_leagues import build_team_game_table, resolve_home_leagues
 
 logger = logging.getLogger(__name__)
@@ -128,7 +130,7 @@ def _lp_features(year: int, home_leagues: Optional[dict] = None,
     with the standalone map."""
     _CACHE_DIR.mkdir(parents=True, exist_ok=True)
     tag = "_merged" if home_leagues is not None else ""
-    path = _CACHE_DIR / f"lp_features_{year}{tag}.pkl"
+    path = _CACHE_DIR / f"lp_features_{year}{tag}.pkl"   # RAW; normalization applied downstream
     if path.exists() and not force_recompute:
         return pd.read_pickle(path)
 
@@ -227,6 +229,8 @@ def build_match_scores(year: int, weights: Optional[ScoreWeights] = None,
     the (cheap) weights. home_leagues overrides the per-team home-league map."""
     weights = weights or ScoreWeights()
     long = _lp_features(year, home_leagues=home_leagues, force_recompute=force_recompute).copy()
+    # Cross-lane normalization onto the same global (Oracle) reference as the full model.
+    long = apply_lane_remap(long, "lp")
     long["baseline_term"] = weights.alpha * long["baseline"]
     long["contribution_term"] = weights.lam * long["net_contribution"]
     long["win_bonus"] = weights.beta * (long["result"] - long["p_model"])

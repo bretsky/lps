@@ -126,12 +126,19 @@ _GLOSSARY: list[tuple[str, str]] = [
         "viewership and normalized so a full winning run = the tournament's weight."),
     ("Baseline", "Points for the strength of the OPPONENT's league (cross-league parity term)."),
     ("Contribution", "Win-probability the player added vs an expected player at their "
-                     "position (leave-one-out on Model 2), summed over games."),
+                     "position (leave-one-out on Model 2), summed over games. Quantile-"
+                     "normalized PER LANE across ALL years (each lane's per-game distribution "
+                     "remapped onto a common reference), so the Nth-percentile game -- and the "
+                     "best-ever season -- is worth the same in every role. This removes the "
+                     "box-score bias that under-measures supports/junglers (making cross-lane "
+                     "and same-team comparisons fair) while preserving real within-year "
+                     "differences between lanes."),
     ("WinBonus", "Credit for actually winning vs the model's expectation: beta*(result - p_model). "
                  "Positive = won games the model rated as losses (clutch); negative = choked."),
     ("Kills/Deaths/Assists/Damage/FirstBlood", "Contribution split by stat source -- these "
         "sum to Contribution. First blood is credited to the FB getter (+) / victim (-)."),
-    ("AvgContrib", "Mean per-game net win-probability contribution (raw, not scaled)."),
+    ("AvgContrib", "Mean per-game net win-probability contribution (after per-lane "
+                   "normalization; comparable across roles)."),
     ("Intangibles", "TEAM-level: mean per-game (result - p_model), i.e. how much the team wins "
                  "ABOVE what its box score (KDA/damage/first blood) predicts -- macro, "
                  "shotcalling, closing games, doing more with less. Identical for all 5 "

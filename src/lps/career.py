@@ -375,8 +375,18 @@ def build_and_write(
     weights = weights or _DEMO_WEIGHTS
     out = Path(out) if out is not None else PROJECT_ROOT / f"player_ratings_career_{years[0]}_{years[-1]}.xlsx"
 
+    # Build the cross-year lane-normalization tables ONCE, up front, from ALL years pooled
+    # (independent of the --years subset being written) so every per-year frame is remapped
+    # against the same global reference. Must precede the year loop: it force-rebuilds each
+    # year's raw contributions when force_recompute, so the pooled distributions are current.
+    from .season import build_lane_remap
+    logger.info("[career] building cross-year lane-normalization tables ...")
+    build_lane_remap(force_recompute=force_recompute)
+
+    # Per-year frames reuse the raw caches the prebuild just refreshed (gap-year '_merged'
+    # variants build on demand), so the loop itself doesn't need to force a rebuild.
     records, all_tourn = run_year_frames(
-        years, weights, min_games, intl_weight, force_recompute, write_yearly)
+        years, weights, min_games, intl_weight, False, write_yearly)
     if not records:
         raise RuntimeError("no years produced ratings; nothing to aggregate")
     got = tuple(sorted({r["year"] for r in records}))     # years that actually succeeded

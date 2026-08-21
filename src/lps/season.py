@@ -59,6 +59,151 @@ _INVARIANT_COLS = [
 # from the lane, plus first blood (credited to the kill-getter / victim).
 _SOURCES = ["c_kills", "c_deaths", "c_assists", "c_damage", "c_fb"]
 
+# Cross-year per-lane contribution normalization ------------------------------------------
+# Model 2 sees only KDA + damage (+ CS in the reduced model), which capture a carry's impact
+# well but structurally UNDER-MEASURE a support's (vision, roams, engage/peel) and, to a lesser
+# degree, a jungler's. Empirically that compresses the per-game net_contribution ~2-3x for
+# sup/jng vs carries (bot per-game std ~16pp vs sup ~7pp) and the lanes have different-SHAPED
+# distributions (support is more peaked). Because the baseline and win-bonus terms are IDENTICAL
+# for all five players on a team, net_contribution is the only thing separating teammates, so
+# the carry out-scores the support no matter who actually played better (this is why a bot
+# laner's peak LPS could sit ~20pts above his own support's).
+#
+# We remove that measurement bias with QUANTILE NORMALIZATION pooled across ALL years: pool each
+# lane's per-game leave-one-out contribution over every season, then remap each lane's empirical
+# CDF onto a common REFERENCE distribution (all Oracle lanes/years pooled). The Nth-percentile
+# game in any lane -- and over all time, the best-ever season in any lane -- then lands at the
+# same value, so lanes are directly comparable. Crucially the remap is a SINGLE fixed function
+# per lane (not per year), so real within-year cross-lane differences survive (a lane can be
+# stronger than another in a given season); only the systematic all-time lane scale is equalized.
+# The reduced-model (2013-2015) lanes are mapped onto the same Oracle reference, which also lines
+# up their contribution scale with the modern years. The stat components are rescaled by the same
+# per-game factor so they still sum to the normalized contribution.
+_LANE_NORMALIZE: bool = True
+_LANE_COMPONENTS = ("c_kills", "c_deaths", "c_assists", "c_damage")
+_REMAP_KNOTS = 1001                              # quantile grid resolution for the CDF tables
+_REMAP_ORACLE_YEARS = tuple(range(2014, 2026))   # Oracle box-score years (define the reference)
+_REMAP_LP_YEARS = (2013, 2014, 2015)             # reduced Leaguepedia gap years
+_REMAP_CACHE = _CACHE_DIR / "lane_remap.pkl"
+
+
+def _pool_lane_loo() -> dict:
+    """Pool RAW lane leave-one-out contributions (net_contribution - c_fb) across all remap
+    years, per (source, lane), and build quantile-knot tables that map each source-lane's CDF
+    onto a common reference (all Oracle lanes/years pooled). Reads the cached weight-invariant
+    frames (building them if missing) -- this is the only step that spans all years."""
+    from . import lp_reduced
+
+    q_grid = np.linspace(0.0, 1.0, _REMAP_KNOTS)
+    per_lane: dict[tuple[str, str], list] = {}
+    ref_vals: list = []
+
+    def add(long: pd.DataFrame, source: str) -> None:
+        if long.empty:
+            return
+        fb = long["c_fb"].to_numpy(float) if "c_fb" in long.columns else np.zeros(len(long))
+        loo = long["net_contribution"].to_numpy(float) - fb
+        pos = long["position"].to_numpy()
+        for lane in ROLES:
+            v = loo[pos == lane]
+            v = v[np.isfinite(v)]
+            if len(v):
+                per_lane.setdefault((source, lane), []).append(v)
+                if source == "oracle":
+                    ref_vals.append(v)
+
+    for y in _REMAP_ORACLE_YEARS:
+        try:
+            add(_match_features(y, use_model1=True), "oracle")
+        except Exception as e:
+            logging.warning(f"[lane-norm] oracle {y} skipped ({type(e).__name__}: {e})")
+    for y in _REMAP_LP_YEARS:
+        try:
+            add(lp_reduced._lp_features(y), "lp")
+        except Exception as e:
+            logging.warning(f"[lane-norm] lp {y} skipped ({type(e).__name__}: {e})")
+
+    ref = np.concatenate(ref_vals) if ref_vals else np.array([0.0, 1.0])
+    tables = {"q_grid": q_grid, "ref_q": np.quantile(ref, q_grid), "lane_q": {}}
+    for key, arrs in per_lane.items():
+        tables["lane_q"][key] = np.quantile(np.concatenate(arrs), q_grid)
+    return tables
+
+
+def build_lane_remap(force_recompute: bool = False) -> dict:
+    """Build (and disk-cache) the cross-year per-lane quantile-remap tables. With
+    force_recompute, first rebuild every remap year's weight-invariant frame (after a model
+    change) so the pooled distributions are current; otherwise reuse whatever is cached."""
+    from . import lp_reduced
+
+    if force_recompute:
+        for y in _REMAP_ORACLE_YEARS:
+            try:
+                _match_features(y, use_model1=True, force_recompute=True)
+            except Exception as e:
+                logging.warning(f"[lane-norm] oracle {y} rebuild skipped ({type(e).__name__}: {e})")
+        for y in _REMAP_LP_YEARS:
+            try:
+                lp_reduced._lp_features(y, force_recompute=True)
+            except Exception as e:
+                logging.warning(f"[lane-norm] lp {y} rebuild skipped ({type(e).__name__}: {e})")
+    elif _REMAP_CACHE.exists():
+        return pd.read_pickle(_REMAP_CACHE)
+
+    tables = _pool_lane_loo()
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    pd.to_pickle(tables, _REMAP_CACHE)
+    return tables
+
+
+def _get_lane_remap() -> dict:
+    """Load the cached remap tables, building them once (from the cached per-year frames) if
+    they don't exist yet."""
+    if _REMAP_CACHE.exists():
+        return pd.read_pickle(_REMAP_CACHE)
+    return build_lane_remap(force_recompute=False)
+
+
+def apply_lane_remap(long: pd.DataFrame, source: str, tables: Optional[dict] = None) -> pd.DataFrame:
+    """Quantile-normalize each lane's per-game leave-one-out contribution onto the global
+    reference distribution (so the Nth-percentile game is worth the same in every role), then
+    re-add the role-neutral first-blood term. Stat components are rescaled to still sum to the
+    normalized contribution. Mutates and returns `long`; no-op when _LANE_NORMALIZE is False.
+
+    `source` selects which per-lane CDF to invert ('oracle' or 'lp')."""
+    if not _LANE_NORMALIZE or long.empty:
+        return long
+    if tables is None:
+        tables = _get_lane_remap()
+    q_grid, ref_q = tables["q_grid"], tables["ref_q"]
+    comp = [c for c in _LANE_COMPONENTS if c in long.columns]
+
+    fb = long["c_fb"].to_numpy(float) if "c_fb" in long.columns else np.zeros(len(long))
+    loo = long["net_contribution"].to_numpy(float) - fb
+    new_loo = loo.copy()
+    pos = long["position"].to_numpy()
+    for lane in ROLES:
+        lane_q = tables["lane_q"].get((source, lane))
+        if lane_q is None:
+            continue
+        m = pos == lane
+        if not m.any():
+            continue
+        u = np.interp(loo[m], lane_q, q_grid)      # this lane's empirical CDF -> percentile
+        new_loo[m] = np.interp(u, q_grid, ref_q)   # value at the same percentile in the reference
+
+    if comp:
+        C = long[comp].to_numpy(float)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            ratio = np.where(np.abs(loo) > 1e-9, new_loo / loo, np.nan)
+        newC = C * ratio[:, None]
+        zero = ~np.isfinite(ratio)                 # loo ~ 0: split evenly (shares undefined)
+        if zero.any():
+            newC[zero] = (new_loo[zero] / len(comp))[:, None]
+        long[comp] = newC
+    long["net_contribution"] = new_loo + fb
+    return long
+
 # Tournament importance weights derived from average peak concurrent viewership over the
 # last 3 years -- an objective proxy for how much each tournament matters. Keys are Oracle
 # game_labels; update as new data arrives. FST (First Stand) debuted 2025 so has 2 years.
@@ -205,6 +350,8 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
     """
     _CACHE_DIR.mkdir(parents=True, exist_ok=True)
     tag = "_merged" if home_leagues is not None else ""
+    # Cache holds RAW (un-normalized) contributions; cross-lane normalization is applied
+    # downstream in build_player_match_scores from the global remap tables.
     path = _CACHE_DIR / f"match_features_{year}_m1{int(use_model1)}{tag}.pkl"
     if path.exists() and not force_recompute:
         return pd.read_pickle(path)
@@ -318,6 +465,9 @@ def build_player_match_scores(
 
     m = _match_features(year, use_model1=use_model1, force_recompute=force_recompute,
                         home_leagues=home_leagues).copy()
+    # Cross-lane normalization: quantile-remap each lane's contribution onto the global
+    # (all-years) reference so lanes are directly comparable (see apply_lane_remap).
+    m = apply_lane_remap(m, "oracle")
     # Baseline is measured against the year's PEAK region (not a fixed 1000), so each era's
     # best region anchors at 0.5. Recomputed here from opp_league so it's a cheap post-cache
     # transform -- no model retraining needed when the reference changes.
