@@ -48,6 +48,20 @@ from .win_probability import WinProbabilityConfig, build_team_features
 # accumulates (WAR-style: value above replacement).
 _REPLACEMENT_QUANTILE: Optional[float] = 0.20
 
+# Scale the per-player contribution is measured on (see contribution.contributions_for_frame):
+#   "pp" = win-probability points (state-dependent; under-credits players on dominant teams).
+#   "z"  = raw log-odds delta (teammate-/game-state-independent, a purer individual-skill
+#          measure). Raw z runs ~20x larger than "pp", which would swamp the baseline/
+#          win-bonus terms (both on a 0-1 probability scale) and break the tuned weights and
+#          Excel formatting. _CONTRIB_Z_RESCALE multiplies z back onto a pp-comparable scale;
+#          a LINEAR rescale preserves state-independence (the whole point of using z), it only
+#          changes units. Default ~= mean(pp)/mean(z) so overall contribution magnitude (and
+#          thus the baseline/contribution balance) matches the "pp" pipeline -- the switch
+#          then only REDISTRIBUTES contribution across team strengths, without re-weighting
+#          contribution vs baseline. Retune scoring weights for precision (this is approximate).
+_CONTRIB_METRIC: str = "z"
+_CONTRIB_Z_RESCALE: float = 0.05
+
 _CACHE_DIR = DATA_DIR / "cache"
 _INVARIANT_COLS = [
     "gameid", "game", "date", "side", "position", "playername", "teamname", "opp_teamname",
@@ -137,16 +151,23 @@ def build_lane_remap(force_recompute: bool = False) -> dict:
     from . import lp_reduced
 
     if force_recompute:
+        total = len(_REMAP_ORACLE_YEARS) + len(_REMAP_LP_YEARS)
+        done = 0
         for y in _REMAP_ORACLE_YEARS:
+            done += 1
+            logging.info(f"[lane-norm] ({done}/{total}) rebuilding oracle {y} models ...")
             try:
                 _match_features(y, use_model1=True, force_recompute=True)
             except Exception as e:
                 logging.warning(f"[lane-norm] oracle {y} rebuild skipped ({type(e).__name__}: {e})")
         for y in _REMAP_LP_YEARS:
+            done += 1
+            logging.info(f"[lane-norm] ({done}/{total}) rebuilding lp {y} models ...")
             try:
                 lp_reduced._lp_features(y, force_recompute=True)
             except Exception as e:
                 logging.warning(f"[lane-norm] lp {y} rebuild skipped ({type(e).__name__}: {e})")
+        logging.info(f"[lane-norm] pooling {total} years into cross-year remap tables ...")
     elif _REMAP_CACHE.exists():
         return pd.read_pickle(_REMAP_CACHE)
 
@@ -352,7 +373,8 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
     tag = "_merged" if home_leagues is not None else ""
     # Cache holds RAW (un-normalized) contributions; cross-lane normalization is applied
     # downstream in build_player_match_scores from the global remap tables.
-    path = _CACHE_DIR / f"match_features_{year}_m1{int(use_model1)}{tag}.pkl"
+    met = f"_{_CONTRIB_METRIC}"                  # bust the cache when the contribution scale changes
+    path = _CACHE_DIR / f"match_features_{year}_m1{int(use_model1)}{met}{tag}.pkl"
     if path.exists() and not force_recompute:
         return pd.read_pickle(path)
 
@@ -365,7 +387,16 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
     team_df = build_team_features(df, cfg).reset_index(drop=True)
     expected_df = (expected_reference_frame(df, team_df, quantile=_REPLACEMENT_QUANTILE)
                    if use_model1 else None)
-    contrib = contributions_for_frame(team_df, bundle, expected_df=expected_df)
+    contrib = contributions_for_frame(team_df, bundle, expected_df=expected_df,
+                                      metric=_CONTRIB_METRIC)
+    if _CONTRIB_METRIC == "z" and _CONTRIB_Z_RESCALE != 1.0:
+        # Linear rescale onto a pp-comparable scale (state-independence preserved). The dz_*
+        # per-feature columns are left RAW -- they only feed the ratio-based source split
+        # (frac = Dz/dz_sum), where any constant factor cancels; the lane totals and team_fb
+        # carry the rescaled scale that flows into net_contribution downstream.
+        for role in ROLES:
+            contrib[role] = contrib[role] * _CONTRIB_Z_RESCALE
+        contrib["team_fb"] = contrib["team_fb"] * _CONTRIB_Z_RESCALE
 
     # Long form: one row per (team-game, lane). net_contribution is that lane's per-lane
     # LOO (unchanged). We SPLIT it across its four stats by each stat's log-odds share --

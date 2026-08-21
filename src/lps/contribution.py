@@ -120,19 +120,23 @@ def contributions_for_row(
     row: pd.Series,
     bundle: WinProbBundle,
     expected: Optional[dict[str, float]] = None,
+    metric: str = "pp",
 ) -> dict[str, float]:
     """
-    Per-player (and team-firstblood) net win-probability contributions for one team-game.
+    Per-player (and team-firstblood) net contributions for one team-game.
 
     Args:
         row: a team-game row (columns = bundle.feature_cols, as from build_team_features).
         bundle: trained Model 2 bundle.
         expected: optional {feature -> expected value}. Missing features fall back to the
             training mean. None => global-mean reference for every feature.
+        metric: contribution scale (see contributions_for_frame). "pp" (default) =
+            win-probability points sigmoid(z) - sigmoid(z - delta_z); "z" = the raw
+            log-odds delta delta_z (teammate- and game-state-independent).
 
     Returns:
         {'p_model': ..., 'top': ..., 'jng': ..., ..., 'team_fb': ...} where each value is
-        sigmoid(z) - sigmoid(z - delta_z) for that player's / the team's feature block.
+        the chosen metric for that player's / the team's feature block.
     """
     exp = expected or {}
     z = bundle.z(row, expected=exp)
@@ -143,7 +147,7 @@ def contributions_for_row(
             bundle.coef[f] * (row[f] - exp.get(f, bundle.mu[f])) / bundle.sigma[f]
             for f in features
         )
-        return p - _sigmoid(z - dz)
+        return dz if metric == "z" else p - _sigmoid(z - dz)
 
     out: dict[str, float] = {"p_model": p}
     for role in ROLES:
@@ -156,23 +160,35 @@ def contributions_for_frame(
     team_df: pd.DataFrame,
     bundle: WinProbBundle,
     expected_df: Optional[pd.DataFrame] = None,
+    metric: str = "pp",
 ) -> pd.DataFrame:
     """
-    Vectorized per-LANE win-probability contributions (leave-one-out) for every team-game.
+    Vectorized per-LANE contributions (leave-one-out) for every team-game.
 
-    net_contribution for a lane = sigmoid(z) - sigmoid(z - dz_lane), i.e. how much the win
-    prob would drop if that lane's stats were swapped to expected. Also emits, for pure
-    interpretability, the per-feature log-odds deviations (dz_{feature}) so a lane's
-    contribution can be split by source WITHOUT changing it, and team_fb (the first-blood
-    LOO), which is reported as a diagnostic and is NOT part of any net_contribution.
+    A lane's contribution measures how much its actual stats beat the expected reference,
+    on one of two scales (`metric`):
+      - "pp" (default): WIN-PROBABILITY POINTS, sigmoid(z) - sigmoid(z - dz_lane) -- how
+        much the team's win prob would drop if the lane played at expected level. Intuitive
+        ("wins added") but STATE-DEPENDENT: the same dz is worth more near p=0.5 and is
+        squashed near p=0/1, so it under-credits players on dominant (usually-winning) teams.
+      - "z": the raw LOG-ODDS delta dz_lane itself. In this linear no-intercept model
+        dz_lane = sum_j coef_j*(x_j - e_j)/sigma_j depends ONLY on the lane's own stats vs
+        the reference -- teammate- and game-state-INDEPENDENT (a purer individual-skill
+        measure). ~20x larger in magnitude than "pp", so downstream weights (scoring.lam)
+        must be retuned when switching.
+
+    Also emits, for pure interpretability, the per-feature log-odds deviations (dz_{feature})
+    -- unchanged by `metric` -- so a lane's contribution can be split by source, and team_fb
+    (the first-blood LOO on the same scale), reported as a diagnostic.
 
     Args:
         team_df: team-game rows (columns = bundle.feature_cols) from build_team_features.
         expected_df: optional per-row expected values, ROW-ALIGNED to team_df; missing/NaN
             cells fall back to the training mean. None => global-mean reference.
+        metric: "pp" (win-prob points, default) or "z" (raw log-odds delta).
 
     Returns one row per team-game: gameid, side, result, p_model, one column per role
-    (that lane's net_contribution), team_fb, and dz_{feature} columns.
+    (that lane's net_contribution on the chosen scale), team_fb, and dz_{feature} columns.
     """
     fc = bundle.feature_cols
     n = len(team_df)
@@ -206,12 +222,13 @@ def contributions_for_frame(
     for role in ROLES:
         idx = [idx_of[c] for c in bundle.lane_features[role]]
         dz_role = Dz[:, idx].sum(axis=1)
-        out[role] = p - _sigmoid(z - dz_role)                 # per-lane LOO (the score)
+        # per-lane LOO on the chosen scale: raw log-odds delta ("z") or win-prob points ("pp")
+        out[role] = dz_role if metric == "z" else p - _sigmoid(z - dz_role)
         for c, i in zip(bundle.lane_features[role], idx):
             out[f"dz_{c}"] = Dz[:, i]                          # per-feature share for the split
     idx_fb = [idx_of[c] for c in bundle.team_features]
     dz_fb = Dz[:, idx_fb].sum(axis=1)
-    out["team_fb"] = p - _sigmoid(z - dz_fb)                  # diagnostic only
+    out["team_fb"] = dz_fb if metric == "z" else p - _sigmoid(z - dz_fb)   # diagnostic only
     return out
 
 
