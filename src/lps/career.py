@@ -44,7 +44,8 @@ from .team_leagues import resolve_home_leagues
 
 logger = logging.getLogger(__name__)
 
-YEARS_DEFAULT = tuple(range(2013, 2026))  # 2013 via reduced Leaguepedia model; 2014-2025 Oracle
+YEARS_DEFAULT = tuple(range(2011, 2026))  # 2011-2013 via reduced Leaguepedia model; 2014-2025 Oracle
+# (2011+2012 share one pooled KDA-only model; see lp_reduced.MODEL_GROUPS)
 
 # Columns that ACCUMULATE across years (summed).
 _SUM_COLS = [
@@ -364,7 +365,7 @@ def write_career_workbook(out: Path, career_all: pd.DataFrame,
 def build_and_write(
     years: tuple[int, ...] = YEARS_DEFAULT,
     weights: Optional[ScoreWeights] = None,
-    min_games: int = 15,
+    min_games: int = 3,
     intl_weight: float = 2.0,
     force_recompute: bool = True,
     write_yearly: bool = True,
@@ -432,8 +433,8 @@ def _parse_years(s: str) -> tuple[int, ...]:
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     ap = argparse.ArgumentParser(description="Build per-year + cumulative career LPS workbooks.")
-    ap.add_argument("--years", type=str, default="2013-2025")
-    ap.add_argument("--min-games", type=int, default=15)
+    ap.add_argument("--years", type=str, default="2011-2025")
+    ap.add_argument("--min-games", type=int, default=3)
     ap.add_argument("--intl-weight", type=float, default=2.0)
     ap.add_argument("--alpha", type=float, default=_DEMO_WEIGHTS.alpha)
     ap.add_argument("--lam", type=float, default=_DEMO_WEIGHTS.lam)

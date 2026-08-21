@@ -97,7 +97,10 @@ _LANE_NORMALIZE: bool = True
 _LANE_COMPONENTS = ("c_kills", "c_deaths", "c_assists", "c_damage")
 _REMAP_KNOTS = 1001                              # quantile grid resolution for the CDF tables
 _REMAP_ORACLE_YEARS = tuple(range(2014, 2026))   # Oracle box-score years (define the reference)
-_REMAP_LP_YEARS = (2013, 2014, 2015)             # reduced Leaguepedia gap years
+_REMAP_LP_YEARS = (2013, 2014, 2015)             # reduced (KDA+CS) Leaguepedia gap years
+# The earliest years are KDA-ONLY (no reliable CS), a different contribution distribution, so
+# they get their own remap source and are pooled separately before mapping onto the Oracle ref.
+_REMAP_LP_KDA_YEARS = (2011, 2012)
 _REMAP_CACHE = _CACHE_DIR / "lane_remap.pkl"
 
 
@@ -136,6 +139,11 @@ def _pool_lane_loo() -> dict:
             add(lp_reduced._lp_features(y), "lp")
         except Exception as e:
             logging.warning(f"[lane-norm] lp {y} skipped ({type(e).__name__}: {e})")
+    for y in _REMAP_LP_KDA_YEARS:
+        try:
+            add(lp_reduced._lp_features(y), "lp_kda")
+        except Exception as e:
+            logging.warning(f"[lane-norm] lp_kda {y} skipped ({type(e).__name__}: {e})")
 
     ref = np.concatenate(ref_vals) if ref_vals else np.array([0.0, 1.0])
     tables = {"q_grid": q_grid, "ref_q": np.quantile(ref, q_grid), "lane_q": {}}
@@ -151,7 +159,7 @@ def build_lane_remap(force_recompute: bool = False) -> dict:
     from . import lp_reduced
 
     if force_recompute:
-        total = len(_REMAP_ORACLE_YEARS) + len(_REMAP_LP_YEARS)
+        total = len(_REMAP_ORACLE_YEARS) + len(_REMAP_LP_YEARS) + len(_REMAP_LP_KDA_YEARS)
         done = 0
         for y in _REMAP_ORACLE_YEARS:
             done += 1
@@ -160,7 +168,7 @@ def build_lane_remap(force_recompute: bool = False) -> dict:
                 _match_features(y, use_model1=True, force_recompute=True)
             except Exception as e:
                 logging.warning(f"[lane-norm] oracle {y} rebuild skipped ({type(e).__name__}: {e})")
-        for y in _REMAP_LP_YEARS:
+        for y in _REMAP_LP_YEARS + _REMAP_LP_KDA_YEARS:
             done += 1
             logging.info(f"[lane-norm] ({done}/{total}) rebuilding lp {y} models ...")
             try:
@@ -248,6 +256,13 @@ _MANUAL_TOURNAMENT_WEIGHTS = {
     "ASI":  0.1,    # Asia Invitational (minor intl)
     "IWCI": 0.1,    # International Wildcard Invitational (wildcard qualifier)
     "Riot": 0.1,    # 2020 VCS x PCS cross-region event (MSI-cancelled COVID season)
+    # Early-era (2011-2012) events, scored as "tournament" phase (no regional Elo pre-2013 in
+    # the region-keyed era). No reliable viewership numbers exist, so these are hand-set on the
+    # Worlds=1.0 scale and are prime CALIBRATION targets against the consensus all-time list.
+    "OGN":  0.4,    # Champions Korea -- premier league of the dominant region (2012)
+    "IPL":  0.15,   # IGN Pro League (IPL5 drew top intl fields; other IPLs smaller)
+    "MLG":  0.1,    # MLG Pro Circuit (NA LAN)
+    "DH":   0.1,    # DreamHack (EU LAN)
 }
 
 # Minor / secondary tiers (2nd divisions, academy & challenger leagues, regional feeders)
@@ -615,11 +630,19 @@ def build_player_ratings(
     tourn = _to_series(m[m["phase"] == "tournament"])
     tourn_games = m[m["phase"] == "tournament"]   # game-level, kept only for champion detection
 
-    n_ref = (   # reference volume = mean regular-season MATCHES (series) per player
-        regular_season_ref_games
-        if regular_season_ref_games is not None
-        else (reg.groupby("playername").size().mean() if len(reg) else 0.0)
-    )
+    # Reference volume = mean regular-season MATCHES (series) per player. The earliest years
+    # (2011-2012) are 100% tournament (no domestic league in the data), so reg is empty; fall
+    # back to mean matches/player over the tournament phase, else tourn_scale would be 0 and
+    # zero out every score. (n_ref cancels against the schedule-norm ref/n_ref multiplier
+    # downstream, so its exact value only needs to be positive and on the right scale.)
+    if regular_season_ref_games is not None:
+        n_ref = regular_season_ref_games
+    elif len(reg):
+        n_ref = reg.groupby("playername").size().mean()
+    elif len(tourn):
+        n_ref = tourn.groupby("playername").size().mean()
+    else:
+        n_ref = 0.0
 
     # Tournament weights: default = viewership-based (Worlds=1.0). Overridable. Any
     # tournament label without a weight is warned and counted as 0.

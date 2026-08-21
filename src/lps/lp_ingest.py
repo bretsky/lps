@@ -45,11 +45,23 @@ LEAGUE_MAP = {
     "Circuit Brazilian League of Legends": "CBLOL",
     "Turkish Championship League": "TCL",
     "Vietnam Championship Series A": "VCS",
+    # Early-era (2011-2012) LAN circuits + Korea. These aren't in any ending_elos file, so they
+    # resolve to "tournament" phase; home leagues come from team_regions (region-keyed).
+    "IGN Pro League": "IPL",
+    "Intel Extreme Masters": "IEM",
+    "MLG 2012 Fall": "MLG",
+    "DreamHack": "DH",
+    "OGN": "OGN",
 }
 _ROLE_MAP = {"Top": "top", "Jungle": "jng", "Mid": "mid", "Bot": "bot", "Support": "sup"}
 
 # Which leagues to pull per year (only the gaps Oracle lacks). 2014/2015 West is in Oracle.
+# 2011-2012 predate Oracle entirely, so we pull every event that has ScoreboardPlayers data
+# (verified via a coverage spike): 2011 is Worlds-only; 2012 adds Champions Korea + LAN circuits.
 GAP_SPECS: dict[int, list[str]] = {
+    2011: ["World Championship"],
+    2012: ["LoL The Champions", "IGN Pro League", "Intel Extreme Masters",
+           "World Championship", "MLG 2012 Fall", "DreamHack", "OGN"],
     2013: ["LoL The Champions", "Tencent LoL Pro League",
            "Europe League Championship Series", "North America League Championship Series",
            "World Championship"],
@@ -108,9 +120,14 @@ def _adapt(df: pd.DataFrame) -> pd.DataFrame:
     out["date"] = pd.to_datetime(df["date"], errors="coerce")
     out["year"] = pd.to_numeric(df["year"], errors="coerce").astype("Int64")
     out["datacompleteness"] = "complete"
-    # Keep only real lanes with a parsed KDA/CS and both sides present.
+    # Keep only real lanes with a parsed KDA. CS is required from 2013 on (Oracle-gap years where
+    # CS is reliably populated), but the 2011-2012 LAN circuits often lack CS entirely (~33% null
+    # in 2012); we keep those KDA-only rows and drop CS from the model downstream (lp_reduced)
+    # rather than discard a third of the earliest games.
     out = out[out["position"].notna()]
-    out = out.dropna(subset=["kills", "deaths", "assists", "cs"])
+    out = out.dropna(subset=["kills", "deaths", "assists"])
+    early = out["year"].isin([2011, 2012])
+    out = out[early | out["cs"].notna()]
     return out.reset_index(drop=True)
 
 
