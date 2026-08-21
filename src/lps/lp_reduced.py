@@ -48,7 +48,11 @@ _ALL_STAT_COLS = ("c_kills", "c_deaths", "c_assists", "c_damage")
 # Years whose reduced model is trained TOGETHER on their pooled data, so a year too small to fit
 # alone (2011 = 28 games) borrows strength from its neighbour. Contributions are still emitted
 # per-year (career.py breaks them out by season). Map: year -> tuple of pooled years.
-MODEL_GROUPS: dict[int, tuple[int, ...]] = {2011: (2011, 2012), 2012: (2011, 2012)}
+MODEL_GROUPS: dict[int, tuple[int, ...]] = {
+    2011: (2011, 2012), 2012: (2011, 2012),
+    # Rift Rivals 2017-2019 (KDA+CS): ~100 games/yr, 32 in 2019 -- pool for a stable fit.
+    2017: (2017, 2018, 2019), 2018: (2017, 2018, 2019), 2019: (2017, 2018, 2019),
+}
 
 # Years scored KDA-only (CS is absent/unreliable: OGN 2012 is 100% CS-null, Worlds 2012 25%),
 # so CS is dropped rather than imputed for the most important early league.
@@ -77,6 +81,9 @@ GAP_LEAGUES: dict[int, Optional[list[str]]] = {
     2013: None,                    # Oracle has no 2013 data: score all of it
     2014: ["OGN", "LPL"],          # Oracle covers NA/EU + Worlds; LP fills East domestic
     2015: ["LPL"],                 # Oracle covers all but LPL domestic
+    2017: ["RR"],                  # Rift Rivals only (Oracle lacks it); rest of the year is Oracle
+    2018: ["RR"],
+    2019: ["RR"],
 }
 
 

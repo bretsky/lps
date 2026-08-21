@@ -69,6 +69,15 @@ GAP_SPECS: dict[int, list[str]] = {
     2015: ["Tencent LoL Pro League"],                                              # China only
 }
 
+# Name-based tournament pulls (year -> [(Tournaments.Name prefix, game_label)]) for events whose
+# League field is unreliable. Rift Rivals (2017-2019) isn't in Oracle and its League column is
+# blank/mislabeled, so we pull it by Name and tag it "RR" (scored as tournament phase).
+GAP_TOURNAMENTS: dict[int, list[tuple[str, str]]] = {
+    2017: [("Rift Rivals 2017", "RR")],
+    2018: [("Rift Rivals 2018", "RR")],
+    2019: [("Rift Rivals 2019", "RR")],
+}
+
 _FIELDS = ("SP.Link=playername, SP.Champion=champion, SP.Kills=kills, SP.Deaths=deaths, "
            "SP.Assists=assists, SP.CS=cs, SP.Gold=gold, SP.Team=teamname, SP.Role=role, "
            "SP.Side=side, SP.PlayerWin=win, SP.GameId=gameid, SP.DateTime_UTC=date, "
@@ -94,6 +103,35 @@ def _fetch_gamelengths(lp: LPClient, league: str, year: int) -> pd.DataFrame:
         join_on="SG.OverviewPage=T.OverviewPage",
         fields="SG.GameId=gameid, SG.Gamelength_Number=gamelength",
         where=f"T.League='{league_esc}' AND T.Year={year}",
+    )
+    return pd.DataFrame(rows)
+
+
+def _fetch_tournament_year(lp: LPClient, name_prefix: str, label: str) -> pd.DataFrame:
+    """Fetch ScoreboardPlayers by Tournaments.Name prefix (for events whose League field is
+    unreliable, e.g. Rift Rivals), tagging every row with a single game_label. Showmatches are
+    excluded. The Name prefix already scopes the year, so no separate year filter is needed."""
+    prefix = name_prefix.replace("'", "\\'")
+    rows = lp.query(
+        tables="ScoreboardPlayers=SP, Tournaments=T",
+        join_on="SP.OverviewPage=T.OverviewPage",
+        fields=_FIELDS,
+        where=f"T.Name LIKE '{prefix}%' AND T.Name NOT LIKE '%Showmatch%'",
+    )
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        df["lp_league"] = label   # unify the messy per-region League labels to one game_label
+    return df
+
+
+def _fetch_gamelengths_by_name(lp: LPClient, name_prefix: str) -> pd.DataFrame:
+    """Game lengths for a Name-prefixed tournament (companion to _fetch_tournament_year)."""
+    prefix = name_prefix.replace("'", "\\'")
+    rows = lp.query(
+        tables="ScoreboardGames=SG, Tournaments=T",
+        join_on="SG.OverviewPage=T.OverviewPage",
+        fields="SG.GameId=gameid, SG.Gamelength_Number=gamelength",
+        where=f"T.Name LIKE '{prefix}%' AND T.Name NOT LIKE '%Showmatch%'",
     )
     return pd.DataFrame(rows)
 
@@ -146,6 +184,14 @@ def fetch_year(year: int, leagues: Optional[list[str]] = None,
         if len(adapted):
             parts.append(adapted)
             lens.append(_fetch_gamelengths(lp, lg, year))
+    for name_prefix, label in GAP_TOURNAMENTS.get(year, []):
+        raw = _fetch_tournament_year(lp, name_prefix, label)
+        adapted = _adapt(raw)
+        logger.info(f"[lp_ingest] {year} {name_prefix}: {len(raw)} rows -> {len(adapted)} adapted "
+                    f"({adapted['gameid'].nunique() if len(adapted) else 0} games, {label})")
+        if len(adapted):
+            parts.append(adapted)
+            lens.append(_fetch_gamelengths_by_name(lp, name_prefix))
     if not parts:
         return pd.DataFrame()
     df = pd.concat(parts, ignore_index=True)

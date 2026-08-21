@@ -97,7 +97,7 @@ _LANE_NORMALIZE: bool = True
 _LANE_COMPONENTS = ("c_kills", "c_deaths", "c_assists", "c_damage")
 _REMAP_KNOTS = 1001                              # quantile grid resolution for the CDF tables
 _REMAP_ORACLE_YEARS = tuple(range(2014, 2026))   # Oracle box-score years (define the reference)
-_REMAP_LP_YEARS = (2013, 2014, 2015)             # reduced (KDA+CS) Leaguepedia gap years
+_REMAP_LP_YEARS = (2013, 2014, 2015, 2017, 2018, 2019)  # reduced (KDA+CS) LP years (gap fills + Rift Rivals)
 # The earliest years are KDA-ONLY (no reliable CS), a different contribution distribution, so
 # they get their own remap source and are pooled separately before mapping onto the Oracle ref.
 _REMAP_LP_KDA_YEARS = (2011, 2012)
@@ -263,6 +263,7 @@ _MANUAL_TOURNAMENT_WEIGHTS = {
     "IPL":  0.15,   # IGN Pro League (IPL5 drew top intl fields; other IPLs smaller)
     "MLG":  0.1,    # MLG Pro Circuit (NA LAN)
     "DH":   0.1,    # DreamHack (EU LAN)
+    "RR":   0.2,    # Rift Rivals (2017-2019 mid-season regional-rivalry exhibition, no damage data)
 }
 
 # Minor / secondary tiers (2nd divisions, academy & challenger leagues, regional feeders)
