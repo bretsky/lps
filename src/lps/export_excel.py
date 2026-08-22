@@ -145,6 +145,17 @@ _GLOSSARY: list[tuple[str, str]] = [
                 "(always >= 1, since the best season counts). The width of the peak plateau."),
     ("PeakAvg", "Mean LPS across the player's peak years (the height of the peak plateau). "
                 "PeakVal builds on this by adding a length bonus for extra peak years."),
+    ("BestRkLane / BestRkGlob", "High Noon peer rank -- the player's BEST single-season standing, "
+                "ranking rated players by that year's schedule-normalized LPS (1 = best that "
+                "year). Lane = within their position; Glob = across all players/lanes. Companion "
+                "metric, NOT part of CLR. Lower is better."),
+    ("HN3Lane / HN3Glob", "High Noon (3-year) -- the AVERAGE peer rank over the player's 3 "
+                "best-ranked seasons (taken wherever they fall, not a consecutive window -- "
+                "matching how PeakVal uses a player's best seasons), within lane / global. "
+                "Captures dominance across a player's strongest seasons (e.g. ~1.0 = a clear #1 "
+                "across three seasons). Lower is better; companion metric, not summed into CLR."),
+    ("HN3LaneYrs / HN3GlobYrs", "The seasons that make up HN3Lane / HN3Glob -- i.e. the player's "
+                "3 best-ranked years within lane / globally."),
     ("LPS", "League Performance Score: total_score = Baseline + Contribution + WinBonus, "
             "accumulated across regular season, playoffs and tournaments (more games help). "
             "Schedule-length normalized (see About) so a full season is worth the same across "

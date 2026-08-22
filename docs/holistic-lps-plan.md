@@ -109,7 +109,8 @@ first three terms; the bonus terms are added in Phase 2.
   years** (seasons within `peak_band` of their best) plus a length bonus per extra peak year. A
   one-year great (Marin) scores his single best season exactly; a wide plateau (Faker) scores its
   plateau average plus a length reward — and a longer peak is never penalized.
-- **High Noon** = rolling-3-yr best positional peer rank — **companion column**, not summed in.
+- **High Noon** = peer rank among that season's players (global + per-lane); HN3 = average over a
+  player's 3 best-ranked seasons (non-consecutive) — **companion columns**, not summed in.
 
 ## 5. Implementation phases (sequenced for later)
 
@@ -138,9 +139,14 @@ components sit on a ~one-season scale so the weights are unit-free.
   These motivate raising `w_career` and/or the pace prior, and are the reason Phase 0 ships with
   *provisional* weights pending the calibration step.
 
-**Phase 1 — "High Noon" peer-rank trajectory (Oracle-only).**
-For each (year, position) rank players by that season's normalized LPS; store best rolling-3-year
-average rank. A groupby over data we already produce. Surfaces sustained #1-at-position dominance.
+**Phase 1 — "High Noon" peer-rank trajectory. ✅ DONE.**
+`_high_noon()` in `career.py`: each season, rank rated players by that year's schedule-normalized
+LPS (1 = best), both **globally** (all lanes) and **within lane**. Per player it stores the best
+single-season rank (`BestRkLane`/`BestRkGlob`) and **HN3** = the average rank over their 3
+best-ranked seasons (`HN3Lane`/`HN3Glob`), with the constituent years listed (`HN3LaneYrs`/
+`HN3GlobYrs`). Best seasons are taken **wherever they fall, not a consecutive window** — matching
+how PeakVal uses a player's best seasons, so a gap year never breaks the metric. Companion columns
+only (NOT summed into CLR — peak already lives in the score); lower is better.
 
 **Phase 2 — Résumé bonuses (Leaguepedia curation).**
 Era/region-calibrated, PPS-style capped:

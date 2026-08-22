@@ -335,6 +335,50 @@ def _add_clr(career: pd.DataFrame, years: tuple[int, ...], cfg: CLRConfig) -> pd
     return career
 
 
+_HIGH_NOON_YEARS = 3   # High Noon averages a player's N best-ranked seasons (companion metric)
+
+
+def _high_noon(allyears: pd.DataFrame,
+               n_years: int = _HIGH_NOON_YEARS) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Compute 'High Noon' peer-rank companion columns from the stacked per-(player,year) frame.
+
+    Each season, rated players are ranked by that year's schedule-normalized LPS (rank 1 = best),
+    both GLOBALLY (all lanes together) and WITHIN LANE. For each player we record:
+      - the BEST single-season rank (their highest peer standing ever), and
+      - HN3 = the average peer rank over their N best-ranked seasons (default 3), plus the years
+        that make it up -- i.e. how dominant they were across their strongest seasons.
+    Best seasons are taken WHEREVER they fall (not a consecutive window), matching how PeakVal is
+    defined, so a gap year never breaks the metric. Lower is better. COMPANION only -- NOT summed
+    into CLR (peak already lives in the score). Returns (by_player, by_player_position) frames."""
+    df = allyears[["playername", "position", "year", "total_score"]].copy()
+    df = df[df["total_score"].notna() & df["year"].notna()]
+    df["year"] = df["year"].astype(int)
+    df["rank_global"] = df.groupby("year")["total_score"].rank(ascending=False, method="min")
+    df["rank_lane"] = (df.groupby(["year", "position"])["total_score"]
+                       .rank(ascending=False, method="min"))
+
+    def _stats(year_rank: dict) -> tuple[float, float, str]:
+        by_rank = sorted(year_rank.items(), key=lambda kv: kv[1])   # best (lowest) rank first
+        best = float(by_rank[0][1])
+        top = by_rank[:n_years]
+        hn = sum(r for _, r in top) / len(top)
+        yrs = ",".join(str(y) for y in sorted(y for y, _ in top))   # the High Noon seasons
+        return best, hn, yrs
+
+    def _rows(keys: list[str]) -> pd.DataFrame:
+        out = []
+        for key, sub in df.groupby(keys, sort=False):
+            gb, g3, gyr = _stats(dict(zip(sub["year"], sub["rank_global"])))
+            lb, l3, lyr = _stats(dict(zip(sub["year"], sub["rank_lane"])))
+            rec = dict(zip(keys, key if isinstance(key, tuple) else (key,)))
+            rec.update(hn_lane_best=lb, hn_lane=l3, hn_lane_yrs=lyr,
+                       hn_global_best=gb, hn_global=g3, hn_global_yrs=gyr)
+            out.append(rec)
+        return pd.DataFrame(out)
+
+    return _rows(["playername"]), _rows(["playername", "position"])
+
+
 def _career_layout(all_tourn: list[str], years: tuple[int, ...],
                     include_lane: bool) -> list[tuple]:
     """(col, header, fmt, width) layout for a career sheet."""
@@ -362,6 +406,12 @@ def _career_layout(all_tourn: list[str], years: tuple[int, ...],
         ("peak_lps", "PeakLPS", _PTS, 9),
         ("peak_years", "PeakYrs", _INT, 8),
         ("peak_band_avg", "PeakAvg", _PTS, 9),
+        ("hn_lane_best", "BestRkLane", _INT, 10),
+        ("hn_lane", "HN3Lane", _PTS, 8),
+        ("hn_lane_yrs", "HN3LaneYrs", None, 14),
+        ("hn_global_best", "BestRkGlob", _INT, 10),
+        ("hn_global", "HN3Glob", _PTS, 8),
+        ("hn_global_yrs", "HN3GlobYrs", None, 14),
         ("pts_per_game", "LPS/Gm", _PTS, 8),
         ("pts_per_game_w", "LPS/Gm·wt", _PTS, 10),
         ("reg_pts", "Regular", _PTS, 9),
@@ -429,6 +479,13 @@ def _write_about(writer, meta: dict) -> None:
              f"{cfg.w_career:g}, {cfg.w_pace:g}, {cfg.w_peak:g}  (provisional -- pending calibration)"),
             ("", "CareerLPS is kept as a component column; sheets now sort by CLR. Resume"),
             ("", "bonuses (titles/awards/international finishes) will be added in a later phase."),
+            ("", ""),
+            ("High Noon (peer rank) -- COMPANION, not in CLR", ""),
+            ("", "Each season, rated players are ranked by that year's LPS (1 = best), globally"),
+            ("", "and within lane. BestRkLane/BestRkGlob = best single-season rank; HN3Lane/"),
+            ("", "HN3Glob = average rank over the player's 3 best-ranked seasons (listed in the"),
+            ("", "HN3*Yrs columns), taken wherever they fall (not a consecutive window, matching"),
+            ("", "PeakVal). Lower is better. Shown alongside CLR, not summed in."),
         ]
     about = pd.DataFrame(rows, columns=["Field", "Value"])
     about.to_excel(writer, sheet_name="About", index=False)
@@ -519,6 +576,11 @@ def build_and_write(
     career_all = _add_clr(_aggregate(allyears, ["playername"], all_tourn, got), got, clr_cfg)
     career_lane = _add_clr(
         _aggregate(allyears, ["playername", "position"], all_tourn, got), got, clr_cfg)
+
+    # High Noon peer-rank companion columns (global + per-lane); NOT summed into CLR.
+    hn_all, hn_lane = _high_noon(allyears)
+    career_all = career_all.merge(hn_all, on="playername", how="left")
+    career_lane = career_lane.merge(hn_lane, on=["playername", "position"], how="left")
 
     meta = {"years": got, "alpha": weights.alpha, "lam": weights.lam, "beta": weights.beta,
             "intl_weight": intl_weight, "min_games": min_games, "ref_nref": ref_nref,
