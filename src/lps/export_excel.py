@@ -125,6 +125,11 @@ _TOURN_FMT, _TOURN_WIDTH = _PTS, 8
 _GLOSSARY: list[tuple[str, str]] = [
     ("Rank", "Rank within the lane by CLR on the career workbook (by LPS on per-season sheets); "
              "Overview sheets rank across all lanes."),
+    ("Teams / Leagues / Lanes (by LPS)", "Career workbook: every team, league and lane a player "
+             "logged, each shown with the LPS earned there and ordered high->low -- e.g. "
+             "'T1 (245.3), DAMWON Gaming (30.1)'. Overview lists all lanes (so multi-role careers "
+             "like Perkz/Xiaohu are visible); per-lane sheets list teams/leagues within that lane. "
+             "The per-team/league/lane LPS sums to CareerLPS."),
     ("CLR", "Career Legend Rating (career workbook only): the holistic, PPS/JAWS-inspired "
             "primary ranking = w_career*CareerVal + w_pace*PaceVal + w_peak*PeakVal + "
             "w_bonus*Resume. Blends career bulk, per-year pace, peak, and a titles/placements/"

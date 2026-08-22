@@ -293,6 +293,20 @@ def _aggregate(allyears: pd.DataFrame, keys: list[str], all_tourn: list[str],
     return out.reset_index()
 
 
+def _breakdown_df(allyears: pd.DataFrame, keys: list[str], col: str,
+                  out_name: str) -> pd.DataFrame:
+    """For each group in `keys`, list the distinct values of `col` a player logged, ordered by
+    the (schedule-normalized) LPS earned with each, as one string: 'T1 (245.3), DAMWON (30.1)'.
+    Returns a frame [*keys, out_name] to merge onto a career aggregate."""
+    g = (allyears.groupby(keys + [col], sort=False, dropna=True)["total_score"]
+         .sum().reset_index())
+    g = g[(g[col].astype(str) != "") & (g["total_score"].abs() > 1e-9)]
+    g = g.sort_values("total_score", ascending=False)     # high LPS first, preserved by groupby
+    g["_s"] = [f"{v} ({s:.1f})" for v, s in zip(g[col].astype(str), g["total_score"])]
+    return (g.groupby(keys, sort=False)["_s"].agg(", ".join).reset_index()
+            .rename(columns={"_s": out_name}))
+
+
 def _add_clr(career: pd.DataFrame, years: tuple[int, ...], cfg: CLRConfig) -> pd.DataFrame:
     """Add the Career Legend Rating composite + its components to an aggregated career frame.
 
@@ -416,11 +430,13 @@ def _career_layout(all_tourn: list[str], years: tuple[int, ...],
     lay: list[tuple] = [
         ("rank", "Rank", _INT, 6),
         ("playername", "Player", None, 16),
-        ("team", "Team", None, 18),
-        ("league", "League", None, 8),
+        # Full career breakdown: every team / league (and, on Overview, every lane) a player
+        # logged, ordered by the LPS earned with each -- "T1 (245.3), DAMWON Gaming (30.1)".
+        ("teams_lps", "Teams (by LPS)", None, 38),
+        ("leagues_lps", "Leagues (by LPS)", None, 24),
     ]
     if include_lane:
-        lay.append(("position", "Lane", None, 8))
+        lay.append(("lanes_lps", "Lanes (by LPS)", None, 20))
     lay += [
         ("n_years", "#Yrs", _INT, 6),
         ("first_year", "First", _INT, 7),
@@ -632,6 +648,17 @@ def build_and_write(
     # CLR (IntlBonus + TitleBonus + AwardBonus, weighted by bonus_cfg.w_bonus), attributed to the
     # lane the player played that year. See achievements.py / info/achievements.csv.
     career_all, career_lane = _add_bonuses(career_all, career_lane, allyears, bonus_cfg)
+
+    # Career breakdowns: every team / league / lane a player logged, ordered by LPS earned with
+    # each (so multi-team, multi-region and multi-lane careers -- e.g. Xiaohu, Perkz -- are fully
+    # visible). Overview lists all lanes; per-lane sheets list teams/leagues within that lane.
+    for col, name in (("team", "teams_lps"), ("league", "leagues_lps"), ("position", "lanes_lps")):
+        career_all = career_all.merge(
+            _breakdown_df(allyears, ["playername"], col, name), on="playername", how="left")
+    for col, name in (("team", "teams_lps"), ("league", "leagues_lps")):
+        career_lane = career_lane.merge(
+            _breakdown_df(allyears, ["playername", "position"], col, name),
+            on=["playername", "position"], how="left")
 
     meta = {"years": got, "alpha": weights.alpha, "lam": weights.lam, "beta": weights.beta,
             "intl_weight": intl_weight, "min_games": min_games, "ref_nref": ref_nref,
