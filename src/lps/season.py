@@ -306,6 +306,9 @@ EXCLUDED_LEAGUES = {
     "GPL",                                   # rest-of-SEA minor circuit 2016-2018 after Vietnam
                                              # (VCS) + Taiwan (LMS) split off; no intl slot, so
                                              # unrated -- rated guard keeps its rated 2013 season
+    "TCL",                                   # Turkey: rated region 2013-2023, then demoted to an
+                                             # EMEA ERL (no intl slot) in 2024+; rated guard keeps
+                                             # its 2013-2023 seasons, drops the ERL-tier years
     "PCS", "VCS", "LJL", "LCO",              # top-tier in their years (rated guard keeps those)
 }
 
