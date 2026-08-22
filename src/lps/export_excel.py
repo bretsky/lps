@@ -135,13 +135,16 @@ _GLOSSARY: list[tuple[str, str]] = [
     ("PaceVal", "CLR rate term = per-active-year LPS, empirical-Bayes shrunk toward the cohort "
                 "mean by weighted games so brilliant short careers score well but tiny, noisy "
                 "samples can't top the board. Length-neutral counterweight to CareerVal."),
-    ("PeakVal", "CLR peak term = best-season peak. Default 'sustain' = the single best season "
-                "(PeakLPS) PLUS a bonus for additional strong seasons (mean of seasons 2..N, "
-                "zero-padded). A sharp one-year peak keeps its full single-season height (never "
-                "diluted); a multi-year prime rises above it -- longer peaks rewarded, shorter "
-                "ones relatively punished."),
-    ("PeakTop3", "Mean of a player's 3 best schedule-normalized seasons (over active seasons "
-                 "only) -- the sustained-excellence view of peak; PeakLPS is the single best."),
+    ("PeakVal", "CLR peak term = mean of a player's PEAK YEARS + a length bonus. A season is a "
+                "'peak year' if it is within a set band of the player's best season (e.g. >=85% "
+                "of PeakLPS). PeakVal = mean(peak years) + bonus*PeakLPS*(PeakYrs-1). A one-year "
+                "peak scores its single best season exactly; a wide plateau scores its plateau "
+                "average plus a reward for length -- and a longer peak is never penalized. See "
+                "the About sheet for the band and bonus values."),
+    ("PeakYrs", "Number of PEAK YEARS: seasons within the peak band of the player's best season "
+                "(always >= 1, since the best season counts). The width of the peak plateau."),
+    ("PeakAvg", "Mean LPS across the player's peak years (the height of the peak plateau). "
+                "PeakVal builds on this by adding a length bonus for extra peak years."),
     ("LPS", "League Performance Score: total_score = Baseline + Contribution + WinBonus, "
             "accumulated across regular season, playoffs and tournaments (more games help). "
             "Schedule-length normalized (see About) so a full season is worth the same across "

@@ -63,14 +63,17 @@ class CLRConfig:
     `peak_top_n`, and the three-era framing are locked (per the plan doc)."""
 
     career_divisor: float = 7.5      # D: avg career length (yrs) of retired top-100-by-CareerLPS
-    peak_top_n: int = 3              # PeakTopN = mean of a player's N best seasons
-    peak_form: str = "sustain"       # "single" | "top_n" | "sustain"
-    # sustain = single + peak_sustain_w * mean(supporting seasons 2..N, ZERO-PADDED to N slots).
-    # Keeps the single best season as the anchor/floor (a sharp one-year peak like Marin is
-    # credited in full, never diluted), then ADDS a bonus for additional strong seasons: a
-    # one-year peak gets +0 (padding), three dominant seasons get ~ single*(1+w). Rewards longer
-    # peaks / relatively punishes shorter ones without ever dropping below the single best.
-    peak_sustain_w: float = 0.5
+    # PEAK = "plateau" definition. A season counts as a PEAK YEAR if it is within `peak_band` of
+    # the player's best season (>= (1-peak_band)*best). PeakVal = mean(peak years) + a length
+    # bonus for each EXTRA peak year:
+    #     PeakVal = avg(peak years) + peak_len_bonus * best_season * (k - 1)
+    # A one-year peak (Marin) scores exactly its single great season; a wide plateau (Faker)
+    # scores its plateau average plus a length reward. The length bonus offsets the fact that
+    # averaging in a slightly-lower peak year would otherwise drag the mean down -- so a longer
+    # peak is NEVER penalized as long as peak_len_bonus >= peak_band/2 (the worst-case average
+    # drop from adding a year at the band edge). Both default safely above that floor.
+    peak_band: float = 0.15          # within 15% of the best season counts as a peak year
+    peak_len_bonus: float = 0.10     # per extra peak year, as a fraction of the best season
     pace_prior_games: float = 50.0   # empirical-Bayes shrinkage strength (weighted games)
     w_career: float = 1.0
     w_pace: float = 1.0
@@ -298,34 +301,25 @@ def _add_clr(career: pd.DataFrame, years: tuple[int, ...], cfg: CLRConfig) -> pd
         careers longer than D keep a bulk advantage, shorter ones scale down (Pace counters).
       - PaceValue   = per-active-year production, empirical-Bayes shrunk toward the cohort mean
         by weighted games so brilliant short careers aren't buried yet tiny samples can't win.
-      - PeakValue   = best-season peak: single max, top-N mean, or (default) 'sustain' = the
-        single best season plus a bonus for additional strong seasons (zero-padded, so a sharp
-        one-year peak like Marin keeps its full single-season height while a multi-year prime
-        rises above it -- longer peaks rewarded, shorter ones relatively punished).
-    Also exposes peak_single and peak_top{N} as standalone columns regardless of `peak_form`."""
-    n = cfg.peak_top_n
-    single = career["peak_lps"].to_numpy(dtype=float)     # single best season (== PeakLPS)
+      - PeakValue   = "plateau" peak: mean of the player's PEAK YEARS (seasons within `peak_band`
+        of their best season) plus a length bonus per extra peak year. A one-year peak (Marin)
+        scores its single great season exactly; a wide plateau (Faker) scores its plateau average
+        plus a length reward. A longer peak is never penalized (see CLRConfig for the guarantee).
+    Also exposes peak_years (count) and peak_band_avg (plateau mean) as standalone columns."""
+    best = career["peak_lps"].to_numpy(dtype=float)       # absolute peak season (== PeakLPS)
+    thr = best * (1.0 - cfg.peak_band)                     # peak-year threshold, per player
     ycols = [f"y{y}" for y in years if f"y{y}" in career.columns]
     yv = career[ycols].to_numpy(dtype=float) if ycols else np.zeros((len(career), 0))
-    topn = np.zeros(len(career))       # mean of top-N ACTIVE seasons (sustained view; display)
-    support = np.zeros(len(career))    # mean of supporting seasons 2..N, ZERO-PADDED to N slots
+    k = np.ones(len(career))           # number of peak years (>= 1: the best season always counts)
+    band_avg = best.copy()             # mean of the peak years (defaults to the best season)
     for i, row in enumerate(yv):
-        top = np.sort(row[row > 0])[::-1][:n]              # this player's N best seasons, desc
-        if top.size:
-            topn[i] = top.mean()
-        if n > 1:
-            pad = np.zeros(n)
-            pad[:top.size] = top
-            support[i] = pad[1:].mean()                    # seasons 2..N (0 for missing years)
-    career["peak_single"] = single
-    career[f"peak_top{n}"] = topn
-    if cfg.peak_form == "single":
-        peak = single
-    elif cfg.peak_form == "top_n":
-        peak = topn
-    else:  # "sustain": single-max anchor + zero-padded bonus for additional strong seasons
-        peak = single + cfg.peak_sustain_w * support
-    career["peak_value"] = peak
+        peak_yrs = row[row >= thr[i]]                      # seasons within the band of the peak
+        if peak_yrs.size:
+            k[i] = peak_yrs.size
+            band_avg[i] = peak_yrs.mean()
+    career["peak_years"] = k.astype(int)
+    career["peak_band_avg"] = band_avg
+    career["peak_value"] = band_avg + cfg.peak_len_bonus * best * (k - 1.0)
 
     career["career_value"] = career["total_score"] / cfg.career_divisor
 
@@ -342,7 +336,7 @@ def _add_clr(career: pd.DataFrame, years: tuple[int, ...], cfg: CLRConfig) -> pd
 
 
 def _career_layout(all_tourn: list[str], years: tuple[int, ...],
-                    include_lane: bool, peak_top_n: int = 3) -> list[tuple]:
+                    include_lane: bool) -> list[tuple]:
     """(col, header, fmt, width) layout for a career sheet."""
     lay: list[tuple] = [
         ("rank", "Rank", _INT, 6),
@@ -366,7 +360,8 @@ def _career_layout(all_tourn: list[str], years: tuple[int, ...],
         ("lps_per_year", "LPS/Yr", _PTS, 8),
         ("peak_year", "PeakYr", _INT, 7),
         ("peak_lps", "PeakLPS", _PTS, 9),
-        (f"peak_top{peak_top_n}", f"PeakTop{peak_top_n}", _PTS, 9),
+        ("peak_years", "PeakYrs", _INT, 8),
+        ("peak_band_avg", "PeakAvg", _PTS, 9),
         ("pts_per_game", "LPS/Gm", _PTS, 8),
         ("pts_per_game_w", "LPS/Gm·wt", _PTS, 10),
         ("reg_pts", "Regular", _PTS, 9),
@@ -427,11 +422,9 @@ def _write_about(writer, meta: dict) -> None:
             ("  CareerVal", f"CareerLPS / D  (bulk; D = typical career length = {cfg.career_divisor})"),
             ("  PaceVal", f"per-active-year LPS, empirical-Bayes shrunk toward the cohort mean "
              f"(prior = {cfg.pace_prior_games:g} weighted games) -- rate reward, length-neutral"),
-            ("  PeakVal", f"best-season peak, form='{cfg.peak_form}'"
-             + (f" = PeakMax + {cfg.peak_sustain_w:g}*mean(supporting top-{cfg.peak_top_n} "
-                f"seasons, zero-padded)"
-                if cfg.peak_form == "sustain"
-                else f" (single max / mean of top {cfg.peak_top_n})")),
+            ("  PeakVal", f"mean(peak years) + {cfg.peak_len_bonus:g}*PeakLPS*(PeakYrs-1); a "
+             f"season is a peak year if >= {1 - cfg.peak_band:g}*PeakLPS (within "
+             f"{cfg.peak_band:.0%} of the best). Longer peaks never penalized."),
             ("  Weights (w_career, w_pace, w_peak)",
              f"{cfg.w_career:g}, {cfg.w_pace:g}, {cfg.w_peak:g}  (provisional -- pending calibration)"),
             ("", "CareerLPS is kept as a component column; sheets now sort by CLR. Resume"),
@@ -449,11 +442,9 @@ def _write_about(writer, meta: dict) -> None:
 
 def write_career_workbook(out: Path, career_all: pd.DataFrame,
                           career_lane: pd.DataFrame, all_tourn: list[str],
-                          years: tuple[int, ...], meta: dict,
-                          peak_top_n: int = 3) -> Path:
-    lay_all = _career_layout(all_tourn, years, include_lane=True,     # Overview shows Lane too
-                             peak_top_n=peak_top_n)
-    lay_lane = _career_layout(all_tourn, years, include_lane=False, peak_top_n=peak_top_n)
+                          years: tuple[int, ...], meta: dict) -> Path:
+    lay_all = _career_layout(all_tourn, years, include_lane=True)     # Overview shows Lane too
+    lay_lane = _career_layout(all_tourn, years, include_lane=False)
     with pd.ExcelWriter(out, engine="openpyxl") as writer:
         _write_about(writer, meta)
 
@@ -532,8 +523,7 @@ def build_and_write(
     meta = {"years": got, "alpha": weights.alpha, "lam": weights.lam, "beta": weights.beta,
             "intl_weight": intl_weight, "min_games": min_games, "ref_nref": ref_nref,
             "clr": clr_cfg}
-    write_career_workbook(out, career_all, career_lane, all_tourn, got, meta,
-                          peak_top_n=clr_cfg.peak_top_n)
+    write_career_workbook(out, career_all, career_lane, all_tourn, got, meta)
     logger.info(f"[career] wrote {out.name}  ({len(career_all)} players, {len(got)} years)")
     return out
 

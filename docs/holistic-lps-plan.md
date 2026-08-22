@@ -105,33 +105,31 @@ first three terms; the bonus terms are added in Phase 2.
 - **CareerValue** = `CareerLPS / 7.5`.
 - **PaceValue** = length-robust rate (`LPS/Gm·wt`) shrunk toward the mean via an empirical-Bayes
   prior on games, so small samples don't top the board.
-- **PeakValue** = best-season peak. Candidate forms (decide by calibration, §6):
-  - **single max** — the one best schedule-normalized season (rewards short, sharp peaks like Marin);
-  - **top-3 mean** — JAWS-style, rewards sustained excellence over dilution of one-year spikes;
-  - **sustain** (chosen default) — `single + w·mean(supporting top-3 seasons, zero-padded)`:
-    keeps the single best as the anchor (sharp peaks credited in full) and adds a bonus for extra
-    strong seasons, rewarding longer peaks without dropping a Marin below his single best. (A
-    plain `max(single, top-3 mean)` is degenerate — the top-3 mean is always ≤ the single max.)
+- **PeakValue** = "plateau" peak (see §5 for the exact formula): the mean of a player's **peak
+  years** (seasons within `peak_band` of their best) plus a length bonus per extra peak year. A
+  one-year great (Marin) scores his single best season exactly; a wide plateau (Faker) scores its
+  plateau average plus a length reward — and a longer peak is never penalized.
 - **High Noon** = rolling-3-yr best positional peer rank — **companion column**, not summed in.
 
 ## 5. Implementation phases (sequenced for later)
 
 **Phase 0 — Composite (Oracle/LP-only, no new data). ✅ DONE.**
-Implemented in `career.py`: `CLRConfig` @dataclass (`career_divisor=7.5`, `peak_top_n=3`,
-`peak_form="sustain"`, `peak_sustain_w=0.5`, `pace_prior_games=50`, `w_*=1.0`), `_add_clr()` adds
-`clr` + component columns (`career_value`, `pace_value`, `peak_value`, `peak_single`,
-`peak_top3`); Overview + lane sheets sort by CLR; methodology documented on the `About` sheet
-and glossary. All three components sit on a ~one-season scale so the weights are unit-free.
+Implemented in `career.py`: `CLRConfig` @dataclass (`career_divisor=7.5`, `peak_band=0.15`,
+`peak_len_bonus=0.10`, `pace_prior_games=50`, `w_*=1.0`), `_add_clr()` adds `clr` + component
+columns (`career_value`, `pace_value`, `peak_value`, `peak_years`, `peak_band_avg`); Overview +
+lane sheets sort by CLR; methodology documented on the `About` sheet and glossary. All three
+components sit on a ~one-season scale so the weights are unit-free.
 - **CareerValue** = `CareerLPS / 7.5`.
 - **PaceValue** = per-active-year LPS, empirical-Bayes shrunk toward the cohort mean by weighted
   games (prior strength `pace_prior_games`).
-- **PeakValue** = `single + peak_sustain_w·mean(supporting top-N seasons, zero-padded)` (the
-  "sustain" form — default `peak_sustain_w=0.5`); `peak_single` and `peak_top3` are exposed as
-  standalone columns regardless. Keeps the single best season as the anchor/floor (a sharp
-  one-year peak like Marin is credited in full, never diluted), then adds a bonus for additional
-  strong seasons: a one-year peak gets +0 (zero-padding), a three-season prime gets ~`single·(1+w)`.
-  (NB: a `max(single, top-N mean)` would be degenerate — `top-N mean ≤ single` always — hence the
-  additive-bonus form to reward longer peaks / relatively punish shorter ones.)
+- **PeakValue** = `mean(peak years) + peak_len_bonus · best · (PeakYrs − 1)`, where a **peak
+  year** is a season `≥ (1 − peak_band) · best`. Mean-of-plateau captures peak *height*; the
+  length bonus rewards peak *width*. **Never-penalized guarantee:** adding a qualifying peak year
+  changes PeakVal by `≥ best·(peak_len_bonus − peak_band/2)`, so as long as
+  `peak_len_bonus ≥ peak_band/2` (0.10 ≥ 0.075 by default) a longer peak can never lower the
+  score. `peak_years` (plateau width) and `peak_band_avg` (plateau height) are exposed as columns.
+  *Known trade-off:* the hard `(1−band)` cutoff is a knife-edge (a season at 84.9% vs 85.1% of the
+  peak flips in/out) — a soft, distance-weighted band is the fallback if that proves too brittle.
 - **First-run sanity (defaults, uncalibrated):** top of board is a clean consensus ordering
   (Faker ≫ Canyon, Ruler, Knight, Keria, ShowMaker, Chovy …). Peak correctly isolates sharp
   peaks (Marin PeakVal ≈ 34.7, elite despite a 5-yr career). Known distortions are all
@@ -171,11 +169,13 @@ all-time players (how PPS/JAWS were tuned), via a dedicated calibration script �
   rates; extend `GAP_SPECS` only if coverage is adequate (Worlds S1/S2 + OGN 2012).
 - Bonuses are uncapped to start (locked); revisit only if title/award terms distort results.
 - Whether to later promote **High Noon** from companion column to a small dominance bonus.
-- **Peak form + `peak_sustain_w`.** Resolved for Phase 0 to the **sustain** form (single-max
-  anchor + zero-padded bonus for supporting seasons) so sharp peaks (Marin) keep their full height
-  while multi-year primes rise above one-year wonders. `peak_single` and `peak_top3` are exposed
-  regardless. Still to resolve empirically against the consensus list: the bonus weight
-  `peak_sustain_w` (default 0.5) and whether "single"/"top_n" ever beats "sustain" on the ordering.
+- **Peak "plateau" params (`peak_band`, `peak_len_bonus`).** Resolved for Phase 0 to the plateau
+  form (mean of peak years + length bonus). Still to resolve empirically against the consensus
+  list: the band width (default 15%), the length bonus (default 0.10, floored at `band/2`), and
+  whether the hard cutoff should become a soft distance-weighted band to kill the knife-edge.
+- **`w_peak` (term balance).** PeakVal's base is ~one elite season, so it's structurally larger
+  than CareerVal/PaceVal; `w_peak` (currently 1.0) is the lever to rebalance the three terms and
+  is a prime calibration target.
 
 ## 7. Sources
 - Adjusted Hockey — HHOF Methodology / Career / Pace / Peak / Inspiration pages (adjustedhockey.com)
