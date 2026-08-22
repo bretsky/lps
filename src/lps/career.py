@@ -64,7 +64,13 @@ class CLRConfig:
 
     career_divisor: float = 7.5      # D: avg career length (yrs) of retired top-100-by-CareerLPS
     peak_top_n: int = 3              # PeakTopN = mean of a player's N best seasons
-    peak_form: str = "blend"         # "single" | "top_n" | "blend" (= max(single, top_n))
+    peak_form: str = "sustain"       # "single" | "top_n" | "sustain"
+    # sustain = single + peak_sustain_w * mean(supporting seasons 2..N, ZERO-PADDED to N slots).
+    # Keeps the single best season as the anchor/floor (a sharp one-year peak like Marin is
+    # credited in full, never diluted), then ADDS a bonus for additional strong seasons: a
+    # one-year peak gets +0 (padding), three dominant seasons get ~ single*(1+w). Rewards longer
+    # peaks / relatively punishes shorter ones without ever dropping below the single best.
+    peak_sustain_w: float = 0.5
     pace_prior_games: float = 50.0   # empirical-Bayes shrinkage strength (weighted games)
     w_career: float = 1.0
     w_pace: float = 1.0
@@ -292,26 +298,33 @@ def _add_clr(career: pd.DataFrame, years: tuple[int, ...], cfg: CLRConfig) -> pd
         careers longer than D keep a bulk advantage, shorter ones scale down (Pace counters).
       - PaceValue   = per-active-year production, empirical-Bayes shrunk toward the cohort mean
         by weighted games so brilliant short careers aren't buried yet tiny samples can't win.
-      - PeakValue   = best-season peak: single max, top-N mean, or (default) their blend --
-        rewards a sharp one-year peak (Marin) OR sustained excellence, whichever is higher.
+      - PeakValue   = best-season peak: single max, top-N mean, or (default) 'sustain' = the
+        single best season plus a bonus for additional strong seasons (zero-padded, so a sharp
+        one-year peak like Marin keeps its full single-season height while a multi-year prime
+        rises above it -- longer peaks rewarded, shorter ones relatively punished).
     Also exposes peak_single and peak_top{N} as standalone columns regardless of `peak_form`."""
+    n = cfg.peak_top_n
     single = career["peak_lps"].to_numpy(dtype=float)     # single best season (== PeakLPS)
     ycols = [f"y{y}" for y in years if f"y{y}" in career.columns]
     yv = career[ycols].to_numpy(dtype=float) if ycols else np.zeros((len(career), 0))
-    topn = np.zeros(len(career))
+    topn = np.zeros(len(career))       # mean of top-N ACTIVE seasons (sustained view; display)
+    support = np.zeros(len(career))    # mean of supporting seasons 2..N, ZERO-PADDED to N slots
     for i, row in enumerate(yv):
-        nz = row[row > 0]                                  # top-N over ACTIVE seasons only
-        if nz.size:
-            k = min(cfg.peak_top_n, nz.size)
-            topn[i] = np.sort(nz)[::-1][:k].mean()
+        top = np.sort(row[row > 0])[::-1][:n]              # this player's N best seasons, desc
+        if top.size:
+            topn[i] = top.mean()
+        if n > 1:
+            pad = np.zeros(n)
+            pad[:top.size] = top
+            support[i] = pad[1:].mean()                    # seasons 2..N (0 for missing years)
     career["peak_single"] = single
-    career[f"peak_top{cfg.peak_top_n}"] = topn
+    career[f"peak_top{n}"] = topn
     if cfg.peak_form == "single":
         peak = single
     elif cfg.peak_form == "top_n":
         peak = topn
-    else:  # "blend"
-        peak = np.maximum(single, topn)
+    else:  # "sustain": single-max anchor + zero-padded bonus for additional strong seasons
+        peak = single + cfg.peak_sustain_w * support
     career["peak_value"] = peak
 
     career["career_value"] = career["total_score"] / cfg.career_divisor
@@ -414,8 +427,11 @@ def _write_about(writer, meta: dict) -> None:
             ("  CareerVal", f"CareerLPS / D  (bulk; D = typical career length = {cfg.career_divisor})"),
             ("  PaceVal", f"per-active-year LPS, empirical-Bayes shrunk toward the cohort mean "
              f"(prior = {cfg.pace_prior_games:g} weighted games) -- rate reward, length-neutral"),
-            ("  PeakVal", f"best-season peak, form='{cfg.peak_form}' "
-             f"(single max / mean of top {cfg.peak_top_n} / their blend)"),
+            ("  PeakVal", f"best-season peak, form='{cfg.peak_form}'"
+             + (f" = PeakMax + {cfg.peak_sustain_w:g}*mean(supporting top-{cfg.peak_top_n} "
+                f"seasons, zero-padded)"
+                if cfg.peak_form == "sustain"
+                else f" (single max / mean of top {cfg.peak_top_n})")),
             ("  Weights (w_career, w_pace, w_peak)",
              f"{cfg.w_career:g}, {cfg.w_pace:g}, {cfg.w_peak:g}  (provisional -- pending calibration)"),
             ("", "CareerLPS is kept as a component column; sheets now sort by CLR. Resume"),

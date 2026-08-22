@@ -108,23 +108,30 @@ first three terms; the bonus terms are added in Phase 2.
 - **PeakValue** = best-season peak. Candidate forms (decide by calibration, §6):
   - **single max** — the one best schedule-normalized season (rewards short, sharp peaks like Marin);
   - **top-3 mean** — JAWS-style, rewards sustained excellence over dilution of one-year spikes;
-  - **blend** — e.g. `max(single, top-3 mean)` or a weighted combo, to reward both without
-    letting a lone outlier season fully define a career.
+  - **sustain** (chosen default) — `single + w·mean(supporting top-3 seasons, zero-padded)`:
+    keeps the single best as the anchor (sharp peaks credited in full) and adds a bonus for extra
+    strong seasons, rewarding longer peaks without dropping a Marin below his single best. (A
+    plain `max(single, top-3 mean)` is degenerate — the top-3 mean is always ≤ the single max.)
 - **High Noon** = rolling-3-yr best positional peer rank — **companion column**, not summed in.
 
 ## 5. Implementation phases (sequenced for later)
 
 **Phase 0 — Composite (Oracle/LP-only, no new data). ✅ DONE.**
 Implemented in `career.py`: `CLRConfig` @dataclass (`career_divisor=7.5`, `peak_top_n=3`,
-`peak_form="blend"`, `pace_prior_games=50`, `w_career/w_pace/w_peak=1.0`), `_add_clr()` adds
+`peak_form="sustain"`, `peak_sustain_w=0.5`, `pace_prior_games=50`, `w_*=1.0`), `_add_clr()` adds
 `clr` + component columns (`career_value`, `pace_value`, `peak_value`, `peak_single`,
 `peak_top3`); Overview + lane sheets sort by CLR; methodology documented on the `About` sheet
 and glossary. All three components sit on a ~one-season scale so the weights are unit-free.
 - **CareerValue** = `CareerLPS / 7.5`.
 - **PaceValue** = per-active-year LPS, empirical-Bayes shrunk toward the cohort mean by weighted
   games (prior strength `pace_prior_games`).
-- **PeakValue** = `max(single-max season, mean of top-3 seasons)` (the "blend"); `peak_single`
-  and `peak_top3` are exposed as standalone columns regardless.
+- **PeakValue** = `single + peak_sustain_w·mean(supporting top-N seasons, zero-padded)` (the
+  "sustain" form — default `peak_sustain_w=0.5`); `peak_single` and `peak_top3` are exposed as
+  standalone columns regardless. Keeps the single best season as the anchor/floor (a sharp
+  one-year peak like Marin is credited in full, never diluted), then adds a bonus for additional
+  strong seasons: a one-year peak gets +0 (zero-padding), a three-season prime gets ~`single·(1+w)`.
+  (NB: a `max(single, top-N mean)` would be degenerate — `top-N mean ≤ single` always — hence the
+  additive-bonus form to reward longer peaks / relatively punish shorter ones.)
 - **First-run sanity (defaults, uncalibrated):** top of board is a clean consensus ordering
   (Faker ≫ Canyon, Ruler, Knight, Keria, ShowMaker, Chovy …). Peak correctly isolates sharp
   peaks (Marin PeakVal ≈ 34.7, elite despite a 5-yr career). Known distortions are all
@@ -164,11 +171,11 @@ all-time players (how PPS/JAWS were tuned), via a dedicated calibration script �
   rates; extend `GAP_SPECS` only if coverage is adequate (Worlds S1/S2 + OGN 2012).
 - Bonuses are uncapped to start (locked); revisit only if title/award terms distort results.
 - Whether to later promote **High Noon** from companion column to a small dominance bonus.
-- **Peak form (single max vs top-3 vs blend).** Short LoL careers with one dominant season
-  (e.g. Marin) argue for including the single max so sharp peaks aren't averaged away; sustained
-  primes argue for top-3. Resolve empirically against the consensus list — try all three peak
-  forms and keep whichever best reproduces the hand-ranked ordering (and consider exposing single
-  max and top-3 as separate columns regardless of which feeds the score).
+- **Peak form + `peak_sustain_w`.** Resolved for Phase 0 to the **sustain** form (single-max
+  anchor + zero-padded bonus for supporting seasons) so sharp peaks (Marin) keep their full height
+  while multi-year primes rise above one-year wonders. `peak_single` and `peak_top3` are exposed
+  regardless. Still to resolve empirically against the consensus list: the bonus weight
+  `peak_sustain_w` (default 0.5) and whether "single"/"top_n" ever beats "sustain" on the ordering.
 
 ## 7. Sources
 - Adjusted Hockey — HHOF Methodology / Career / Pace / Peak / Inspiration pages (adjustedhockey.com)

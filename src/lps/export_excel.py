@@ -135,8 +135,11 @@ _GLOSSARY: list[tuple[str, str]] = [
     ("PaceVal", "CLR rate term = per-active-year LPS, empirical-Bayes shrunk toward the cohort "
                 "mean by weighted games so brilliant short careers score well but tiny, noisy "
                 "samples can't top the board. Length-neutral counterweight to CareerVal."),
-    ("PeakVal", "CLR peak term = best-season peak (single max, mean of top-N, or their blend). "
-                "Rewards a sharp one-year peak OR sustained excellence, whichever is higher."),
+    ("PeakVal", "CLR peak term = best-season peak. Default 'sustain' = the single best season "
+                "(PeakLPS) PLUS a bonus for additional strong seasons (mean of seasons 2..N, "
+                "zero-padded). A sharp one-year peak keeps its full single-season height (never "
+                "diluted); a multi-year prime rises above it -- longer peaks rewarded, shorter "
+                "ones relatively punished."),
     ("PeakTop3", "Mean of a player's 3 best schedule-normalized seasons (over active seasons "
                  "only) -- the sustained-excellence view of peak; PeakLPS is the single best."),
     ("LPS", "League Performance Score: total_score = Baseline + Contribution + WinBonus, "
