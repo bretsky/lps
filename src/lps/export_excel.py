@@ -123,7 +123,22 @@ _COLUMNS: list[tuple[str, str, str, int, str]] = [
 _TOURN_FMT, _TOURN_WIDTH = _PTS, 8
 
 _GLOSSARY: list[tuple[str, str]] = [
-    ("Rank", "Rank within the lane by LPS (Overview sheet: rank across all lanes)."),
+    ("Rank", "Rank within the lane by CLR on the career workbook (by LPS on per-season sheets); "
+             "Overview sheets rank across all lanes."),
+    ("CLR", "Career Legend Rating (career workbook only): the holistic, PPS/JAWS-inspired "
+            "primary ranking = w_career*CareerVal + w_pace*PaceVal + w_peak*PeakVal. Blends "
+            "career bulk, per-year pace, and peak onto one comparable scale so longevity, rate, "
+            "and dominance all count (resume bonuses for titles/awards are added later). See the "
+            "About sheet for the weights and divisor."),
+    ("CareerVal", "CLR bulk term = CareerLPS / D, where D is a typical career length (yrs). "
+                  "Careers longer than D keep a proportional bulk edge; shorter ones scale down."),
+    ("PaceVal", "CLR rate term = per-active-year LPS, empirical-Bayes shrunk toward the cohort "
+                "mean by weighted games so brilliant short careers score well but tiny, noisy "
+                "samples can't top the board. Length-neutral counterweight to CareerVal."),
+    ("PeakVal", "CLR peak term = best-season peak (single max, mean of top-N, or their blend). "
+                "Rewards a sharp one-year peak OR sustained excellence, whichever is higher."),
+    ("PeakTop3", "Mean of a player's 3 best schedule-normalized seasons (over active seasons "
+                 "only) -- the sustained-excellence view of peak; PeakLPS is the single best."),
     ("LPS", "League Performance Score: total_score = Baseline + Contribution + WinBonus, "
             "accumulated across regular season, playoffs and tournaments (more games help). "
             "Schedule-length normalized (see About) so a full season is worth the same across "

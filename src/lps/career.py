@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import datetime as _dt
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
@@ -46,6 +47,28 @@ logger = logging.getLogger(__name__)
 
 YEARS_DEFAULT = tuple(range(2011, 2026))  # 2011-2013 via reduced Leaguepedia model; 2014-2025 Oracle
 # (2011+2012 share one pooled KDA-only model; see lp_reduced.MODEL_GROUPS)
+
+
+@dataclass
+class CLRConfig:
+    """Career Legend Rating -- the holistic PPS/JAWS-inspired composite (see
+    docs/holistic-lps-plan.md).  Phase 0 is Oracle/LP-only and blends three length-decoupled
+    views of a career onto a common ~one-season scale so the weights are unit-free and can be
+    calibrated directly against the consensus all-time list:
+
+        CLR = w_career * CareerValue + w_pace * PaceValue + w_peak * PeakValue
+
+    Resume bonuses (titles / awards / international finishes -- Phase 2) are added on top later.
+    Defaults are provisional placeholders pending calibration; only `career_divisor`,
+    `peak_top_n`, and the three-era framing are locked (per the plan doc)."""
+
+    career_divisor: float = 7.5      # D: avg career length (yrs) of retired top-100-by-CareerLPS
+    peak_top_n: int = 3              # PeakTopN = mean of a player's N best seasons
+    peak_form: str = "blend"         # "single" | "top_n" | "blend" (= max(single, top_n))
+    pace_prior_games: float = 50.0   # empirical-Bayes shrinkage strength (weighted games)
+    w_career: float = 1.0
+    w_pace: float = 1.0
+    w_peak: float = 1.0
 
 # Columns that ACCUMULATE across years (summed).
 _SUM_COLS = [
@@ -260,8 +283,53 @@ def _aggregate(allyears: pd.DataFrame, keys: list[str], all_tourn: list[str],
     return out.reset_index()
 
 
+def _add_clr(career: pd.DataFrame, years: tuple[int, ...], cfg: CLRConfig) -> pd.DataFrame:
+    """Add the Career Legend Rating composite + its components to an aggregated career frame.
+
+    CLR = w_career*CareerValue + w_pace*PaceValue + w_peak*PeakValue.  All three are on a
+    ~one-season scale (so the weights are unit-free):
+      - CareerValue = CareerLPS / D   -- total production per unit of a typical career length;
+        careers longer than D keep a bulk advantage, shorter ones scale down (Pace counters).
+      - PaceValue   = per-active-year production, empirical-Bayes shrunk toward the cohort mean
+        by weighted games so brilliant short careers aren't buried yet tiny samples can't win.
+      - PeakValue   = best-season peak: single max, top-N mean, or (default) their blend --
+        rewards a sharp one-year peak (Marin) OR sustained excellence, whichever is higher.
+    Also exposes peak_single and peak_top{N} as standalone columns regardless of `peak_form`."""
+    single = career["peak_lps"].to_numpy(dtype=float)     # single best season (== PeakLPS)
+    ycols = [f"y{y}" for y in years if f"y{y}" in career.columns]
+    yv = career[ycols].to_numpy(dtype=float) if ycols else np.zeros((len(career), 0))
+    topn = np.zeros(len(career))
+    for i, row in enumerate(yv):
+        nz = row[row > 0]                                  # top-N over ACTIVE seasons only
+        if nz.size:
+            k = min(cfg.peak_top_n, nz.size)
+            topn[i] = np.sort(nz)[::-1][:k].mean()
+    career["peak_single"] = single
+    career[f"peak_top{cfg.peak_top_n}"] = topn
+    if cfg.peak_form == "single":
+        peak = single
+    elif cfg.peak_form == "top_n":
+        peak = topn
+    else:  # "blend"
+        peak = np.maximum(single, topn)
+    career["peak_value"] = peak
+
+    career["career_value"] = career["total_score"] / cfg.career_divisor
+
+    raw_pace = career["total_score"] / career["n_years"].replace(0, 1)
+    gw = career["total_weight"].to_numpy(dtype=float)
+    prior = float(np.average(raw_pace, weights=career["games"].clip(lower=1)))
+    conf = gw / (gw + cfg.pace_prior_games)
+    career["pace_value"] = conf * raw_pace + (1.0 - conf) * prior
+
+    career["clr"] = (cfg.w_career * career["career_value"]
+                     + cfg.w_pace * career["pace_value"]
+                     + cfg.w_peak * career["peak_value"])
+    return career
+
+
 def _career_layout(all_tourn: list[str], years: tuple[int, ...],
-                    include_lane: bool) -> list[tuple]:
+                    include_lane: bool, peak_top_n: int = 3) -> list[tuple]:
     """(col, header, fmt, width) layout for a career sheet."""
     lay: list[tuple] = [
         ("rank", "Rank", _INT, 6),
@@ -277,10 +345,15 @@ def _career_layout(all_tourn: list[str], years: tuple[int, ...],
         ("last_year", "Last", _INT, 7),
         ("games", "Games", _INT, 7),
         ("win_rate", "Win%", _PCT, 7),
+        ("clr", "CLR", _PTS, 9),
+        ("career_value", "CareerVal", _PTS, 9),
+        ("pace_value", "PaceVal", _PTS, 8),
+        ("peak_value", "PeakVal", _PTS, 8),
         ("total_score", "CareerLPS", _PTS, 11),
         ("lps_per_year", "LPS/Yr", _PTS, 8),
         ("peak_year", "PeakYr", _INT, 7),
         ("peak_lps", "PeakLPS", _PTS, 9),
+        (f"peak_top{peak_top_n}", f"PeakTop{peak_top_n}", _PTS, 9),
         ("pts_per_game", "LPS/Gm", _PTS, 8),
         ("pts_per_game_w", "LPS/Gm·wt", _PTS, 10),
         ("reg_pts", "Regular", _PTS, 9),
@@ -330,6 +403,24 @@ def _write_about(writer, meta: dict) -> None:
          f"(REF={meta.get('ref_nref', 0):.1f} matches) so schedule length doesn't bias the"),
         ("", "career sum across eras; the Elo/baseline strength signal is kept."),
     ]
+    cfg = meta.get("clr")
+    if cfg is not None:
+        rows += [
+            ("", ""),
+            ("CLR (Career Legend Rating) -- PRIMARY RANKING", ""),
+            ("", "Holistic PPS/JAWS-style composite (see docs/holistic-lps-plan.md). Blends"),
+            ("", "three length-decoupled views of a career onto a common one-season scale:"),
+            ("  CLR", "w_career*CareerVal + w_pace*PaceVal + w_peak*PeakVal"),
+            ("  CareerVal", f"CareerLPS / D  (bulk; D = typical career length = {cfg.career_divisor})"),
+            ("  PaceVal", f"per-active-year LPS, empirical-Bayes shrunk toward the cohort mean "
+             f"(prior = {cfg.pace_prior_games:g} weighted games) -- rate reward, length-neutral"),
+            ("  PeakVal", f"best-season peak, form='{cfg.peak_form}' "
+             f"(single max / mean of top {cfg.peak_top_n} / their blend)"),
+            ("  Weights (w_career, w_pace, w_peak)",
+             f"{cfg.w_career:g}, {cfg.w_pace:g}, {cfg.w_peak:g}  (provisional -- pending calibration)"),
+            ("", "CareerLPS is kept as a component column; sheets now sort by CLR. Resume"),
+            ("", "bonuses (titles/awards/international finishes) will be added in a later phase."),
+        ]
     about = pd.DataFrame(rows, columns=["Field", "Value"])
     about.to_excel(writer, sheet_name="About", index=False)
     ws = writer.sheets["About"]
@@ -342,19 +433,21 @@ def _write_about(writer, meta: dict) -> None:
 
 def write_career_workbook(out: Path, career_all: pd.DataFrame,
                           career_lane: pd.DataFrame, all_tourn: list[str],
-                          years: tuple[int, ...], meta: dict) -> Path:
-    lay_all = _career_layout(all_tourn, years, include_lane=True)   # Overview shows Lane too
-    lay_lane = _career_layout(all_tourn, years, include_lane=False)
+                          years: tuple[int, ...], meta: dict,
+                          peak_top_n: int = 3) -> Path:
+    lay_all = _career_layout(all_tourn, years, include_lane=True,     # Overview shows Lane too
+                             peak_top_n=peak_top_n)
+    lay_lane = _career_layout(all_tourn, years, include_lane=False, peak_top_n=peak_top_n)
     with pd.ExcelWriter(out, engine="openpyxl") as writer:
         _write_about(writer, meta)
 
-        ov = career_all.sort_values("total_score", ascending=False).copy()
+        ov = career_all.sort_values("clr", ascending=False).copy()
         ov.insert(0, "rank", range(1, len(ov) + 1))
         _write_sheet(writer, "Overview", ov, lay_all)
 
         for lane in ROLES:
             sub = career_lane[career_lane["position"] == lane].sort_values(
-                "total_score", ascending=False).copy()
+                "clr", ascending=False).copy()
             sub.insert(0, "rank", range(1, len(sub) + 1))
             _write_sheet(writer, _LANE_NAMES[lane], sub, lay_lane)
 
@@ -370,8 +463,10 @@ def build_and_write(
     force_recompute: bool = True,
     write_yearly: bool = True,
     out: Optional[Path] = None,
+    clr_cfg: Optional[CLRConfig] = None,
 ) -> Path:
     weights = weights or _DEMO_WEIGHTS
+    clr_cfg = clr_cfg or CLRConfig()
     out = Path(out) if out is not None else PROJECT_ROOT / f"player_ratings_career_{years[0]}_{years[-1]}.xlsx"
 
     # Build the cross-year lane-normalization tables ONCE, up front, from ALL years pooled
@@ -414,12 +509,15 @@ def build_and_write(
                         f"({len(rec['frame'])} players, x{rec['mult']:.3f})")
 
     allyears = _stack(records, all_tourn)   # frames already schedule-normalized
-    career_all = _aggregate(allyears, ["playername"], all_tourn, got)
-    career_lane = _aggregate(allyears, ["playername", "position"], all_tourn, got)
+    career_all = _add_clr(_aggregate(allyears, ["playername"], all_tourn, got), got, clr_cfg)
+    career_lane = _add_clr(
+        _aggregate(allyears, ["playername", "position"], all_tourn, got), got, clr_cfg)
 
     meta = {"years": got, "alpha": weights.alpha, "lam": weights.lam, "beta": weights.beta,
-            "intl_weight": intl_weight, "min_games": min_games, "ref_nref": ref_nref}
-    write_career_workbook(out, career_all, career_lane, all_tourn, got, meta)
+            "intl_weight": intl_weight, "min_games": min_games, "ref_nref": ref_nref,
+            "clr": clr_cfg}
+    write_career_workbook(out, career_all, career_lane, all_tourn, got, meta,
+                          peak_top_n=clr_cfg.peak_top_n)
     logger.info(f"[career] wrote {out.name}  ({len(career_all)} players, {len(got)} years)")
     return out
 

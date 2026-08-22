@@ -1,16 +1,20 @@
-# Plan: A Holistic LPS ("Résumé Score"), inspired by PPS / JAWS
+# Plan: CLR (Career Legend Rating), a Holistic LPS inspired by PPS / JAWS
 
-Status: **draft plan** (no code yet). Owner decisions locked so far:
-- The holistic composite becomes the **new primary ranking**; `CareerLPS` is demoted to a
-  component column (kept, not deleted).
-- First build target: **plan only**; implementation phases below are sequenced for later.
+**Name locked: Career Legend Rating (CLR).** Career (whole-career), Legend (LoL's identity +
+Riot's "Hall of Legends"), Rating (a quantitative composite). Three-word / three-letter, PPS
+cadence, no collision with LPS or any LoL league acronym.
+
+Status: **Phase 0 implemented** (see below). Owner decisions locked so far:
+- The holistic composite (**CLR**) is the **new primary ranking**; `CareerLPS` is demoted to a
+  component column (kept, not deleted). The career workbook now sorts by CLR.
+- Remaining phases (High Noon, résumé bonuses, tiers, calibration) are sequenced below.
 
 ### Locked parameters
 - **Peak term** = a player's best-season peak. **Open sub-decision (see §6):** whether this is the
   **single max season**, the **mean of top-3** seasons, or a **blend** of both. Leaning toward
   including the single max (possibly the primary peak signal), because many great LoL careers were
   short with one very sharp peak (Marin the canonical example) — top-3 averaging dilutes exactly
-  that profile. Whatever is chosen feeds `ResumeScore`.
+  that profile. Whatever is chosen feeds `CLR`.
 - **High Noon** (rolling-3-yr positional peer rank) = **companion column, NOT summed** into the
   score (avoids double-counting peak). May be promoted to a small dominance bonus later if
   results warrant.
@@ -88,14 +92,15 @@ scrape + hand-curation task, exactly like PPS treats awards as a small verifiabl
 One composite per player, the new primary ranking:
 
 ```
-ResumeScore = w_career · CareerValue
-            + w_pace   · PaceValue
-            + w_peak   · PeakValue
-            + TitleBonus + IntlBonus + AwardShare      # capped, era/region-calibrated
+CLR = w_career · CareerValue
+    + w_pace   · PaceValue
+    + w_peak   · PeakValue
+    + TitleBonus + IntlBonus + AwardShare      # capped, era/region-calibrated (Phase 2+)
 ```
 
-All weights + caps live in a new `ResumeConfig` @dataclass (per repo convention). `CareerLPS`
-stays as a component column; the workbook's default sort switches to `ResumeScore`.
+All weights + caps live in the `CLRConfig` @dataclass (per repo convention). `CareerLPS`
+stays as a component column; the workbook's default sort switches to `CLR`. Phase 0 ships the
+first three terms; the bonus terms are added in Phase 2.
 
 - **CareerValue** = `CareerLPS / 7.5`.
 - **PaceValue** = length-robust rate (`LPS/Gm·wt`) shrunk toward the mean via an empirical-Bayes
@@ -109,9 +114,24 @@ stays as a component column; the workbook's default sort switches to `ResumeScor
 
 ## 5. Implementation phases (sequenced for later)
 
-**Phase 0 — Composite (Oracle-only, no new data).**
-Add CareerValue/PaceValue/PeakValue + `ResumeScore` columns in `career.py`/`export_excel.py`;
-switch primary sort. Weights in `ResumeConfig`. Note methodology on the `About` sheet.
+**Phase 0 — Composite (Oracle/LP-only, no new data). ✅ DONE.**
+Implemented in `career.py`: `CLRConfig` @dataclass (`career_divisor=7.5`, `peak_top_n=3`,
+`peak_form="blend"`, `pace_prior_games=50`, `w_career/w_pace/w_peak=1.0`), `_add_clr()` adds
+`clr` + component columns (`career_value`, `pace_value`, `peak_value`, `peak_single`,
+`peak_top3`); Overview + lane sheets sort by CLR; methodology documented on the `About` sheet
+and glossary. All three components sit on a ~one-season scale so the weights are unit-free.
+- **CareerValue** = `CareerLPS / 7.5`.
+- **PaceValue** = per-active-year LPS, empirical-Bayes shrunk toward the cohort mean by weighted
+  games (prior strength `pace_prior_games`).
+- **PeakValue** = `max(single-max season, mean of top-3 seasons)` (the "blend"); `peak_single`
+  and `peak_top3` are exposed as standalone columns regardless.
+- **First-run sanity (defaults, uncalibrated):** top of board is a clean consensus ordering
+  (Faker ≫ Canyon, Ruler, Knight, Keria, ShowMaker, Chovy …). Peak correctly isolates sharp
+  peaks (Marin PeakVal ≈ 34.7, elite despite a 5-yr career). Known distortions are all
+  weight/prior artifacts for **calibration** to fix: short high-volume careers (e.g. 3-yr Peyz)
+  and one-split wonders (e.g. Wh1t3zZ, 1 yr) rank higher than longevity warrants at `w_*`=1.
+  These motivate raising `w_career` and/or the pace prior, and are the reason Phase 0 ships with
+  *provisional* weights pending the calibration step.
 
 **Phase 1 — "High Noon" peer-rank trajectory (Oracle-only).**
 For each (year, position) rank players by that season's normalized LPS; store best rolling-3-year
@@ -127,7 +147,7 @@ Era/region-calibrated, PPS-style capped:
   `team_regions_<year>.csv`).
 
 **Phase 3 — Standard & tiers.**
-Per-position `ResumeScore` threshold from the top historical cohort; label tiers
+Per-position `CLR` threshold from the top historical cohort; label tiers
 (inner-circle / qualified / borderline / …) so the number has meaning, like PPS's 235.
 
 **Cross-cutting — Calibration.**
