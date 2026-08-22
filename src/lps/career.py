@@ -293,18 +293,54 @@ def _aggregate(allyears: pd.DataFrame, keys: list[str], all_tourn: list[str],
     return out.reset_index()
 
 
-def _breakdown_df(allyears: pd.DataFrame, keys: list[str], col: str,
-                  out_name: str) -> pd.DataFrame:
-    """For each group in `keys`, list the distinct values of `col` a player logged, ordered by
-    the (schedule-normalized) LPS earned with each, as one string: 'T1 (245.3), DAMWON (30.1)'.
+def _breakdown_df(frame: pd.DataFrame, keys: list[str], col: str, out_name: str,
+                  value_col: str = "clr_year", as_pct: bool = False) -> pd.DataFrame:
+    """For each group in `keys`, list the distinct values of `col` a player logged, ordered by the
+    value earned with each (CLR by default), as one string: 'T1 (245.3), DAMWON Gaming (30.1)' --
+    or, with as_pct, share of the player's total: 'T1 (78%), DAMWON Gaming (10%)'.
     Returns a frame [*keys, out_name] to merge onto a career aggregate."""
-    g = (allyears.groupby(keys + [col], sort=False, dropna=True)["total_score"]
-         .sum().reset_index())
-    g = g[(g[col].astype(str) != "") & (g["total_score"].abs() > 1e-9)]
-    g = g.sort_values("total_score", ascending=False)     # high LPS first, preserved by groupby
-    g["_s"] = [f"{v} ({s:.1f})" for v, s in zip(g[col].astype(str), g["total_score"])]
+    g = (frame.groupby(keys + [col], sort=False, dropna=True)[value_col].sum().reset_index())
+    g = g[(g[col].astype(str) != "") & (g[value_col].abs() > 1e-9)]
+    g = g.sort_values(value_col, ascending=False)         # highest first, preserved by groupby
+    if as_pct:
+        tot = g.groupby(keys, sort=False)[value_col].transform("sum")
+        pct = 100.0 * g[value_col] / tot.where(tot != 0, 1.0)
+        g["_s"] = [f"{v} ({p:.0f}%)" for v, p in zip(g[col].astype(str), pct)]
+    else:
+        g["_s"] = [f"{v} ({s:.1f})" for v, s in zip(g[col].astype(str), g[value_col])]
     return (g.groupby(keys, sort=False)["_s"].agg(", ".join).reset_index()
             .rename(columns={"_s": out_name}))
+
+
+def _add_clr_year(allyears: pd.DataFrame, career_all: pd.DataFrame,
+                  bonus_long: pd.DataFrame, w_bonus: float) -> pd.DataFrame:
+    """Return a copy of `allyears` with an additive per-row CLR contribution `clr_year`, so
+    team/league/lane splits can be ordered by (and shown as a share of) CLR rather than raw LPS:
+        clr_year = (CLR - w_bonus*resume_bonus) * (row LPS / career LPS)   # performance, ∝ LPS
+                 + w_bonus * that (player, lane, year)'s résumé bonus       # credited where earned
+    The performance part (career bulk + pace + peak) tracks LPS, so the split isn't distorted by
+    lumpy peak/pace attribution; the résumé bonus lands on the exact seasons/teams/lanes that
+    earned it, so championship stints rank up (the intended 'by CLR, not LPS' difference). Summed
+    per player it equals CLR. Computed as a column (no self-merge) so dual-position seasons -- two
+    rows for one (player, year) -- aren't cartesian-inflated."""
+    ally = allyears.copy()
+    if len(bonus_long):                                   # résumé bonus per (player, lane, year)
+        yb = (bonus_long.assign(_yb=bonus_long[_BONUS_COLS].sum(axis=1))
+              .groupby(["playername", "position", "year"], as_index=False)["_yb"].sum())
+        ally = ally.merge(yb, on=["playername", "position", "year"], how="left")
+    if "_yb" not in ally.columns:
+        ally["_yb"] = 0.0
+    ally["_yb"] = ally["_yb"].fillna(0.0)
+    # Spread each (player, lane, year) bonus across its rows by LPS, so it sums to the group bonus
+    # exactly even when a season spans duplicate rows or multiple teams (a mid-year trade).
+    grp = ally.groupby(["playername", "position", "year"])["total_score"].transform("sum")
+    row_bonus = ally["_yb"] * ally["total_score"] / grp.where(grp != 0, 1.0)
+    pl = career_all.set_index("playername")
+    perf = ally["playername"].map(pl["clr"]) - w_bonus * ally["playername"].map(pl["resume_bonus"])
+    career_lps = ally["playername"].map(pl["total_score"])
+    share = ally["total_score"] / career_lps.where(career_lps != 0, 1.0)
+    ally["clr_year"] = perf * share + w_bonus * row_bonus
+    return ally.drop(columns="_yb")
 
 
 def _add_clr(career: pd.DataFrame, years: tuple[int, ...], cfg: CLRConfig) -> pd.DataFrame:
@@ -354,13 +390,11 @@ _BONUS_COLS = ["intl_bonus", "title_bonus", "award_bonus"]
 
 
 def _add_bonuses(career_all: pd.DataFrame, career_lane: pd.DataFrame,
-                 allyears: pd.DataFrame, cfg: BonusConfig) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Score resume bonuses from the per-(player,year) roster and fold them into CLR. Adds
+                 bonus_long: pd.DataFrame, cfg: BonusConfig) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Fold the (precomputed) per-(player,position,year) resume bonuses into CLR. Adds
     intl_bonus/title_bonus/award_bonus + resume_bonus columns and updates `clr` by
     cfg.w_bonus * resume_bonus. Bonuses are aggregated to per-player (Overview) and
     per-player-lane (lane sheets); a title credits the lane the player played that year."""
-    roster = allyears[["playername", "year", "team", "league", "position"]].copy()
-    bonus_long = score_bonuses(roster, cfg)
     b_all = (bonus_long.groupby("playername")[_BONUS_COLS].sum().reset_index()
              if len(bonus_long) else pd.DataFrame(columns=["playername", *_BONUS_COLS]))
     b_lane = (bonus_long.groupby(["playername", "position"])[_BONUS_COLS].sum().reset_index()
@@ -431,12 +465,13 @@ def _career_layout(all_tourn: list[str], years: tuple[int, ...],
         ("rank", "Rank", _INT, 6),
         ("playername", "Player", None, 16),
         # Full career breakdown: every team / league (and, on Overview, every lane) a player
-        # logged, ordered by the LPS earned with each -- "T1 (245.3), DAMWON Gaming (30.1)".
-        ("teams_lps", "Teams (by LPS)", None, 38),
-        ("leagues_lps", "Leagues (by LPS)", None, 24),
+        # logged, ordered by the CLR earned with each -- "T1 (245.3), DAMWON Gaming (30.1)"
+        # (or shares like "T1 (78%), ..." when built with breakdown_pct).
+        ("teams_lps", "Teams (by CLR)", None, 38),
+        ("leagues_lps", "Leagues (by CLR)", None, 24),
     ]
     if include_lane:
-        lay.append(("lanes_lps", "Lanes (by LPS)", None, 20))
+        lay.append(("lanes_lps", "Lanes (by CLR)", None, 20))
     lay += [
         ("n_years", "#Yrs", _INT, 6),
         ("first_year", "First", _INT, 7),
@@ -589,6 +624,7 @@ def build_and_write(
     out: Optional[Path] = None,
     clr_cfg: Optional[CLRConfig] = None,
     bonus_cfg: Optional[BonusConfig] = None,
+    breakdown_pct: bool = False,
 ) -> Path:
     weights = weights or _DEMO_WEIGHTS
     clr_cfg = clr_cfg or CLRConfig()
@@ -647,17 +683,24 @@ def build_and_write(
     # Resume bonuses (Phase 2): Worlds/MSI placements + domestic titles + awards -> folded into
     # CLR (IntlBonus + TitleBonus + AwardBonus, weighted by bonus_cfg.w_bonus), attributed to the
     # lane the player played that year. See achievements.py / info/achievements.csv.
-    career_all, career_lane = _add_bonuses(career_all, career_lane, allyears, bonus_cfg)
+    roster = allyears[["playername", "year", "team", "league", "position"]].copy()
+    bonus_long = score_bonuses(roster, bonus_cfg)
+    career_all, career_lane = _add_bonuses(career_all, career_lane, bonus_long, bonus_cfg)
 
-    # Career breakdowns: every team / league / lane a player logged, ordered by LPS earned with
-    # each (so multi-team, multi-region and multi-lane careers -- e.g. Xiaohu, Perkz -- are fully
-    # visible). Overview lists all lanes; per-lane sheets list teams/leagues within that lane.
+    # Career breakdowns: every team / league / lane a player logged, ordered by the CLR earned with
+    # each (additive per-year decomposition, so multi-team/region/lane careers -- Xiaohu, Perkz --
+    # are fully visible). Overview lists all lanes; per-lane sheets list teams/leagues within that
+    # lane. `breakdown_pct` renders shares ("T1 (78%), ...") instead of absolute CLR, for the site.
+    # NOTE: same-year team changes are attributed to the season's primary team (see _stack); the
+    # per-team split isn't trade-accurate yet (career totals are).
+    ally_clr = _add_clr_year(allyears, career_all, bonus_long, bonus_cfg.w_bonus)
     for col, name in (("team", "teams_lps"), ("league", "leagues_lps"), ("position", "lanes_lps")):
         career_all = career_all.merge(
-            _breakdown_df(allyears, ["playername"], col, name), on="playername", how="left")
+            _breakdown_df(ally_clr, ["playername"], col, name, as_pct=breakdown_pct),
+            on="playername", how="left")
     for col, name in (("team", "teams_lps"), ("league", "leagues_lps")):
         career_lane = career_lane.merge(
-            _breakdown_df(allyears, ["playername", "position"], col, name),
+            _breakdown_df(ally_clr, ["playername", "position"], col, name, as_pct=breakdown_pct),
             on=["playername", "position"], how="left")
 
     meta = {"years": got, "alpha": weights.alpha, "lam": weights.lam, "beta": weights.beta,
@@ -685,13 +728,15 @@ def main() -> None:
     ap.add_argument("--beta", type=float, default=_DEMO_WEIGHTS.beta)
     ap.add_argument("--no-recompute", action="store_true", help="reuse cached per-year models")
     ap.add_argument("--no-yearly", action="store_true", help="skip per-year workbooks")
+    ap.add_argument("--breakdown-pct", action="store_true",
+                    help="render team/league/lane splits as CLR shares (e.g. 'T1 (78%)')")
     args = ap.parse_args()
 
     weights = ScoreWeights(alpha=args.alpha, lam=args.lam, beta=args.beta)
     build_and_write(
         years=_parse_years(args.years), weights=weights, min_games=args.min_games,
         intl_weight=args.intl_weight, force_recompute=not args.no_recompute,
-        write_yearly=not args.no_yearly,
+        write_yearly=not args.no_yearly, breakdown_pct=args.breakdown_pct,
     )
 
 

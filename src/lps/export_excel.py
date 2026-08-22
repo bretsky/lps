@@ -125,11 +125,15 @@ _TOURN_FMT, _TOURN_WIDTH = _PTS, 8
 _GLOSSARY: list[tuple[str, str]] = [
     ("Rank", "Rank within the lane by CLR on the career workbook (by LPS on per-season sheets); "
              "Overview sheets rank across all lanes."),
-    ("Teams / Leagues / Lanes (by LPS)", "Career workbook: every team, league and lane a player "
-             "logged, each shown with the LPS earned there and ordered high->low -- e.g. "
-             "'T1 (245.3), DAMWON Gaming (30.1)'. Overview lists all lanes (so multi-role careers "
-             "like Perkz/Xiaohu are visible); per-lane sheets list teams/leagues within that lane. "
-             "The per-team/league/lane LPS sums to CareerLPS."),
+    ("Teams / Leagues / Lanes (by CLR)", "Career workbook: every team, league and lane a player "
+             "logged, each shown with the CLR earned there and ordered high->low -- e.g. "
+             "'T1 (245.3), DAMWON Gaming (30.1)' (or shares like 'T1 (78%)' when built with "
+             "--breakdown-pct). CLR is decomposed per year (its performance part in proportion to "
+             "that year's LPS, plus the résumé bonus on the seasons that earned it) and re-summed "
+             "per slice, so the parts add up to the player's CLR. Overview lists all "
+             "lanes (so multi-role careers like Perkz/Xiaohu are visible); per-lane sheets list "
+             "teams/leagues within that lane. NOTE: same-year team changes are booked to the "
+             "season's primary team, so the per-team split isn't trade-accurate yet."),
     ("CLR", "Career Legend Rating (career workbook only): the holistic, PPS/JAWS-inspired "
             "primary ranking = w_career*CareerVal + w_pace*PaceVal + w_peak*PeakVal + "
             "w_bonus*Resume. Blends career bulk, per-year pace, peak, and a titles/placements/"
