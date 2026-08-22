@@ -25,6 +25,11 @@ INTERNATIONAL_TOURNAMENTS = {
     "MSI": {"tournament": "MSI", "league": ["Mid-Season Invitational"]},  # MSI
     "Worlds": {"tournament": "Worlds", "league": ["World Championship"]},  # Worlds
     "IEM": {"tournament": "IEM", "league": ["Intel Extreme Masters", "IEM Challenger"]},  # Intel Extreme Masters
+    "IPL": {"tournament": "IPL", "league": ["IGN Pro League"]},  # IGN Pro League (IPL 5, 2012 — cross-region LAN)
+    # OGN "the Champions" 2012 (Spring/Summer) invited NA/EU/CN clubs — cross-region games. Scoped to
+    # 2012 by name because 2013+ Champions is pure-KR (intra-regional, no Elo signal).
+    "OGN": {"tournament": "Champions 2012", "league": ["LoL The Champions"]},
+    "MLG": {"tournament": "MLG 2012", "league": ["MLG 2012 Fall"]},  # MLG 2012 Fall — NA/EU/KR LAN
     "FirstStand": {"tournament": "First Stand", "league": ["First Stand"]},  # First Stand
     "IWCT": {"tournament": "IWCT", "league": ["2014 International Wildcard Tournament", "International Wildcard Tournament Chile", "International Wildcard Tournament Turkey"]},  # International Wildcard Tournament
     "IWCQ": {"tournament": "IWCQ", "league": ["2016 International Wildcard Qualifier"]},  # International Wildcard Qualifier
@@ -227,7 +232,7 @@ def main():
     logging.info("Fetching international tournament matches...")
     all_matches = fetch_all_international_matches(
         client,
-        force_refetch=True,  # Set to True to refetch everything
+        force_refetch=False,  # Only fetch missing tournaments (e.g. newly-added IPL); cached ones load from disk
     )
 
     logging.info("Done!")
