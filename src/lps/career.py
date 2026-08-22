@@ -32,6 +32,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
+from .achievements import BonusConfig, score_bonuses
 from .config import PROJECT_ROOT
 from .contribution import ROLES
 from .export_excel import (
@@ -335,6 +336,36 @@ def _add_clr(career: pd.DataFrame, years: tuple[int, ...], cfg: CLRConfig) -> pd
     return career
 
 
+_BONUS_COLS = ["intl_bonus", "title_bonus", "award_bonus"]
+
+
+def _add_bonuses(career_all: pd.DataFrame, career_lane: pd.DataFrame,
+                 allyears: pd.DataFrame, cfg: BonusConfig) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Score resume bonuses from the per-(player,year) roster and fold them into CLR. Adds
+    intl_bonus/title_bonus/award_bonus + resume_bonus columns and updates `clr` by
+    cfg.w_bonus * resume_bonus. Bonuses are aggregated to per-player (Overview) and
+    per-player-lane (lane sheets); a title credits the lane the player played that year."""
+    roster = allyears[["playername", "year", "team", "league", "position"]].copy()
+    bonus_long = score_bonuses(roster, cfg)
+    b_all = (bonus_long.groupby("playername")[_BONUS_COLS].sum().reset_index()
+             if len(bonus_long) else pd.DataFrame(columns=["playername", *_BONUS_COLS]))
+    b_lane = (bonus_long.groupby(["playername", "position"])[_BONUS_COLS].sum().reset_index()
+              if len(bonus_long) else
+              pd.DataFrame(columns=["playername", "position", *_BONUS_COLS]))
+    career_all = career_all.merge(b_all, on="playername", how="left")
+    career_lane = career_lane.merge(b_lane, on=["playername", "position"], how="left")
+    out = []
+    for frame in (career_all, career_lane):
+        for c in _BONUS_COLS:
+            if c not in frame.columns:
+                frame[c] = 0.0
+        frame[_BONUS_COLS] = frame[_BONUS_COLS].fillna(0.0)
+        frame["resume_bonus"] = frame[_BONUS_COLS].sum(axis=1)
+        frame["clr"] = frame["clr"] + cfg.w_bonus * frame["resume_bonus"]
+        out.append(frame)
+    return out[0], out[1]
+
+
 _HIGH_NOON_YEARS = 3   # High Noon averages a player's N best-ranked seasons (companion metric)
 
 
@@ -400,6 +431,10 @@ def _career_layout(all_tourn: list[str], years: tuple[int, ...],
         ("career_value", "CareerVal", _PTS, 9),
         ("pace_value", "PaceVal", _PTS, 8),
         ("peak_value", "PeakVal", _PTS, 8),
+        ("resume_bonus", "Resume", _PTS, 8),
+        ("intl_bonus", "Intl", _PTS, 7),
+        ("title_bonus", "Titles", _PTS, 7),
+        ("award_bonus", "Awards", _PTS, 7),
         ("total_score", "CareerLPS", _PTS, 11),
         ("lps_per_year", "LPS/Yr", _PTS, 8),
         ("peak_year", "PeakYr", _INT, 7),
@@ -475,10 +510,18 @@ def _write_about(writer, meta: dict) -> None:
             ("  PeakVal", f"mean(peak years) + {cfg.peak_len_bonus:g}*PeakLPS*(PeakYrs-1); a "
              f"season is a peak year if >= {1 - cfg.peak_band:g}*PeakLPS (within "
              f"{cfg.peak_band:.0%} of the best). Longer peaks never penalized."),
-            ("  Weights (w_career, w_pace, w_peak)",
-             f"{cfg.w_career:g}, {cfg.w_pace:g}, {cfg.w_peak:g}  (provisional -- pending calibration)"),
-            ("", "CareerLPS is kept as a component column; sheets now sort by CLR. Resume"),
-            ("", "bonuses (titles/awards/international finishes) will be added in a later phase."),
+            ("  + Resume", "w_bonus * (Intl + Titles + Awards) -- see Resume bonuses below"),
+            ("  Weights (w_career, w_pace, w_peak, w_bonus)",
+             f"{cfg.w_career:g}, {cfg.w_pace:g}, {cfg.w_peak:g}, "
+             f"{meta.get('w_bonus', 1.0):g}  (provisional -- pending calibration)"),
+            ("", "CareerLPS is kept as a component column; sheets now sort by CLR."),
+            ("", ""),
+            ("Resume bonuses (Intl / Titles / Awards)", ""),
+            ("  Intl", "Worlds/MSI placement points (champion..play-in), flat by event+round."),
+            ("  Titles", "Domestic split-playoff titles/finals, each scaled by that region's Elo"),
+            ("", "strength (an LCK/LPL title outweighs a weak-region one)."),
+            ("  Awards", "Hand-curated regional MVP / All-Pro / Finals MVP (info/player_awards.csv)."),
+            ("", "Credited to the lane the player played that year. Source: info/achievements.csv."),
             ("", ""),
             ("High Noon (peer rank) -- COMPANION, not in CLR", ""),
             ("", "Each season, rated players are ranked by that year's LPS (1 = best), globally"),
@@ -528,9 +571,11 @@ def build_and_write(
     write_yearly: bool = True,
     out: Optional[Path] = None,
     clr_cfg: Optional[CLRConfig] = None,
+    bonus_cfg: Optional[BonusConfig] = None,
 ) -> Path:
     weights = weights or _DEMO_WEIGHTS
     clr_cfg = clr_cfg or CLRConfig()
+    bonus_cfg = bonus_cfg or BonusConfig()
     out = Path(out) if out is not None else PROJECT_ROOT / f"player_ratings_career_{years[0]}_{years[-1]}.xlsx"
 
     # Build the cross-year lane-normalization tables ONCE, up front, from ALL years pooled
@@ -582,9 +627,14 @@ def build_and_write(
     career_all = career_all.merge(hn_all, on="playername", how="left")
     career_lane = career_lane.merge(hn_lane, on=["playername", "position"], how="left")
 
+    # Resume bonuses (Phase 2): Worlds/MSI placements + domestic titles + awards -> folded into
+    # CLR (IntlBonus + TitleBonus + AwardBonus, weighted by bonus_cfg.w_bonus), attributed to the
+    # lane the player played that year. See achievements.py / info/achievements.csv.
+    career_all, career_lane = _add_bonuses(career_all, career_lane, allyears, bonus_cfg)
+
     meta = {"years": got, "alpha": weights.alpha, "lam": weights.lam, "beta": weights.beta,
             "intl_weight": intl_weight, "min_games": min_games, "ref_nref": ref_nref,
-            "clr": clr_cfg}
+            "clr": clr_cfg, "w_bonus": bonus_cfg.w_bonus}
     write_career_workbook(out, career_all, career_lane, all_tourn, got, meta)
     logger.info(f"[career] wrote {out.name}  ({len(career_all)} players, {len(got)} years)")
     return out

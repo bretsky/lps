@@ -126,10 +126,19 @@ _GLOSSARY: list[tuple[str, str]] = [
     ("Rank", "Rank within the lane by CLR on the career workbook (by LPS on per-season sheets); "
              "Overview sheets rank across all lanes."),
     ("CLR", "Career Legend Rating (career workbook only): the holistic, PPS/JAWS-inspired "
-            "primary ranking = w_career*CareerVal + w_pace*PaceVal + w_peak*PeakVal. Blends "
-            "career bulk, per-year pace, and peak onto one comparable scale so longevity, rate, "
-            "and dominance all count (resume bonuses for titles/awards are added later). See the "
-            "About sheet for the weights and divisor."),
+            "primary ranking = w_career*CareerVal + w_pace*PaceVal + w_peak*PeakVal + "
+            "w_bonus*Resume. Blends career bulk, per-year pace, peak, and a titles/placements/"
+            "awards resume onto one comparable scale so longevity, rate, dominance, and hardware "
+            "all count. See the About sheet for the weights and divisor."),
+    ("Resume", "Total resume bonus folded into CLR = Intl + Titles + Awards (before w_bonus). "
+               "Rewards big-stage results the box score can't see."),
+    ("Intl", "International placement points from Worlds + MSI (champion / finalist / "
+             "semifinalist / quarterfinalist / play-in), flat by event and round. A player is "
+             "credited for their team's finish in years they were on that roster."),
+    ("Titles", "Domestic split-playoff titles (and finals), each scaled by that region's Elo "
+               "strength that year -- so an LCK/LPL title outweighs a weak-region one."),
+    ("Awards", "Hand-curated individual awards (regional MVP / All-Pro / Worlds & MSI Finals "
+               "MVP), a small tiebreaker. Source: info/player_awards.csv."),
     ("CareerVal", "CLR bulk term = CareerLPS / D, where D is a typical career length (yrs). "
                   "Careers longer than D keep a proportional bulk edge; shorter ones scale down."),
     ("PaceVal", "CLR rate term = per-active-year LPS, empirical-Bayes shrunk toward the cohort "
