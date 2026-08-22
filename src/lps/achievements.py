@@ -8,7 +8,9 @@ Scoring:
   - TitleBonus = domestic split-playoff titles/finals, each scaled by that region's strength
                  (regionElo / strongest-region-Elo that year), so an LCK/LPL title outweighs a
                  weak-region one. Unrated leagues (no Elo) contribute 0.
-  - AwardBonus = small hand-curated regional-MVP / All-Pro / Finals-MVP tiebreaker.
+  - AwardBonus = small individual-award tiebreaker (regional MVP / All-Pro / Finals MVP),
+                 auto-pulled from Leaguepedia's IndividualAchievements table; domestic awards are
+                 region-Elo scaled, the global Finals MVPs are flat.
 
 Credit is assigned by joining the team-level achievement rows to OUR roster (per player-year:
 team + home league + lane), so only players in our scored universe are credited, and a title is
@@ -76,10 +78,15 @@ class BonusConfig:
     # Domestic split podium base points (each multiplied by regionElo/topElo that year).
     domestic_champion: float = 1.5
     domestic_finalist: float = 0.5
-    # Awards (small tiebreaker).
+    # Awards (small tiebreaker; auto-pulled from Leaguepedia IndividualAchievements). Domestic
+    # awards are region-Elo scaled like titles; the intl Finals MVPs are flat (see FLAT_AWARDS).
     award_points: dict[str, float] = field(default_factory=lambda: {
-        "worlds_finals_mvp": 2.0, "msi_finals_mvp": 1.0, "regional_mvp": 1.0,
-        "all_pro_1": 0.75, "all_pro_2": 0.4, "all_pro_3": 0.2,
+        # International (flat): finals MVP, tournament MVP, and All-Pro at Worlds / MSI.
+        "worlds_finals_mvp": 2.0, "msi_finals_mvp": 1.0,
+        "worlds_mvp": 2.0, "msi_mvp": 1.0, "worlds_all_pro": 1.0, "msi_all_pro": 0.5,
+        # Domestic (region-Elo scaled): finals/season MVP + All-Pro tiers.
+        "domestic_finals_mvp": 0.5, "regional_mvp": 1.0,
+        "all_pro_1": 0.6, "all_pro_2": 0.35, "all_pro_3": 0.15,
     })
     # Overall resume-bonus weight into CLR. Kept < 1 so the resume BOOSTS individual performance
     # rather than swamping it (raw bonus points for the most-decorated players rival the entire
@@ -89,6 +96,9 @@ class BonusConfig:
 
 
 _BONUS_COLS = ["intl_bonus", "title_bonus", "award_bonus"]
+# Awards scored flat (global-stage individual honors at Worlds/MSI); all others region-Elo scaled.
+FLAT_AWARDS = {"worlds_finals_mvp", "msi_finals_mvp", "worlds_mvp", "msi_mvp",
+               "worlds_all_pro", "msi_all_pro"}
 
 
 def _region_scale(years: list[int]) -> dict[tuple[int, str], float]:
@@ -171,7 +181,8 @@ def score_bonuses(roster: pd.DataFrame, cfg: BonusConfig | None = None) -> pd.Da
              .rename(columns={"cname": "playername"}))
         parts.append(g)
 
-    # Awards: matched by (name, year), attributed to that year's lane.
+    # Awards: matched by (name, year), attributed to that year's lane. Intl Finals MVPs are flat;
+    # domestic awards (season/finals MVP, All-Pro) are region-Elo scaled like titles.
     aw = load_awards()
     if len(aw):
         aw = aw.copy()
@@ -179,7 +190,12 @@ def score_bonuses(roster: pd.DataFrame, cfg: BonusConfig | None = None) -> pd.Da
         aw = aw[aw["year"].notna()]
         aw["year"] = aw["year"].astype(int)
         aw["_nlc"] = aw["playername"].astype(str).str.lower()
-        aw["award_bonus"] = aw["award"].map(cfg.award_points).fillna(0.0)
+        base = aw["award"].map(cfg.award_points).fillna(0.0).to_numpy()
+        code = (aw["league_full"].map(FULL2CODE) if "league_full" in aw.columns
+                else pd.Series([None] * len(aw), index=aw.index))
+        sc = np.array([1.0 if a in FLAT_AWARDS else scale.get((y, c), 0.0)
+                       for a, y, c in zip(aw["award"], aw["year"], code)])
+        aw["award_bonus"] = base * sc
         aw = aw[aw["award_bonus"] > 0]
         aw = aw.join(pos.rename("position"), on=["_nlc", "year"], how="inner")
         aw = aw.join(cname.rename("cname"), on=["_nlc", "year"])

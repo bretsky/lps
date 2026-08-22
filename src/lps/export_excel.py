@@ -137,8 +137,10 @@ _GLOSSARY: list[tuple[str, str]] = [
              "credited for their team's finish in years they were on that roster."),
     ("Titles", "Domestic split-playoff titles (and finals), each scaled by that region's Elo "
                "strength that year -- so an LCK/LPL title outweighs a weak-region one."),
-    ("Awards", "Hand-curated individual awards (regional MVP / All-Pro / Worlds & MSI Finals "
-               "MVP), a small tiebreaker. Source: info/player_awards.csv."),
+    ("Awards", "Individual awards (regional/season MVP, All-Pro 1st/2nd/3rd, domestic Finals MVP, "
+               "and at Worlds/MSI the Finals MVP + tournament MVP + All-Pro), a small tiebreaker, "
+               "auto-pulled from Leaguepedia. Domestic awards are region-Elo scaled; the global "
+               "Worlds/MSI honors are flat. Source: info/player_awards.csv."),
     ("CareerVal", "CLR bulk term = CareerLPS / D, where D is a typical career length (yrs). "
                   "Careers longer than D keep a proportional bulk edge; shorter ones scale down."),
     ("PaceVal", "CLR rate term = per-active-year LPS, empirical-Bayes shrunk toward the cohort "

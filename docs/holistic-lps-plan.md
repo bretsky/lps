@@ -148,27 +148,33 @@ best-ranked seasons (`HN3Lane`/`HN3Glob`), with the constituent years listed (`H
 how PeakVal uses a player's best seasons, so a gap year never breaks the metric. Companion columns
 only (NOT summed into CLR — peak already lives in the score); lower is better.
 
-**Phase 2 — Résumé bonuses. ✅ DONE (titles/placements auto; awards hand-curated).**
+**Phase 2 — Résumé bonuses. ✅ DONE (fully auto-pulled).**
 `fetch_achievements.py` pulls Leaguepedia `TournamentResults` (placements) + `ScoreboardPlayers`
-(rosters) → committed, hand-editable `info/achievements.csv`; `achievements.py` (`BonusConfig`,
-`score_bonuses`) scores three terms folded into CLR (`clr += w_bonus·(Intl + Titles + Awards)`):
+(rosters) + `IndividualAchievements` (awards); `achievements.py` (`BonusConfig`, `score_bonuses`)
+scores three terms folded into CLR (`clr += w_bonus·(Intl + Titles + Awards)`):
 - **IntlBonus** — Worlds + MSI placement points, flat by (event × round: champion / finalist /
   semifinalist / quarterfinalist / play-in).
 - **TitleBonus** — domestic split-playoff titles/finals, each scaled by that region's Elo strength
   (`regionElo / topElo` that year), so an LCK/LPL title outweighs a weak-region one; unrated
   leagues score 0.
-- **AwardBonus** — hand-curated regional MVP / All-Pro / Worlds & MSI Finals MVP
-  (`info/player_awards.csv`; Cargo has no awards table). Small tiebreaker.
+- **AwardBonus** — from `IndividualAchievements` (award name in `Display`, joined to `Tournaments`
+  for year/league). Credited: **regional/season MVP, All-Pro 1st/2nd/3rd, domestic Finals MVP**
+  (all region-Elo scaled), and at Worlds/MSI the **Finals MVP, tournament MVP, and All-Pro** (flat).
+  Skipped: coach/rookie/most-improved/role-stat/fan-&expert-voted alternates. Hand-added rows
+  tagged `notes=manual` (e.g. the 2015/2016 Worlds Finals MVPs missing from the table) survive
+  re-fetch. Small tiebreaker.
 - **Crediting by ROSTER, not team name:** each placement carries its team's Leaguepedia roster,
   and we credit players by handle (matched to our universe), attributed to the lane they played
   that year. This sidesteps org-rename mismatches between Leaguepedia and Oracle (e.g. Oracle's
   retroactive "Dplus KIA" vs Leaguepedia's period-correct "DAMWON Gaming") and only credits
   players who actually appeared.
+- **Raw + refined data files** (same pattern for both): `*_raw.csv` holds everything fetched with a
+  `drop_reason` column (blank = kept; else `minor/unrated league` / `unrecognized award` / …), and
+  the refined `achievements.csv` / `player_awards.csv` are the intl + rated-domestic subset the
+  scorer reads. All four are committed + hand-editable.
 - **Provisional:** `w_bonus=0.35` (kept <1 so résumé boosts rather than swamps individual
-  performance and dynasty role-players aren't over-rewarded); per-event/placement points and the
-  domestic base are calibration targets. Columns: Resume / Intl / Titles / Awards.
-- **Still to hand-fill:** `info/player_awards.csv` currently has only two seed rows (2015/2016
-  Worlds Finals MVP); regional MVP + All-Pro + remaining Finals MVPs to be entered.
+  performance and dynasty role-players aren't over-rewarded); per-event/placement/award points and
+  the domestic base are calibration targets. Columns: Resume / Intl / Titles / Awards.
 
 **Phase 3 — Standard & tiers.**
 Per-position `CLR` threshold from the top historical cohort; label tiers
