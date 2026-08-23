@@ -851,9 +851,10 @@ def _print_outliers(matches: pd.DataFrame, n: int = 5) -> None:
 # lanes (grid search over alpha/lambda/beta/intl_weight; mean Spearman ~0.79, Pearson ~0.76):
 #   - beta=0: the win-bonus (rewarding wins the model rated as upsets) adds team-level noise
 #     that fans don't weight -- zeroing it improved every combo.
-#   - alpha=1, lam=2: baseline vs contribution ratio in the broad optimum (fit is flat over
-#     ratios ~0.5-2 once beta=0). intl_weight=2 (the build_player_ratings default) was optimal.
-_DEMO_WEIGHTS = ScoreWeights(alpha=1.0, lam=2.0, beta=0.0)
+#   - alpha=0.75, lam=2: baseline vs contribution ratio in the broad optimum (fit is flat over
+#     ratios ~0.5-2 once beta=0); alpha lowered to 0.75 to weight contribution a bit more.
+#     intl_weight=2 (the build_player_ratings default) was optimal.
+_DEMO_WEIGHTS = ScoreWeights(alpha=0.75, lam=2.0, beta=0.0)
 _MAJOR = {"LCK", "LPL", "LEC", "LCS"}
 
 

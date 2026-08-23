@@ -1,879 +1,303 @@
 year,playername,award,league_full,split,notes
-2011,Shushei,worlds_mvp,World Championship,,Most Valuable Player
-2012,Toyz,worlds_finals_mvp,World Championship,,manual*
-2013,Dade,regional_mvp,LoL The Champions,Spring,Most Valuable Player
-2013,Faker,regional_mvp,LoL The Champions,Summer,Most Valuable Player
-2013,Faker,worlds_finals_mvp,World Championship,,manual*
-2013,MaKNooN,regional_mvp,LoL The Champions,Winter,Most Valuable Player
-2014,Faker,regional_mvp,LoL The Champions,Winter,Most Valuable Player
-2014,Froggen,regional_mvp,Europe League Championship Series,Spring,Most Valuable Player
-2014,KaKAO,regional_mvp,LoL The Champions,Summer,Most Valuable Player
-2014,Mata,worlds_mvp,World Championship,,Most Valuable Player
-2014,Rekkles,regional_mvp,Europe League Championship Series,Summer,Most Valuable Player
-2014,XiaoWeiXiao,regional_mvp,North America League Championship Series,Summer,Most Valuable Player
-2014,dade,regional_mvp,LoL The Champions,Spring,Most Valuable Player
-2015,Adrian,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2015,Altec,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2015,Amazing,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2015,Aphromoo,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2015,Bjergsen,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2015,Bjergsen,regional_mvp,North America League Championship Series,Spring,Most Valuable Player
-2015,BunnyFuFuu,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2015,Cabochard,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2015,Clearlove,msi_mvp,Mid-Season Invitational,,MSI MVP
-2015,Doublelift,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2015,Duke,regional_mvp,LoL The Champions,Spring,Most Valuable Player
-2015,Easyhoon,regional_mvp,LoL The Champions,Spring,Most Valuable Player
-2015,FORG1VENGRE,regional_mvp,Europe League Championship Series,Spring,Most Valuable Player
-2015,Faker,regional_mvp,LoL The Champions,Summer,Most Valuable Player
-2015,Febiven,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2015,FeniX,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2015,Hjarnan,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2015,Huni,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2015,IWillDominate,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2015,Impact,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2015,Jankos,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2015,Keane,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2015,MaRin,worlds_finals_mvp,World Championship,,manual
-2015,Move,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2015,Niels,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2015,Piglet,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2015,Quas,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2015,Reignover,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2015,Rekkles,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2015,Rush,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2015,Rush,regional_mvp,North America League Championship Series,Summer,Most Valuable Player
-2015,Ryu,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2015,Ssumday,regional_mvp,LoL The Champions,Summer,Most Valuable Player
-2015,YellOwStaR,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2015,YellOwStaR,regional_mvp,Europe League Championship Series,Summer,Most Valuable Player
-2015,ZionSpartan,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2015,kaSing,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2015,mithy,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2015,sOAZ,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2015,xPeke,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2016,Adrian,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2016,Adrian,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2016,Aphromoo,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2016,Balls,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2016,Biofrost,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2016,Bjergsen,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2016,Bjergsen,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2016,Bjergsen,regional_mvp,North America League Championship Series,Summer,Most Valuable Player
-2016,Cabochard,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2016,Dardoch,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2016,Dardoch,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2016,Darshan,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2016,Doublelift,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2016,Duke,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
-2016,Emperor,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2016,Faker,msi_mvp,Mid-Season Invitational,,MVP
-2016,Faker,worlds_finals_mvp,World Championship,,manual
-2016,FoFo,regional_mvp,LoL Master Series,Summer,Most Valuable Player
-2016,Forg1ven,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2016,Fox,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2016,Hai,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2016,Hauntzer,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2016,Huni,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2016,Huni,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2016,Hybrid,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2016,Impact,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2016,Jankos,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2016,Jankos,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2016,Jensen,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2016,Jensen,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2016,Kobbe,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2016,Kuro,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
-2016,Looper,msi_all_pro,Mid-Season Invitational,,All Pro Team
-2016,Mata,msi_all_pro,Mid-Season Invitational,,All Pro Team
-2016,Mikyx,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2016,NighT,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2016,Odoamne,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2016,PerkZ,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2016,Perkz,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2016,Piglet,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2016,Pobelter,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2016,Pobelter,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2016,Reignover,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2016,Reignover,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2016,Reignover,regional_mvp,North America League Championship Series,Spring,Most Valuable Player
-2016,Rekkles,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2016,Rush,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2016,Sencux,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2016,Shook,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2016,Smeb,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
-2016,Smeb,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
-2016,SmittyJ,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2016,Sneaky,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2016,Sneaky,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2016,Steeelback,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2016,Stixxay,msi_all_pro,Mid-Season Invitational,,All Pro Team
-2016,Svenskeren,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2016,Trashy,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2016,Trick,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2016,Trick,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2016,Trick,regional_mvp,Europe League Championship Series,Spring,Most Valuable Player
-2016,Trick,regional_mvp,Europe League Championship Series,Summer,Most Valuable Player
-2016,VandeR,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2016,Vander,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2016,Vizicsacsi,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2016,Vizicsacsi,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2016,WildTurtle,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2016,WildTurtle,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2016,Wunder,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2016,Zven,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2016,aphromoo,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2016,kaSing,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2016,mithy,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2016,mlxg,msi_all_pro,Mid-Season Invitational,,All Pro Team
-2016,nukeduck,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2016,xiaohu,msi_all_pro,Mid-Season Invitational,,All Pro Team
-2017,4LaN,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2017,Arrow,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2017,Arrow,regional_mvp,North America League Championship Series,Spring,Most Valuable Player
-2017,Bdd,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
-2017,Biofrost,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2017,Bjergsen,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2017,Bjergsen,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2017,Bjergsen,regional_mvp,North America League Championship Series,Summer,Most Valuable Player
-2017,Broxah,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2017,Caps,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2017,Chei,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2017,Cody Sun,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2017,Contractz,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2017,Crown,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
-2017,Dardoch,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2017,Doublelift,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2017,Exileh,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2017,Expect,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2017,Febiven,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2017,Febiven,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2017,Flame,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2017,Hans Sama,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2017,Hauntzer,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2017,Hauntzer,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2017,Huhi,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2017,Hylissang,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2017,IgNar,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2017,Impact,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2017,Jankos,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2017,Jankos,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2017,Jensen,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2017,Jensen,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2017,Jesiz,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2017,Jockster,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2017,KaKAO,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2017,Khan,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
-2017,Kuro,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
-2017,LirA,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2017,LirA,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2017,Meteos,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2017,Odoamne,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2017,Odoamne,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2017,Olleh,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2017,Olleh,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2017,Peanut,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
-2017,PerkZ,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2017,Perkz,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2017,Rekkles,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2017,Rekkles,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2017,Rekkles,regional_mvp,Europe League Championship Series,Summer,Most Valuable Player
-2017,Ruler,worlds_finals_mvp,World Championship,,Finals MVP
-2017,Ryu,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2017,Samux,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2017,Smoothie,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2017,Smoothie,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2017,Sneaky,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2017,Sneaky,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2017,Ssumday,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2017,Ssumday,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2017,Stixxay,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2017,Trick,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2017,Trick,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2017,VVvert,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2017,VVvert,regional_mvp,Circuit Brazilian League of Legends,,Most Valuable Player
-2017,Vizicsacsi,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2017,Vizicsacsi,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2017,Vizicsacsi,regional_mvp,Europe League Championship Series,Spring,Most Valuable Player
-2017,Xmithie,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2017,Zven,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2017,Zven,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2017,aphromoo,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2017,brTT,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2017,mithy,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2017,mithy,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2017,sOAZ,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2017,tockers,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2018,Bdd,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
-2018,Bjergsen,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2018,Bjergsen,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2018,Broxah,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2018,Broxah,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2018,Bwipo,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2018,Cabochard,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2018,Caps,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2018,Caps,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2018,Caps,regional_mvp,Europe League Championship Series,Summer,Most Valuable Player
-2018,Cody Sun,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2018,Dardoch,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2018,Dardoch,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2018,Doublelift,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2018,Doublelift,regional_mvp,North America League Championship Series,Summer,Most Valuable Player
-2018,Febiven,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2018,Flame,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2018,Hakuho,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2018,Hans Sama,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2018,Hans Sama,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2018,Hauntzer,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2018,Huni,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2018,Hylissang,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2018,Hylissang,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2018,Impact,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2018,Jactroll,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2018,Jankos,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2018,Jensen,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2018,Jensen,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2018,Jiizuke,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2018,Khan,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
-2018,Kikis,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2018,Kobbe,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2018,Licorice,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2018,Maxlore,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2018,Meteos,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2018,Mikyx,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2018,Mikyx,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2018,Ning,worlds_finals_mvp,World Championship,,manual
-2018,Odoamne,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
-2018,Olleh,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2018,Perkz,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
-2018,Perkz,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2018,PowerOfEvil,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2018,PraY,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
-2018,Rekkles,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2018,Rekkles,regional_mvp,Europe League Championship Series,Spring,Most Valuable Player
-2018,Santorin,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2018,Score,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
-2018,Smoothie,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2018,Sneaky,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2018,Sneaky,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2018,Ssumday,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2018,Ssumday,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2018,Svenskeren,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
-2018,Upset,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2018,Wunder,all_pro_1,Europe League Championship Series,Summer,All Pro Team
-2018,Wunder,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2018,Xerxe,all_pro_1,Europe League Championship Series,Spring,All Pro Team
-2018,Xmithie,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2018,Zeyzal,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
-2018,Zven,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
-2018,Zven,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
-2018,aphromoo,all_pro_1,North America League Championship Series,Spring,All Pro Team
-2018,aphromoo,all_pro_1,North America League Championship Series,Summer,All Pro Team
-2018,aphromoo,regional_mvp,North America League Championship Series,Spring,Most Valuable Player
-2018,kaSing,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2018,nukeduck,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2018,sOAZ,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
-2018,sOAZ,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
-2019,Alex,regional_mvp,LoL Master Series,Spring,Most Valuable Player
-2019,Alphari,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2019,Alphari,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2019,Betty,all_pro_1,LoL Master Series,Spring,All Pro Team
-2019,Biofrost,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2019,Bjergsen,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2019,Bjergsen,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2019,Broken Blade,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2019,Broxah,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2019,Broxah,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2019,Bwipo,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2019,Cabochard,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2019,Canyon,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
-2019,Caps,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2019,Caps,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2019,Caps,regional_mvp,LoL EMEA Championship,Spring,Most Valuable Player
-2019,Chovy,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
-2019,Closer,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2019,Closer,regional_mvp,Turkish Championship League,Summer,Most Valuable Player
-2019,Cody Sun,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2019,CoreJJ,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2019,CoreJJ,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2019,CoreJJ,regional_mvp,League of Legends Championship Series,Spring,Most Valuable Player
-2019,Cyeol,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2019,Doinb,regional_mvp,Tencent LoL Pro League,Spring,Most Valuable Player
-2019,Doublelift,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2019,Doublelift,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2019,FoFo,all_pro_1,LoL Master Series,Spring,All Pro Team
-2019,Goku,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2019,Humanoid,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2019,Hylissang,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2019,Hylissang,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2019,IgNar,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2019,Impact,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2019,Impact,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2019,Jankos,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2019,Jankos,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2019,Jankos,regional_mvp,LoL EMEA Championship,Summer,Most Valuable Player
-2019,Jensen,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2019,Jensen,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2019,Jiizuke,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2019,K,all_pro_1,LoL Master Series,Spring,All Pro Team
-2019,Knight9,regional_mvp,Tencent LoL Pro League,Summer,Most Valuable Player
-2019,Kobbe,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2019,Kongyue,all_pro_1,LoL Master Series,Spring,All Pro Team
-2019,Kongyue,regional_mvp,LoL Master Series,Spring,MVP 2nd Place
-2019,Levi,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
-2019,Levi,regional_mvp,Vietnam Championship Series,Summer,Most Valuable Player
-2019,Leza,regional_mvp,Liga Latinoamerica,,Most Valuable Player
-2019,Licorice,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2019,Licorice,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2019,Luci,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2019,Mikyx,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2019,Mikyx,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2019,Nemesis,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2019,Nisqy,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2019,Nisqy,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2019,Nukeduck,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2019,Optimus,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
-2019,Optimus,all_pro_1,Vietnam Championship Series,Spring,All Pro Team
-2019,Palette,all_pro_1,Vietnam Championship Series,Spring,All Pro Team
-2019,Parang,regional_mvp,Liga Latinoamerica,,Most Valuable Player
-2019,Perkz,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2019,Pilot,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2019,Ragner,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2019,Rekkles,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2019,Rekkles,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2019,Rest,all_pro_1,LoL Master Series,Spring,All Pro Team
-2019,Rest,regional_mvp,LoL Master Series,Spring,MVP 3rd Place
-2019,Ruin,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2019,Santorin,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2019,Selfmade,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2019,Shrimp,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2019,Shrimp,regional_mvp,Circuit Brazilian League of Legends,,Most Valuable Player
-2019,Slay,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
-2019,Slayder,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
-2019,Slayder,all_pro_1,Vietnam Championship Series,Spring,All Pro Team
-2019,Smoothie,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2019,Sneaky,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2019,Stixxay,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2019,Svenskeren,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2019,Svenskeren,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2019,Svenskeren,regional_mvp,League of Legends Championship Series,Summer,Most Valuable Player
-2019,Tay,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2019,Teddy,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
-2019,Tian,worlds_finals_mvp,World Championship,,manual
-2019,Tolerant,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2019,Upset,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2019,Upset,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2019,Wiggily,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2019,Wunder,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2019,Wunder,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2019,Xerxe,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2019,Xmithie,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2019,Xmithie,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2019,YiJin,all_pro_1,Vietnam Championship Series,Spring,All Pro Team
-2019,YiJin,regional_mvp,Vietnam Championship Series,Summer,Most Valuable Player
-2019,Zeros,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
-2019,Zeros,all_pro_1,Vietnam Championship Series,Spring,All Pro Team
-2019,Zeros,regional_mvp,Vietnam Championship Series,Spring,Most Valuable Player
-2019,Zeyzal,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2019,Zeyzal,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2019,Zven,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2019,brTT,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2019,mithy,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2020,369,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2020,Aiming,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2020,Alive,all_pro_1,Liga Latinoamerica,,All Pro Team
-2020,Alphari,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2020,Alphari,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2020,Artemis,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
-2020,Azhi,all_pro_1,Pacific Championship Series,Spring,All Pro Team
-2020,Bang,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2020,Baolan,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2020,Bdd,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2020,Bdd,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
-2020,Bdd,regional_mvp,LoL Champions Korea,Spring,Player of the Split
-2020,Bdd,regional_mvp,LoL Champions Korea,Summer,Player of the Split
-2020,BeryL,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2020,Biofrost,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2020,Bjergsen,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2020,Blaber,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2020,Blaber,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2020,Blaber,regional_mvp,League of Legends Championship Series,Spring,Most Valuable Player
-2020,Blue,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2020,Blue,regional_mvp,Turkish Championship League,Winter,Most Valuable Player
-2020,Broken Blade,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2020,Bruce,all_pro_1,Pacific Championship Series,Spring,All Pro Team
-2020,Bvoy,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2020,Bwipo,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2020,Canna,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
-2020,Canyon,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2020,Canyon,worlds_finals_mvp,World Championship,,manual
-2020,Caps,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2020,Caps,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2020,Caps,regional_mvp,LoL EMEA Championship,Summer,Most Valuable Player
-2020,CarioK,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2020,Chovy,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2020,Chovy,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
-2020,Clid,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2020,Clid,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
-2020,Closer,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2020,Closer,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2020,Coated,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
-2020,Cody Sun,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2020,CoreJJ,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2020,CoreJJ,regional_mvp,League of Legends Championship Series,Summer,Most Valuable Player
-2020,Cuzz,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2020,Cuzz,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
-2020,Cuzz,domestic_finals_mvp,LoL Champions Korea,Spring,Final MVP
-2020,DNK,all_pro_2,Vietnam Championship Series,Summer,2nd All Pro Team
-2020,Deft,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2020,Deft,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
-2020,Dia1,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
-2020,Dia1,regional_mvp,Vietnam Championship Series,Summer,Most Valuable Player
-2020,Dia1,regional_mvp,Vietnam Championship Series,Spring,Most Valuable Player
-2020,Doran,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2020,Effort,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2020,FBI,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2020,Faker,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2020,Febiven,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2020,Ferret,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2020,Gemini,all_pro_1,Pacific Championship Series,Spring,All Pro Team
-2020,Ghost,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
-2020,Gilius,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2020,Grell,all_pro_1,Liga Latinoamerica,,All Pro Team
-2020,Hans sama,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2020,HiRit,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2020,HolyPhoenix,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2020,Humanoid,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2020,Hylissang,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2020,IgNar,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2020,IgNar,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2020,Impact,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2020,Inspired,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2020,JackeyLove,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2020,Jankos,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2020,Jankos,regional_mvp,LoL EMEA Championship,Spring,Most Valuable Player
-2020,Japone,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2020,Jensen,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2020,Jiizuke,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2020,Jisu,all_pro_1,Liga Latinoamerica,,All Pro Team
-2020,Jiumeng,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2020,Kaiser,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2020,Kaiser,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2020,Kaiwing,all_pro_1,Pacific Championship Series,Spring,All Pro Team
-2020,Kaiwing,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2020,Kanavi,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2020,Kaori,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2020,Kati,all_pro_2,Vietnam Championship Series,Summer,2nd All Pro Team
-2020,Keria,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2020,Keria,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
-2020,Kiaya,all_pro_2,Vietnam Championship Series,Summer,2nd All Pro Team
-2020,Kiefer,all_pro_1,Liga Latinoamerica,,All Pro Team
-2020,Kongyue,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2020,Larssen,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2020,Levi,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
-2020,Licorice,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2020,Licorice,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2020,Life,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2020,Life,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
-2020,LokeN,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2020,Luana,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2020,Luger,regional_mvp,Turkish Championship League,Summer,Most Valuable Player
-2020,LvMao,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2020,Mikyx,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2020,Mikyx,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2020,Mission,regional_mvp,Pacific Championship Series,Spring,Most Valuable Player
-2020,Mojito,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2020,Mole,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2020,Nemesis,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2020,Newbie,all_pro_1,Liga Latinoamerica,,All Pro Team
-2020,Newbie,regional_mvp,Liga Latinoamerica,,Most Valuable Player
-2020,Ning,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2020,Nisqy,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2020,Nisqy,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2020,Nuguri,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2020,Nuguri,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2020,Nuguri,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
-2020,Orome,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2020,Palette,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
-2020,Pancake,all_pro_1,Liga Latinoamerica,,All Pro Team
-2020,Patrik,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2020,Pbd,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2020,Perkz,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2020,Plugo,all_pro_1,Liga Latinoamerica,,All Pro Team
-2020,PowerOfEvil,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2020,PowerOfEvil,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2020,Rascal,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2020,Rascal,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
-2020,RedBert,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2020,Rekkles,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2020,Rekkles,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2020,Rest,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2020,Rest,regional_mvp,Pacific Championship Series,Summer,Most Valuable Player
-2020,Rookie,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2020,Ruler,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2020,Santorin,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2020,Santorin,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2020,Selfmade,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2020,Serin,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2020,Shad0w,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2020,ShowMaker,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2020,ShowMaker,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
-2020,Slay,all_pro_2,Vietnam Championship Series,Summer,2nd All Pro Team
-2020,Slayder,all_pro_2,Vietnam Championship Series,Summer,2nd All Pro Team
-2020,Ssumday,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2020,Ssumday,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2020,Tactical,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2020,Teddy,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2020,TheShy,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2020,Uniboy,all_pro_1,Pacific Championship Series,Spring,All Pro Team
-2020,Uniboy,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2020,Upset,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2020,Vander,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2020,Vulcan,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2020,Vulcan,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2020,WeiWei,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2020,Wunder,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2020,Wunder,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2020,Xerxe,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2020,Zoom,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2020,Zven,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2020,Zven,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2020,bonO,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2020,fNb,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2020,knight,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2020,knight,regional_mvp,Tencent LoL Pro League,Summer,Most Valuable Player
-2020,ppgod,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2020,tinowns,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
-2020,tinowns,regional_mvp,Circuit Brazilian League of Legends,,Most Valuable Player
-2021,369,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2021,Abbedagge,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2021,Ackerman,all_pro_1,Liga Latinoamerica,,All Pro Team
-2021,Adam,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2021,Alphari,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2021,Artemis,all_pro_1,Vietnam Championship Series,Winter,All Pro Team
-2021,Bdd,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
-2021,Bdd,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2021,BeryL,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2021,Bie,all_pro_1,Vietnam Championship Series,Winter,All Pro Team
-2021,Bin,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2021,Blaber,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2021,Blaber,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2021,Blaber,regional_mvp,League of Legends Championship Series,Spring,Most Valuable Player
-2021,Black,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2021,Blazes,all_pro_1,Vietnam Championship Series,Winter,All Pro Team
-2021,Bolulu,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2021,Breathe,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2021,Bugi,all_pro_1,Liga Latinoamerica,,All Pro Team
-2021,Bugi,regional_mvp,Liga Latinoamerica,,Most Valuable Player
-2021,Bwipo,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2021,Bwipo,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2021,Canyon,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2021,Canyon,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
-2021,Canyon,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
-2021,Caps,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2021,Caps,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2021,Chovy,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2021,Chovy,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
-2021,Chovy,regional_mvp,LoL Champions Korea,Spring,Player of the Split
-2021,Clid,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2021,Closer,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2021,Cody,all_pro_1,Liga Latinoamerica,,All Pro Team
-2021,Cody,regional_mvp,Liga Latinoamerica,,Most Valuable Player
-2021,CoreJJ,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2021,CoreJJ,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2021,Crazy,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2021,Crisp,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2021,Croco,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
-2021,Danny,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2021,Dardoch,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2021,Doinb,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2021,Doinb,regional_mvp,Tencent LoL Pro League,Summer,Most Valuable Player
-2021,EMENES,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2021,Effort,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
-2021,Elk,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2021,Elyoya,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2021,FBI,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2021,FBI,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2021,Farfetch,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2021,Ferret,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2021,FoFo,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2021,FoFo,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2021,Fudge,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2021,GALA,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2021,GALA,domestic_finals_mvp,Tencent LoL Pro League,Spring,Finals MVP
-2021,Ghost,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2021,Gori,regional_mvp,LoL Champions Korea,Summer,Player of the Split
-2021,Hang,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2021,Hans sama,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2021,Hans sama,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2021,Huhi,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2021,Humanoid,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2021,Humanoid,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2021,Huni,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2021,Huni,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2021,Hylissang,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2021,Hylissang,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2021,Impact,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2021,Impact,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2021,Inspired,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2021,Inspired,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2021,Inspired,regional_mvp,LoL EMEA Championship,Summer,Most Valuable Player
-2021,Jankos,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2021,Jankos,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2021,Jauny,all_pro_1,Liga Latinoamerica,,All Pro Team
-2021,Jensen,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2021,Jiizuke,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2021,Kaiser,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2021,Kaiser,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2021,Kaiwing,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2021,Kaori,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2021,Karsa,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2021,Kellin,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
-2021,Keria,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2021,Keria,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2021,Khan,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2021,Khan,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
-2021,Kiin,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2021,Killerqueen,all_pro_1,Vietnam Championship Series,Winter,All Pro Team
-2021,Killerqueen,regional_mvp,Vietnam Championship Series,Winter,Most Valuable Player
-2021,Kingen,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2021,Ksaez,regional_mvp,Turkish Championship League,Winter,Most Valuable Player
-2021,Larssen,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2021,Life,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2021,Lwx,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2021,Lwx,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2021,Maple,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2021,Meiko,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2021,Meiko,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2021,Mikyx,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2021,Mikyx,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2021,Ming,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2021,Ming,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2021,Mojito,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2021,Mojito,regional_mvp,Turkish Championship League,Summer,Most Valuable Player
-2021,Neo,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2021,Nisqy,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2021,Odoamne,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2021,Odoamne,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2021,Peanut,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2021,Peanut,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
-2021,Perkz,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2021,PowerOfEvil,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2021,PowerOfEvil,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2021,Prince,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
-2021,Pun,all_pro_1,Vietnam Championship Series,Winter,All Pro Team
-2021,Pyosik,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2021,Pyosik,regional_mvp,LoL Champions Korea,Spring,Player of the Split
-2021,Rascal,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2021,Rekkles,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2021,Rekkles,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2021,Rekkles,regional_mvp,LoL EMEA Championship,Spring,Most Valuable Player
-2021,Rest,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2021,River,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2021,Ruler,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2021,Ruler,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
-2021,Santorin,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2021,Scout,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2021,Scout,domestic_finals_mvp,Tencent LoL Pro League,Summer,Finals MVP
-2021,Scout,worlds_finals_mvp,World Championship,,Finals MVP
-2021,ShowMaker,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2021,ShowMaker,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2021,ShowMaker,regional_mvp,LoL Champions Korea,Spring,Player of the Split
-2021,SolidSnake,all_pro_1,Liga Latinoamerica,,All Pro Team
-2021,Spica,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2021,Spica,regional_mvp,League of Legends Championship Series,Summer,Most Valuable Player
-2021,StarScreen,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2021,Summit,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
-2021,SwordArt,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2021,Tactical,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2021,Tarzan,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2021,Teddy,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2021,Tian,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2021,TopLop,all_pro_1,Liga Latinoamerica,,All Pro Team
-2021,Unified,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2021,Unified,regional_mvp,Pacific Championship Series,Summer,Most Valuable Player
-2021,Upset,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2021,Upset,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2021,Viper,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2021,Viper,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2021,Viper,regional_mvp,Tencent LoL Pro League,Spring,Most Valuable Player
-2021,Vulcan,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2021,Vulcan,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2021,Wei,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2021,Wei,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2021,Whitelotus,all_pro_1,Liga Latinoamerica,,All Pro Team
-2021,Wunder,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2021,Wunder,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2021,Xiaohu,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2021,Xiaohu,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2021,Zergsting,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2021,Zoom,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2021,Zven,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2021,beishang,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2021,deokdam,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2021,knight,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2021,knight,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2022,369,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2022,Aiming,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
-2022,Alphari,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2022,Berserker,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2022,Berserker,all_pro_2,League of Legends Championship Series,Summer,2nd All-Pro Team
-2022,BeryL,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2022,Bie,regional_mvp,Vietnam Championship Series,Summer,Most Valuable Player
-2022,Bjergsen,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2022,Bjergsen,all_pro_2,League of Legends Championship Series,Summer,2nd All-Pro Team
-2022,Blaber,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2022,Bolulu,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2022,Bong,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2022,Broken Blade,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2022,BrokenBlade,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2022,Bwipo,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2022,Bwipo,all_pro_3,League of Legends Championship Series,Summer,3rd All-Pro Team
-2022,Canyon,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2022,Canyon,regional_mvp,LoL Champions Korea,Spring,Player of the Split
-2022,Chieftain,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2022,Chovy,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2022,Chovy,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2022,Closer,all_pro_2,League of Legends Championship Series,Summer,2nd All-Pro Team
-2022,Closer,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2022,Clozer,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
-2022,Comp,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2022,Comp,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2022,CoreJJ,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2022,CoreJJ,all_pro_2,League of Legends Championship Series,Summer,2nd All-Pro Team
-2022,Crazy,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2022,Crisp,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2022,Croco,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
-2022,Cryscata,all_pro_2,Pacific Championship Series,Summer,2nd All-Pro Team
-2022,Danny,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2022,Deft,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2022,Doran,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
-2022,Elyoya,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2022,Elyoya,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2022,Enso,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2022,FBI,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2022,FBI,all_pro_3,League of Legends Championship Series,Summer,3rd All-Pro Team
-2022,Faker,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2022,Faker,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
-2022,Ferret,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2022,Fleshy,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2022,Fudge,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2022,Gemini,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2022,Gori,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2022,Gori,regional_mvp,Pacific Championship Series,Summer,Most Valuable Player
-2022,Gumayusi,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2022,Hans Sama,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2022,HolyPhoenix,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2022,HolyPhoenix,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2022,HolyPhoenix,regional_mvp,Turkish Championship League,Winter,Most Valuable Player
-2022,HolyPhoenix,regional_mvp,Turkish Championship League,Summer,Most Valuable Player
-2022,Humanoid,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2022,Husha,all_pro_3,Pacific Championship Series,Summer,3rd All-Pro Team
-2022,Hylissang,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2022,Impact,all_pro_2,League of Legends Championship Series,Summer,2nd All-Pro Team
-2022,Inspired,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2022,Inspired,regional_mvp,League of Legends Championship Series,Summer,Most Valuable Player
-2022,JackeyLove,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2022,Jankos,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2022,Jankos,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2022,Kael,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
-2022,Kaiser,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2022,Kaiwing,all_pro_2,Pacific Championship Series,Summer,2nd All-Pro Team
-2022,Kanavi,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2022,Kanavi,all_pro_2,Tencent LoL Pro League,Summer,2nd All-Pro Team
-2022,Karsa,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2022,Keria,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2022,Keria,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
-2022,Keria,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
-2022,Kiin,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2022,Kingen,worlds_finals_mvp,World Championship,,Finals MVP
-2022,Knight,all_pro_2,Tencent LoL Pro League,Summer,2nd All-Pro Team
-2022,Koala,all_pro_3,Pacific Championship Series,Summer,3rd All-Pro Team
-2022,Kongyue,all_pro_2,Pacific Championship Series,Summer,2nd All-Pro Team
-2022,Larssen,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2022,Leaky,all_pro_3,Pacific Championship Series,Summer,3rd All-Pro Team
-2022,Lehends,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2022,Lehends,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2022,Light,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2022,Malrang,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2022,Mark,all_pro_3,Tencent LoL Pro League,Summer,3rd All-Pro Team
-2022,Markoon,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2022,Ming,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2022,Ming,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2022,Missing,all_pro_2,Tencent LoL Pro League,Summer,2nd All-Pro Team
-2022,Missing,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2022,Mission,all_pro_2,Pacific Championship Series,Summer,2nd All-Pro Team
-2022,MnM,all_pro_3,Pacific Championship Series,Summer,3rd All-Pro Team
-2022,Neon,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2022,Nestea,all_pro_3,Pacific Championship Series,Summer,3rd All-Pro Team
-2022,Nisqy,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2022,Nisqy,regional_mvp,LoL EMEA Championship,Summer,Most Valuable Player
-2022,Odoamne,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2022,Odoamne,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2022,Oner,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2022,Oner,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
-2022,Patrik,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2022,Peanut,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2022,Peanut,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2022,Photic,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2022,Photic,all_pro_2,Tencent LoL Pro League,Summer,2nd All-Pro Team
-2022,Pop,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2022,Prince,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
-2022,Prince,regional_mvp,LoL Champions Korea,Summer,Player of the Split
-2022,Rascal,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2022,Rascal,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
-2022,Rest,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2022,Rich,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2022,Rookie,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2022,Rookie,all_pro_3,Tencent LoL Pro League,Summer,3rd All-Pro Team
-2022,Rookie,regional_mvp,Tencent LoL Pro League,Spring,Most Valuable Player
-2022,Ruler,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2022,Ruler,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
-2022,Ruler,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
-2022,Santorin,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2022,Santorin,all_pro_3,League of Legends Championship Series,Summer,3rd All-Pro Team
-2022,Scout,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2022,Serin,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2022,ShowMaker,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
-2022,Shunn,all_pro_1,Pacific Championship Series,Summer,All Pro Team
-2022,Ssumday,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2022,Ssumday,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2022,Summit,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2022,Summit,regional_mvp,League of Legends Championship Series,Spring,Most Valuable Player
-2022,Targamas,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2022,Targamas,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2022,Tarzan,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2022,TheShy,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2022,TheShy,all_pro_2,Tencent LoL Pro League,Summer,2nd All-Pro Team
-2022,Tian,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2022,Tian,regional_mvp,Tencent LoL Pro League,Summer,Most Valuable Player
-2022,Trymbi,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2022,Trymbi,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2022,UNF0RGIVEN,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
-2022,Upset,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2022,Vetheo,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2022,Vetheo,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
-2022,Vetheo,regional_mvp,LoL EMEA Championship,Spring,Most Valuable Player
-2022,Viper,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2022,Viper,all_pro_3,Tencent LoL Pro League,Summer,3rd All-Pro Team
-2022,Vulcan,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2022,Vulcan,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2022,Wayward,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2022,Wei,all_pro_3,Tencent LoL Pro League,Summer,3rd All-Pro Team
-2022,Wei,msi_mvp,Mid-Season Invitational,,Most Valuable Player
-2022,Wunder,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2022,Xiaohu,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2022,Xiaohu,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2022,YSKM,all_pro_2,Pacific Championship Series,Summer,2nd All-Pro Team
-2022,Zeus,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2022,Zeus,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2022,caPs,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
-2022,huhi,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2022,huhi,all_pro_3,League of Legends Championship Series,Summer,3rd All-Pro Team
-2022,jojopyun,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2022,shanji,all_pro_3,Tencent LoL Pro League,Summer,3rd All-Pro Team
-2022,toucouille,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2022,toucouille,all_pro_3,League of Legends Championship Series,Summer,3rd All-Pro Team
+2025,1xn,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2025,369,all_pro_1,Tencent LoL Pro League,,All Pro Team
+2025,369,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2025,Ale,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2025,Alvaro,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2025,Ayu,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
+2025,BDD,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
+2025,Beichuan,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2025,Betty,all_pro_1,League of Legends Championship Pacific,,All Pro Team
+2025,Blaber,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
+2025,Boal,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
+2025,Brance,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
+2025,Busio,all_pro_1,League of Legends Championship of The Americas North,,All Pro Team
+2025,Bvoy,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
+2025,Bwipo,all_pro_1,League of Legends Championship of The Americas North,,All Pro Team
+2025,Caliste,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2025,Canna,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2025,Canyon,all_pro_1,LoL Champions Korea,,All Pro Team
+2025,Caps,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2025,CarioK,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
+2025,CarioK,regional_mvp,League of Legends Championship of The Americas South,,Most Valuable Player
+2025,Chovy,all_pro_1,LoL Champions Korea,,All Pro Team
+2025,Chovy,msi_finals_mvp,Mid-Season Invitational,,Finals MVP
+2025,Chovy,regional_mvp,LoL Champions Korea,,Most Valuable Player
+2025,Closer,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2025,Contractz,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
+2025,CoreJJ,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
+2025,Creme,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,Crisp,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,DOOM,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
+2025,Delight,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
+2025,Diable,intl_finals_mvp,League of Legends Asia Invitational,,Finals MVP
+2025,Disamis,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
+2025,Disamis,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
+2025,DnDn,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2025,Doggo,all_pro_1,League of Legends Championship Pacific,,All Pro Team
+2025,Doggo,all_pro_1,League of Legends Championship Pacific,Season Finals,All Pro Team
+2025,Doinb,all_pro_1,Tencent LoL Pro League,,All Pro Team
+2025,Doinb,regional_mvp,Tencent LoL Pro League,,Most Valuable Player
+2025,Doran,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
+2025,Driver,regional_mvp,League of Legends Championship Pacific,,Most Valuable Player
+2025,Duro,all_pro_1,LoL Champions Korea,,All Pro Team
+2025,Elk,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,Elyoya,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2025,Eyla,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
+2025,Faker,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
+2025,Feather,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,Flandre,all_pro_1,Tencent LoL Pro League,,All Pro Team
+2025,Flandre,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2025,Flandre,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,Forest,regional_mvp,LoL Japan League,,Most Valuable Player
+2025,Fudge,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
+2025,GALA,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2025,Gori,all_pro_1,Turkish Championship League,Spring,All Pro Team
+2025,Guigo,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
+2025,Gumayusi,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
+2025,Gumayusi,worlds_finals_mvp,World Championship,,Finals MVP
+2025,Hang,all_pro_1,Tencent LoL Pro League,,All Pro Team
+2025,Hans Sama,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2025,HongQ,all_pro_1,League of Legends Championship Pacific,,All Pro Team
+2025,HongQ,all_pro_1,League of Legends Championship Pacific,Season Finals,All Pro Team
+2025,HongQ,domestic_finals_mvp,League of Legends Championship Pacific,Season Finals,Finals MVP
+2025,HongQ,domestic_finals_mvp,League of Legends Championship Pacific,,Finals MVP
+2025,HongQ,regional_mvp,League of Legends Championship Pacific,Season Finals,Most Valuable Player
+2025,Hope,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,Impact,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
+2025,Inspired,all_pro_1,League of Legends Championship of The Americas North,,All Pro Team
+2025,Inspired,regional_mvp,League of Legends Championship of The Americas North,,Most Valuable Player
+2025,Ivory,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2025,JackeyLove,all_pro_1,Tencent LoL Pro League,,All Pro Team
+2025,JackeyLove,domestic_finals_mvp,Tencent LoL Pro League,,Finals MVP
+2025,JackeyLove,regional_mvp,Tencent LoL Pro League,,Most Valuable Player
+2025,JoJo,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
+2025,Jojopyun,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2025,JunJia,all_pro_1,League of Legends Championship Pacific,,All Pro Team
+2025,JunJia,all_pro_1,League of Legends Championship Pacific,Season Finals,All Pro Team
+2025,JunJia,regional_mvp,League of Legends Championship Pacific,,Most Valuable Player
+2025,Kael,all_pro_1,Tencent LoL Pro League,,All Pro Team
+2025,Kaiwing,all_pro_1,League of Legends Championship Pacific,,All Pro Team
+2025,Kaiwing,domestic_finals_mvp,League of Legends Championship Pacific,,Finals MVP
+2025,Kanavi,all_pro_1,Tencent LoL Pro League,,All Pro Team
+2025,Kanavi,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,Kanavi,regional_mvp,Tencent LoL Pro League,,Most Valuable Player
+2025,Kaze,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
+2025,Keria,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
+2025,Kiaya,all_pro_1,League of Legends Championship Pacific,,All Pro Team
+2025,Kiin,all_pro_1,LoL Champions Korea,,All Pro Team
+2025,Kiin,intl_mvp,Esports World Cup,,Tournament MVP
+2025,Knight,all_pro_1,Tencent LoL Pro League,,All Pro Team
+2025,Knight,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,Kofte,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2025,Kratos,all_pro_1,League of Legends Championship Pacific,,All Pro Team
+2025,Kuri,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
+2025,Leave,all_pro_1,Tencent LoL Pro League,,All Pro Team
+2025,Levi,all_pro_1,League of Legends Championship Pacific,,All Pro Team
+2025,Loki,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
+2025,Massu,all_pro_1,League of Legends Championship of The Americas North,,All Pro Team
+2025,Meiko,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2025,Mihile,all_pro_1,Turkish Championship League,Spring,All Pro Team
+2025,Mikyx,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2025,Mireu,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
+2025,Mireu,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
+2025,Morttheus,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
+2025,Myrwn,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2025,Naak Nako,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2025,Neon,all_pro_1,Turkish Championship League,Spring,All Pro Team
+2025,ON,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2025,ON,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,Oner,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
+2025,Patch,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2025,Patch,all_pro_1,Turkish Championship League,Spring,All Pro Team
+2025,Peanut,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
+2025,Peyz,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2025,Peyz,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,Quad,all_pro_1,League of Legends Championship of The Americas North,,All Pro Team
+2025,Quad,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
+2025,Quid,all_pro_1,League of Legends Championship of The Americas North,,All Pro Team
+2025,Quid,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
+2025,Rabelo,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
+2025,Razork,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2025,RedBert,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
+2025,Rest,all_pro_1,League of Legends Championship Pacific,Season Finals,All Pro Team
+2025,River,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
+2025,River,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
+2025,Roamer,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
+2025,Roamer,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
+2025,Robo,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
+2025,Rookie,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2025,Ruep,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2025,Ruler,all_pro_1,LoL Champions Korea,,All Pro Team
+2025,Ruler,domestic_finals_mvp,LoL Champions Korea,,Finals MVP
+2025,SKEANZ,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2025,Samver,regional_mvp,LoL Japan League,,Most Valuable Player
+2025,Scorth,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2025,Scorth,regional_mvp,Turkish Championship League,Summer,Most Valuable Player
+2025,Scout,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2025,Scout,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,Shanks,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2025,SiuLoong,all_pro_1,League of Legends Championship Pacific,,All Pro Team
+2025,Taki,all_pro_1,League of Legends Championship Pacific,Season Finals,All Pro Team
+2025,Targamas,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2025,Tarzan,all_pro_1,Tencent LoL Pro League,,All Pro Team
+2025,Tarzan,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2025,Tarzan,domestic_finals_mvp,Tencent LoL Pro League,,Finals MVP
+2025,Tatu,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
+2025,Tatu,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
+2025,Thanatos,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
+2025,TheShy,all_pro_1,Tencent LoL Pro League,,All Pro Team
+2025,TheShy,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,TitaN,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
+2025,TitaN,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
+2025,Trymbi,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
+2025,Trymbi,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
+2025,Tutsz,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
+2025,Upset,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2025,Upset,regional_mvp,LoL EMEA Championship,Spring,Most Valuable Player
+2025,Viper,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
+2025,Vladi,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2025,Vulcan,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
+2025,Wei,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,Wizer,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
+2025,XnS,all_pro_1,Turkish Championship League,Spring,All Pro Team
+2025,Xun,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2025,Yeon,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
+2025,Yeon,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
+2025,Yeon,intl_finals_mvp,League of Legends Championship of The Americas,,Finals MVP
+2025,Yike,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2025,Zest,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2025,Zeus,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
+2025,Zeus,domestic_finals_mvp,LoL Champions Korea,,Finals MVP
+2025,Zven,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
+2025,fNb,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
+2025,frosty,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
+2025,knight,domestic_finals_mvp,Tencent LoL Pro League,,Finals MVP
+2025,monkaS,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2025,ppgod,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2024,369,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2024,369,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2024,APA,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2024,Aiming,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
+2024,Angel,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2024,BDD,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
+2024,Berserker,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2024,Berserker,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2024,Bin,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2024,Bin,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2024,Blaber,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2024,Blaber,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2024,BrokenBlade,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2024,BrokenBlade,all_pro_1,LoL EMEA Championship,Winter,All Pro Team
+2024,Busio,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2024,Busio,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2024,Bvoy,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2024,Bwipo,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2024,Bwipo,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2024,Canyon,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2024,Canyon,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2024,Caps,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2024,Caps,all_pro_1,LoL EMEA Championship,Winter,All Pro Team
+2024,Carry,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2024,Chovy,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2024,Chovy,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2024,Chovy,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
+2024,Chovy,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
+2024,CoreJJ,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2024,Creme,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2024,Delight,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
+2024,Delight,all_pro_3,LoL Champions Korea,Spring,3rd All-Pro Team
+2024,Doran,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
+2024,Doran,all_pro_3,LoL Champions Korea,Spring,3rd All-Pro Team
+2024,Elk,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2024,Elk,domestic_finals_mvp,Tencent LoL Pro League,Spring,Finals MVP
+2024,Eyla,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2024,Faker,all_pro_2,LoL Champions Korea,Spring,2nd All-Pro Team
+2024,Faker,intl_mvp,Esports World Cup,,Most Valuable Player
+2024,Faker,worlds_finals_mvp,World Championship,,Finals MVP
+2024,GALA,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2024,Gumayusi,all_pro_3,LoL Champions Korea,Spring,3rd All-Pro Team
+2024,Hang,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2024,Hans Sama,all_pro_1,LoL EMEA Championship,Winter,All Pro Team
+2024,Hoon,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2024,Ice,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2024,Impact,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2024,Impact,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2024,Impact,regional_mvp,League of Legends Championship Series,Summer,Most Valuable Player
+2024,Inspired,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2024,Inspired,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2024,JackeyLove,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2024,JackeyLove,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2024,Jensen,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2024,Jojopyun,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2024,Jun,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2024,JunJia,domestic_finals_mvp,Pacific Championship Series,Spring,Finals MVP
+2024,Kanavi,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2024,Kanavi,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2024,Keria,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2024,Keria,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
+2024,Kiaya,domestic_finals_mvp,Vietnam Championship Series,Summer,Finals MVP
+2024,Kiin,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2024,Kiin,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2024,Kiin,domestic_finals_mvp,LoL Champions Korea,Spring,Finals MVP
+2024,Kingen,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
+2024,Lehends,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2024,Lehends,all_pro_2,LoL Champions Korea,Spring,2nd All-Pro Team
+2024,Lehends,msi_finals_mvp,Mid-Season Invitational,,Finals MVP
+2024,MISSING,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2024,Massu,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2024,Massu,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2024,Meiko,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2024,Meiko,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2024,Mikyx,all_pro_1,LoL EMEA Championship,Winter,All Pro Team
+2024,Nakyung,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2024,ON,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2024,ON,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2024,Oner,all_pro_2,LoL Champions Korea,Spring,2nd All-Pro Team
+2024,Oner,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
+2024,Peanut,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
+2024,Peanut,all_pro_3,LoL Champions Korea,Spring,3rd All-Pro Team
+2024,Peyz,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2024,Peyz,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2024,Peyz,regional_mvp,LoL Champions Korea,Summer,Player of the Split
+2024,Quad,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2024,Quid,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2024,Quid,regional_mvp,League of Legends Championship Series,Spring,Most Valuable Player
+2024,Razork,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2024,River,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2024,Rookie,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2024,Ruep,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2024,Ruler,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2024,Ruler,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2024,SKEANZ,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2024,SKEANZ,regional_mvp,Turkish Championship League,Winter,Most Valuable Player
+2024,Scout,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2024,Sniper,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2024,Tarzan,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2024,Thanatos,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2024,Tian,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2024,Tian,regional_mvp,Tencent LoL Pro League,Summer,Most Valuable Player
+2024,UmTi,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2024,VULCAN,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2024,Viper,all_pro_2,LoL Champions Korea,Spring,2nd All-Pro Team
+2024,Viper,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
+2024,Vulcan,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2024,Wayward,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2024,Woody,domestic_finals_mvp,Pacific Championship Series,Summer,Finals MVP
+2024,Xun,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2024,Yeon,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2024,Yike,all_pro_1,LoL EMEA Championship,Winter,All Pro Team
+2024,Zeka,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
+2024,Zeka,all_pro_3,LoL Champions Korea,Spring,3rd All-Pro Team
+2024,Zeka,domestic_finals_mvp,LoL Champions Korea,Summer,Finals MVP
+2024,Zeus,all_pro_2,LoL Champions Korea,Spring,2nd All-Pro Team
+2024,Zika,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2024,jojopyun,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2024,knight,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2024,knight,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2024,knight,domestic_finals_mvp,Tencent LoL Pro League,Summer,Finals MVP
+2024,knight,regional_mvp,Tencent LoL Pro League,Spring,Most Valuable Player
+2024,milkyway,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
 2023,369,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
 2023,369,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
 2023,Abbedagge,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
@@ -1054,298 +478,878 @@ year,playername,award,league_full,split,notes
 2023,nuc,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
 2023,shanji,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
 2023,shanji,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2024,369,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2024,369,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2024,APA,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2024,Aiming,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
-2024,Angel,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2024,BDD,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
-2024,Berserker,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2024,Berserker,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2024,Bin,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2024,Bin,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2024,Blaber,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2024,Blaber,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2024,BrokenBlade,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2024,BrokenBlade,all_pro_1,LoL EMEA Championship,Winter,All Pro Team
-2024,Busio,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2024,Busio,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2024,Bvoy,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2024,Bwipo,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2024,Bwipo,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2024,Canyon,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2024,Canyon,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2024,Caps,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2024,Caps,all_pro_1,LoL EMEA Championship,Winter,All Pro Team
-2024,Carry,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2024,Chovy,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2024,Chovy,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2024,Chovy,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
-2024,Chovy,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
-2024,CoreJJ,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2024,Creme,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2024,Delight,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
-2024,Delight,all_pro_3,LoL Champions Korea,Spring,3rd All-Pro Team
-2024,Doran,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
-2024,Doran,all_pro_3,LoL Champions Korea,Spring,3rd All-Pro Team
-2024,Elk,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2024,Elk,domestic_finals_mvp,Tencent LoL Pro League,Spring,Finals MVP
-2024,Eyla,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2024,Faker,all_pro_2,LoL Champions Korea,Spring,2nd All-Pro Team
-2024,Faker,worlds_finals_mvp,World Championship,,Finals MVP
-2024,GALA,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2024,Gumayusi,all_pro_3,LoL Champions Korea,Spring,3rd All-Pro Team
-2024,Hang,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2024,Hans Sama,all_pro_1,LoL EMEA Championship,Winter,All Pro Team
-2024,Hoon,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2024,Ice,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2024,Impact,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2024,Impact,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2024,Impact,regional_mvp,League of Legends Championship Series,Summer,Most Valuable Player
-2024,Inspired,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2024,Inspired,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2024,JackeyLove,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2024,JackeyLove,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2024,Jensen,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2024,Jojopyun,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2024,Jun,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2024,JunJia,domestic_finals_mvp,Pacific Championship Series,Spring,Finals MVP
-2024,Kanavi,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2024,Kanavi,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2024,Keria,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2024,Keria,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
-2024,Kiaya,domestic_finals_mvp,Vietnam Championship Series,Summer,Finals MVP
-2024,Kiin,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2024,Kiin,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2024,Kiin,domestic_finals_mvp,LoL Champions Korea,Spring,Finals MVP
-2024,Kingen,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
-2024,Lehends,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2024,Lehends,all_pro_2,LoL Champions Korea,Spring,2nd All-Pro Team
-2024,Lehends,msi_finals_mvp,Mid-Season Invitational,,Finals MVP
-2024,MISSING,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2024,Massu,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2024,Massu,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2024,Meiko,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2024,Meiko,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2024,Mikyx,all_pro_1,LoL EMEA Championship,Winter,All Pro Team
-2024,Nakyung,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2024,ON,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2024,ON,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2024,Oner,all_pro_2,LoL Champions Korea,Spring,2nd All-Pro Team
-2024,Oner,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
-2024,Peanut,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
-2024,Peanut,all_pro_3,LoL Champions Korea,Spring,3rd All-Pro Team
-2024,Peyz,all_pro_1,LoL Champions Korea,Spring,All Pro Team
-2024,Peyz,all_pro_1,LoL Champions Korea,Summer,All Pro Team
-2024,Peyz,regional_mvp,LoL Champions Korea,Summer,Player of the Split
-2024,Quad,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2024,Quid,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2024,Quid,regional_mvp,League of Legends Championship Series,Spring,Most Valuable Player
-2024,Razork,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2024,River,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2024,Rookie,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2024,Ruep,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2024,Ruler,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2024,Ruler,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
-2024,SKEANZ,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2024,SKEANZ,regional_mvp,Turkish Championship League,Winter,Most Valuable Player
-2024,Scout,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2024,Sniper,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2024,Tarzan,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2024,Thanatos,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2024,Tian,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2024,Tian,regional_mvp,Tencent LoL Pro League,Summer,Most Valuable Player
-2024,UmTi,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
-2024,VULCAN,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2024,Viper,all_pro_2,LoL Champions Korea,Spring,2nd All-Pro Team
-2024,Viper,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
-2024,Vulcan,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
-2024,Wayward,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2024,Woody,domestic_finals_mvp,Pacific Championship Series,Summer,Finals MVP
-2024,Xun,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
-2024,Yeon,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
-2024,Yike,all_pro_1,LoL EMEA Championship,Winter,All Pro Team
-2024,Zeka,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
-2024,Zeka,all_pro_3,LoL Champions Korea,Spring,3rd All-Pro Team
-2024,Zeka,domestic_finals_mvp,LoL Champions Korea,Summer,Finals MVP
-2024,Zeus,all_pro_2,LoL Champions Korea,Spring,2nd All-Pro Team
-2024,Zika,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
-2024,jojopyun,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
-2024,knight,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
-2024,knight,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
-2024,knight,domestic_finals_mvp,Tencent LoL Pro League,Summer,Finals MVP
-2024,knight,regional_mvp,Tencent LoL Pro League,Spring,Most Valuable Player
-2024,milkyway,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2025,1xn,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
-2025,369,all_pro_1,Tencent LoL Pro League,,All Pro Team
-2025,369,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
-2025,Ale,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
-2025,Alvaro,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2025,Ayu,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
-2025,BDD,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
-2025,Beichuan,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
-2025,Betty,all_pro_1,League of Legends Championship Pacific,,All Pro Team
-2025,Blaber,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
-2025,Boal,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
-2025,Brance,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
-2025,Busio,all_pro_1,League of Legends Championship of The Americas North,,All Pro Team
-2025,Bvoy,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
-2025,Bwipo,all_pro_1,League of Legends Championship of The Americas North,,All Pro Team
-2025,Caliste,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2025,Canna,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2025,Canyon,all_pro_1,LoL Champions Korea,,All Pro Team
-2025,Caps,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2025,CarioK,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
-2025,CarioK,regional_mvp,League of Legends Championship of The Americas South,,Most Valuable Player
-2025,Chovy,all_pro_1,LoL Champions Korea,,All Pro Team
-2025,Chovy,msi_finals_mvp,Mid-Season Invitational,,Finals MVP
-2025,Chovy,regional_mvp,LoL Champions Korea,,Most Valuable Player
-2025,Closer,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2025,Contractz,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
-2025,CoreJJ,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
-2025,Creme,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,Crisp,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,DOOM,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
-2025,Delight,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
-2025,Disamis,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
-2025,Disamis,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
-2025,DnDn,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2025,Doggo,all_pro_1,League of Legends Championship Pacific,,All Pro Team
-2025,Doggo,all_pro_1,League of Legends Championship Pacific,Season Finals,All Pro Team
-2025,Doinb,all_pro_1,Tencent LoL Pro League,,All Pro Team
-2025,Doinb,regional_mvp,Tencent LoL Pro League,,Most Valuable Player
-2025,Doran,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
-2025,Driver,regional_mvp,League of Legends Championship Pacific,,Most Valuable Player
-2025,Duro,all_pro_1,LoL Champions Korea,,All Pro Team
-2025,Elk,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,Elyoya,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2025,Eyla,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
-2025,Faker,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
-2025,Feather,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,Flandre,all_pro_1,Tencent LoL Pro League,,All Pro Team
-2025,Flandre,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
-2025,Flandre,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,Forest,regional_mvp,LoL Japan League,,Most Valuable Player
-2025,Fudge,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
-2025,GALA,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
-2025,Gori,all_pro_1,Turkish Championship League,Spring,All Pro Team
-2025,Guigo,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
-2025,Gumayusi,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
-2025,Gumayusi,worlds_finals_mvp,World Championship,,Finals MVP
-2025,Hang,all_pro_1,Tencent LoL Pro League,,All Pro Team
-2025,Hans Sama,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2025,HongQ,all_pro_1,League of Legends Championship Pacific,,All Pro Team
-2025,HongQ,all_pro_1,League of Legends Championship Pacific,Season Finals,All Pro Team
-2025,HongQ,domestic_finals_mvp,League of Legends Championship Pacific,Season Finals,Finals MVP
-2025,HongQ,domestic_finals_mvp,League of Legends Championship Pacific,,Finals MVP
-2025,HongQ,regional_mvp,League of Legends Championship Pacific,Season Finals,Most Valuable Player
-2025,Hope,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,Impact,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
-2025,Inspired,all_pro_1,League of Legends Championship of The Americas North,,All Pro Team
-2025,Inspired,regional_mvp,League of Legends Championship of The Americas North,,Most Valuable Player
-2025,Ivory,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2025,JackeyLove,all_pro_1,Tencent LoL Pro League,,All Pro Team
-2025,JackeyLove,domestic_finals_mvp,Tencent LoL Pro League,,Finals MVP
-2025,JackeyLove,regional_mvp,Tencent LoL Pro League,,Most Valuable Player
-2025,JoJo,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
-2025,Jojopyun,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2025,JunJia,all_pro_1,League of Legends Championship Pacific,,All Pro Team
-2025,JunJia,all_pro_1,League of Legends Championship Pacific,Season Finals,All Pro Team
-2025,JunJia,regional_mvp,League of Legends Championship Pacific,,Most Valuable Player
-2025,Kael,all_pro_1,Tencent LoL Pro League,,All Pro Team
-2025,Kaiwing,all_pro_1,League of Legends Championship Pacific,,All Pro Team
-2025,Kaiwing,domestic_finals_mvp,League of Legends Championship Pacific,,Finals MVP
-2025,Kanavi,all_pro_1,Tencent LoL Pro League,,All Pro Team
-2025,Kanavi,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,Kanavi,regional_mvp,Tencent LoL Pro League,,Most Valuable Player
-2025,Kaze,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
-2025,Keria,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
-2025,Kiaya,all_pro_1,League of Legends Championship Pacific,,All Pro Team
-2025,Kiin,all_pro_1,LoL Champions Korea,,All Pro Team
-2025,Knight,all_pro_1,Tencent LoL Pro League,,All Pro Team
-2025,Knight,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,Kofte,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2025,Kratos,all_pro_1,League of Legends Championship Pacific,,All Pro Team
-2025,Kuri,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
-2025,Leave,all_pro_1,Tencent LoL Pro League,,All Pro Team
-2025,Levi,all_pro_1,League of Legends Championship Pacific,,All Pro Team
-2025,Loki,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
-2025,Massu,all_pro_1,League of Legends Championship of The Americas North,,All Pro Team
-2025,Meiko,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
-2025,Mihile,all_pro_1,Turkish Championship League,Spring,All Pro Team
-2025,Mikyx,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2025,Mireu,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
-2025,Mireu,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
-2025,Morttheus,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
-2025,Myrwn,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2025,Naak Nako,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2025,Neon,all_pro_1,Turkish Championship League,Spring,All Pro Team
-2025,ON,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
-2025,ON,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,Oner,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
-2025,Patch,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2025,Patch,all_pro_1,Turkish Championship League,Spring,All Pro Team
-2025,Peanut,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
-2025,Peyz,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
-2025,Peyz,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,Quad,all_pro_1,League of Legends Championship of The Americas North,,All Pro Team
-2025,Quad,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
-2025,Quid,all_pro_1,League of Legends Championship of The Americas North,,All Pro Team
-2025,Quid,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
-2025,Rabelo,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
-2025,Razork,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
-2025,RedBert,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
-2025,Rest,all_pro_1,League of Legends Championship Pacific,Season Finals,All Pro Team
-2025,River,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
-2025,River,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
-2025,Roamer,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
-2025,Roamer,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
-2025,Robo,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
-2025,Rookie,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
-2025,Ruep,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2025,Ruler,all_pro_1,LoL Champions Korea,,All Pro Team
-2025,Ruler,domestic_finals_mvp,LoL Champions Korea,,Finals MVP
-2025,SKEANZ,all_pro_1,Turkish Championship League,Winter,All Pro Team
-2025,Samver,regional_mvp,LoL Japan League,,Most Valuable Player
-2025,Scorth,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2025,Scorth,regional_mvp,Turkish Championship League,Summer,Most Valuable Player
-2025,Scout,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
-2025,Scout,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,Shanks,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
-2025,SiuLoong,all_pro_1,League of Legends Championship Pacific,,All Pro Team
-2025,Taki,all_pro_1,League of Legends Championship Pacific,Season Finals,All Pro Team
-2025,Targamas,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2025,Tarzan,all_pro_1,Tencent LoL Pro League,,All Pro Team
-2025,Tarzan,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
-2025,Tarzan,domestic_finals_mvp,Tencent LoL Pro League,,Finals MVP
-2025,Tatu,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
-2025,Tatu,all_pro_3,League of Legends Championship of The Americas South,,3rd All Pro Team
-2025,Thanatos,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
-2025,TheShy,all_pro_1,Tencent LoL Pro League,,All Pro Team
-2025,TheShy,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,TitaN,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
-2025,TitaN,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
-2025,Trymbi,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
-2025,Trymbi,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
-2025,Tutsz,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
-2025,Upset,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2025,Upset,regional_mvp,LoL EMEA Championship,Spring,Most Valuable Player
-2025,Viper,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
-2025,Vladi,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2025,Vulcan,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
-2025,Wei,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,Wizer,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
-2025,XnS,all_pro_1,Turkish Championship League,Spring,All Pro Team
-2025,Xun,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
-2025,Yeon,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
-2025,Yeon,all_pro_3,League of Legends Championship of The Americas North,,3rd All Pro Team
-2025,Yike,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
-2025,Zest,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2025,Zeus,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
-2025,Zeus,domestic_finals_mvp,LoL Champions Korea,,Finals MVP
-2025,Zven,all_pro_2,League of Legends Championship of The Americas North,,2nd All Pro Team
-2025,fNb,all_pro_1,League of Legends Championship of The Americas South,,All Pro Team
-2025,frosty,all_pro_2,League of Legends Championship of The Americas South,,2nd All Pro Team
-2025,knight,domestic_finals_mvp,Tencent LoL Pro League,,Finals MVP
-2025,monkaS,all_pro_1,Turkish Championship League,Summer,All Pro Team
-2025,ppgod,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2022,369,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2022,Aiming,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
+2022,Alphari,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2022,Berserker,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2022,Berserker,all_pro_2,League of Legends Championship Series,Summer,2nd All-Pro Team
+2022,BeryL,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2022,Bie,regional_mvp,Vietnam Championship Series,Summer,Most Valuable Player
+2022,Bjergsen,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2022,Bjergsen,all_pro_2,League of Legends Championship Series,Summer,2nd All-Pro Team
+2022,Blaber,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2022,Bolulu,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2022,Bong,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2022,Broken Blade,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2022,BrokenBlade,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2022,Bwipo,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2022,Bwipo,all_pro_3,League of Legends Championship Series,Summer,3rd All-Pro Team
+2022,Canyon,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2022,Canyon,regional_mvp,LoL Champions Korea,Spring,Player of the Split
+2022,Chieftain,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2022,Chovy,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2022,Chovy,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2022,Closer,all_pro_2,League of Legends Championship Series,Summer,2nd All-Pro Team
+2022,Closer,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2022,Clozer,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
+2022,Comp,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2022,Comp,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2022,CoreJJ,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2022,CoreJJ,all_pro_2,League of Legends Championship Series,Summer,2nd All-Pro Team
+2022,Crazy,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2022,Crisp,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2022,Croco,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
+2022,Cryscata,all_pro_2,Pacific Championship Series,Summer,2nd All-Pro Team
+2022,Danny,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2022,Deft,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2022,Doran,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
+2022,Elyoya,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2022,Elyoya,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2022,Enso,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2022,FBI,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2022,FBI,all_pro_3,League of Legends Championship Series,Summer,3rd All-Pro Team
+2022,Faker,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2022,Faker,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
+2022,Ferret,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2022,Fleshy,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2022,Fudge,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2022,Gemini,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2022,Gori,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2022,Gori,regional_mvp,Pacific Championship Series,Summer,Most Valuable Player
+2022,Gumayusi,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2022,Hans Sama,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2022,HolyPhoenix,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2022,HolyPhoenix,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2022,HolyPhoenix,regional_mvp,Turkish Championship League,Winter,Most Valuable Player
+2022,HolyPhoenix,regional_mvp,Turkish Championship League,Summer,Most Valuable Player
+2022,Humanoid,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2022,Husha,all_pro_3,Pacific Championship Series,Summer,3rd All-Pro Team
+2022,Hylissang,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2022,Impact,all_pro_2,League of Legends Championship Series,Summer,2nd All-Pro Team
+2022,Inspired,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2022,Inspired,regional_mvp,League of Legends Championship Series,Summer,Most Valuable Player
+2022,JackeyLove,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2022,Jankos,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2022,Jankos,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2022,Kael,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
+2022,Kaiser,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2022,Kaiwing,all_pro_2,Pacific Championship Series,Summer,2nd All-Pro Team
+2022,Kanavi,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2022,Kanavi,all_pro_2,Tencent LoL Pro League,Summer,2nd All-Pro Team
+2022,Karsa,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2022,Keria,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2022,Keria,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
+2022,Keria,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
+2022,Kiin,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2022,Kingen,worlds_finals_mvp,World Championship,,Finals MVP
+2022,Knight,all_pro_2,Tencent LoL Pro League,Summer,2nd All-Pro Team
+2022,Koala,all_pro_3,Pacific Championship Series,Summer,3rd All-Pro Team
+2022,Kongyue,all_pro_2,Pacific Championship Series,Summer,2nd All-Pro Team
+2022,Larssen,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2022,Leaky,all_pro_3,Pacific Championship Series,Summer,3rd All-Pro Team
+2022,Lehends,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2022,Lehends,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2022,Light,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2022,Malrang,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2022,Mark,all_pro_3,Tencent LoL Pro League,Summer,3rd All-Pro Team
+2022,Markoon,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2022,Ming,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2022,Ming,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2022,Missing,all_pro_2,Tencent LoL Pro League,Summer,2nd All-Pro Team
+2022,Missing,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2022,Mission,all_pro_2,Pacific Championship Series,Summer,2nd All-Pro Team
+2022,MnM,all_pro_3,Pacific Championship Series,Summer,3rd All-Pro Team
+2022,Neon,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2022,Nestea,all_pro_3,Pacific Championship Series,Summer,3rd All-Pro Team
+2022,Nisqy,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2022,Nisqy,regional_mvp,LoL EMEA Championship,Summer,Most Valuable Player
+2022,Odoamne,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2022,Odoamne,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2022,Oner,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2022,Oner,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
+2022,Patrik,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2022,Peanut,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2022,Peanut,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2022,Photic,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2022,Photic,all_pro_2,Tencent LoL Pro League,Summer,2nd All-Pro Team
+2022,Pop,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2022,Prince,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
+2022,Prince,regional_mvp,LoL Champions Korea,Summer,Player of the Split
+2022,Rascal,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2022,Rascal,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
+2022,Rest,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2022,Rich,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2022,Rookie,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2022,Rookie,all_pro_3,Tencent LoL Pro League,Summer,3rd All-Pro Team
+2022,Rookie,regional_mvp,Tencent LoL Pro League,Spring,Most Valuable Player
+2022,Ruler,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2022,Ruler,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2022,Ruler,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
+2022,Santorin,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2022,Santorin,all_pro_3,League of Legends Championship Series,Summer,3rd All-Pro Team
+2022,Scout,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2022,Serin,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2022,ShowMaker,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2022,Shunn,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2022,Ssumday,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2022,Ssumday,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2022,Summit,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2022,Summit,regional_mvp,League of Legends Championship Series,Spring,Most Valuable Player
+2022,Targamas,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2022,Targamas,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2022,Tarzan,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2022,TheShy,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2022,TheShy,all_pro_2,Tencent LoL Pro League,Summer,2nd All-Pro Team
+2022,Tian,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2022,Tian,regional_mvp,Tencent LoL Pro League,Summer,Most Valuable Player
+2022,Trymbi,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2022,Trymbi,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2022,UNF0RGIVEN,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2022,Upset,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2022,Vetheo,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2022,Vetheo,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2022,Vetheo,regional_mvp,LoL EMEA Championship,Spring,Most Valuable Player
+2022,Viper,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2022,Viper,all_pro_3,Tencent LoL Pro League,Summer,3rd All-Pro Team
+2022,Vulcan,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2022,Vulcan,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2022,Wayward,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2022,Wei,all_pro_3,Tencent LoL Pro League,Summer,3rd All-Pro Team
+2022,Wei,msi_mvp,Mid-Season Invitational,,Most Valuable Player
+2022,Wunder,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2022,Xiaohu,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2022,Xiaohu,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2022,YSKM,all_pro_2,Pacific Championship Series,Summer,2nd All-Pro Team
+2022,Zeus,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2022,Zeus,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2022,caPs,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2022,huhi,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2022,huhi,all_pro_3,League of Legends Championship Series,Summer,3rd All-Pro Team
+2022,jojopyun,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2022,shanji,all_pro_3,Tencent LoL Pro League,Summer,3rd All-Pro Team
+2022,toucouille,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2022,toucouille,all_pro_3,League of Legends Championship Series,Summer,3rd All-Pro Team
+2021,369,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2021,Abbedagge,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2021,Ackerman,all_pro_1,Liga Latinoamerica,,All Pro Team
+2021,Adam,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2021,Alphari,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2021,Artemis,all_pro_1,Vietnam Championship Series,Winter,All Pro Team
+2021,Bdd,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
+2021,Bdd,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2021,BeryL,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2021,Bie,all_pro_1,Vietnam Championship Series,Winter,All Pro Team
+2021,Bin,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2021,Blaber,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2021,Blaber,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2021,Blaber,regional_mvp,League of Legends Championship Series,Spring,Most Valuable Player
+2021,Black,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2021,Blazes,all_pro_1,Vietnam Championship Series,Winter,All Pro Team
+2021,Bolulu,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2021,Breathe,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2021,Bugi,all_pro_1,Liga Latinoamerica,,All Pro Team
+2021,Bugi,regional_mvp,Liga Latinoamerica,,Most Valuable Player
+2021,Bwipo,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2021,Bwipo,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2021,Canyon,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2021,Canyon,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
+2021,Canyon,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
+2021,Caps,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2021,Caps,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2021,Chovy,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2021,Chovy,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
+2021,Chovy,regional_mvp,LoL Champions Korea,Spring,Player of the Split
+2021,Clid,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2021,Closer,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2021,Cody,all_pro_1,Liga Latinoamerica,,All Pro Team
+2021,Cody,regional_mvp,Liga Latinoamerica,,Most Valuable Player
+2021,CoreJJ,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2021,CoreJJ,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2021,Crazy,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2021,Crisp,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2021,Croco,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
+2021,Danny,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2021,Dardoch,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2021,Doinb,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2021,Doinb,regional_mvp,Tencent LoL Pro League,Summer,Most Valuable Player
+2021,EMENES,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2021,Effort,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
+2021,Elk,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2021,Elyoya,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2021,FBI,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2021,FBI,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2021,Farfetch,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2021,Ferret,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2021,FoFo,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2021,FoFo,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2021,Fudge,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2021,GALA,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2021,GALA,domestic_finals_mvp,Tencent LoL Pro League,Spring,Finals MVP
+2021,Ghost,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2021,Gori,regional_mvp,LoL Champions Korea,Summer,Player of the Split
+2021,Hang,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2021,Hans sama,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2021,Hans sama,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2021,Huhi,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2021,Humanoid,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2021,Humanoid,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2021,Huni,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2021,Huni,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2021,Hylissang,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2021,Hylissang,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2021,Impact,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2021,Impact,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2021,Inspired,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2021,Inspired,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2021,Inspired,regional_mvp,LoL EMEA Championship,Summer,Most Valuable Player
+2021,Jankos,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2021,Jankos,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2021,Jauny,all_pro_1,Liga Latinoamerica,,All Pro Team
+2021,Jensen,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2021,Jiizuke,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2021,Kaiser,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2021,Kaiser,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2021,Kaiwing,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2021,Kaori,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2021,Karsa,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2021,Kellin,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
+2021,Keria,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2021,Keria,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2021,Khan,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2021,Khan,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
+2021,Kiin,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2021,Killerqueen,all_pro_1,Vietnam Championship Series,Winter,All Pro Team
+2021,Killerqueen,regional_mvp,Vietnam Championship Series,Winter,Most Valuable Player
+2021,Kingen,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2021,Ksaez,regional_mvp,Turkish Championship League,Winter,Most Valuable Player
+2021,Larssen,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2021,Life,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2021,Lwx,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2021,Lwx,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2021,Maple,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2021,Meiko,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2021,Meiko,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2021,Mikyx,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2021,Mikyx,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2021,Ming,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2021,Ming,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2021,Mojito,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2021,Mojito,regional_mvp,Turkish Championship League,Summer,Most Valuable Player
+2021,Neo,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2021,Nisqy,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2021,Odoamne,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2021,Odoamne,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2021,Peanut,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2021,Peanut,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
+2021,Perkz,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2021,PowerOfEvil,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2021,PowerOfEvil,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2021,Prince,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
+2021,Pun,all_pro_1,Vietnam Championship Series,Winter,All Pro Team
+2021,Pyosik,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2021,Pyosik,regional_mvp,LoL Champions Korea,Spring,Player of the Split
+2021,Rascal,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2021,Rekkles,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2021,Rekkles,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2021,Rekkles,regional_mvp,LoL EMEA Championship,Spring,Most Valuable Player
+2021,Rest,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2021,River,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2021,Ruler,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2021,Ruler,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
+2021,Santorin,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2021,Scout,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2021,Scout,domestic_finals_mvp,Tencent LoL Pro League,Summer,Finals MVP
+2021,Scout,worlds_finals_mvp,World Championship,,Finals MVP
+2021,ShowMaker,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2021,ShowMaker,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2021,ShowMaker,regional_mvp,LoL Champions Korea,Spring,Player of the Split
+2021,SolidSnake,all_pro_1,Liga Latinoamerica,,All Pro Team
+2021,Spica,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2021,Spica,regional_mvp,League of Legends Championship Series,Summer,Most Valuable Player
+2021,StarScreen,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2021,Summit,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
+2021,SwordArt,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2021,Tactical,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2021,Tarzan,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2021,Teddy,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2021,Tian,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2021,TopLop,all_pro_1,Liga Latinoamerica,,All Pro Team
+2021,Unified,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2021,Unified,regional_mvp,Pacific Championship Series,Summer,Most Valuable Player
+2021,Upset,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2021,Upset,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2021,Viper,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2021,Viper,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2021,Viper,regional_mvp,Tencent LoL Pro League,Spring,Most Valuable Player
+2021,Vulcan,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2021,Vulcan,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2021,Wei,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2021,Wei,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2021,Whitelotus,all_pro_1,Liga Latinoamerica,,All Pro Team
+2021,Wunder,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2021,Wunder,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2021,Xiaohu,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2021,Xiaohu,all_pro_1,Tencent LoL Pro League,Spring,All Pro Team
+2021,Zergsting,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2021,Zoom,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
+2021,Zven,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2021,beishang,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2021,deokdam,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2021,knight,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2021,knight,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
+2020,369,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2020,Aiming,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2020,Alive,all_pro_1,Liga Latinoamerica,,All Pro Team
+2020,Alphari,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2020,Alphari,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2020,Artemis,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
+2020,Azhi,all_pro_1,Pacific Championship Series,Spring,All Pro Team
+2020,Bang,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2020,Baolan,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2020,Bdd,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2020,Bdd,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
+2020,Bdd,regional_mvp,LoL Champions Korea,Spring,Player of the Split
+2020,Bdd,regional_mvp,LoL Champions Korea,Summer,Player of the Split
+2020,BeryL,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2020,Biofrost,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2020,Bjergsen,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2020,Blaber,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2020,Blaber,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2020,Blaber,regional_mvp,League of Legends Championship Series,Spring,Most Valuable Player
+2020,Blue,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2020,Blue,regional_mvp,Turkish Championship League,Winter,Most Valuable Player
+2020,Broken Blade,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2020,Bruce,all_pro_1,Pacific Championship Series,Spring,All Pro Team
+2020,Bvoy,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2020,Bwipo,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2020,Canna,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
+2020,Canyon,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2020,Canyon,worlds_finals_mvp,World Championship,,manual
+2020,Caps,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2020,Caps,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2020,Caps,regional_mvp,LoL EMEA Championship,Summer,Most Valuable Player
+2020,CarioK,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2020,Chovy,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2020,Chovy,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
+2020,Clid,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2020,Clid,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
+2020,Closer,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2020,Closer,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2020,Coated,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
+2020,Cody Sun,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2020,CoreJJ,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2020,CoreJJ,regional_mvp,League of Legends Championship Series,Summer,Most Valuable Player
+2020,Cuzz,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2020,Cuzz,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
+2020,Cuzz,domestic_finals_mvp,LoL Champions Korea,Spring,Final MVP
+2020,DNK,all_pro_2,Vietnam Championship Series,Summer,2nd All Pro Team
+2020,Deft,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2020,Deft,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
+2020,Dia1,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
+2020,Dia1,regional_mvp,Vietnam Championship Series,Summer,Most Valuable Player
+2020,Dia1,regional_mvp,Vietnam Championship Series,Spring,Most Valuable Player
+2020,Doran,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2020,Effort,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2020,FBI,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2020,Faker,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2020,Febiven,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2020,Ferret,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2020,Gemini,all_pro_1,Pacific Championship Series,Spring,All Pro Team
+2020,Ghost,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
+2020,Gilius,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2020,Grell,all_pro_1,Liga Latinoamerica,,All Pro Team
+2020,Hans sama,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2020,HiRit,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2020,HolyPhoenix,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2020,Humanoid,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2020,Hylissang,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2020,IgNar,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2020,IgNar,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2020,Impact,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2020,Inspired,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2020,JackeyLove,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2020,Jankos,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2020,Jankos,regional_mvp,LoL EMEA Championship,Spring,Most Valuable Player
+2020,Japone,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2020,Jensen,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2020,Jiizuke,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2020,Jisu,all_pro_1,Liga Latinoamerica,,All Pro Team
+2020,Jiumeng,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2020,Kaiser,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2020,Kaiser,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2020,Kaiwing,all_pro_1,Pacific Championship Series,Spring,All Pro Team
+2020,Kaiwing,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2020,Kanavi,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2020,Kaori,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2020,Kati,all_pro_2,Vietnam Championship Series,Summer,2nd All Pro Team
+2020,Keria,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2020,Keria,all_pro_2,LoL Champions Korea,Summer,2nd All Pro Team
+2020,Kiaya,all_pro_2,Vietnam Championship Series,Summer,2nd All Pro Team
+2020,Kiefer,all_pro_1,Liga Latinoamerica,,All Pro Team
+2020,Kongyue,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2020,Larssen,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2020,Levi,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
+2020,Licorice,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2020,Licorice,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2020,Life,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2020,Life,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
+2020,LokeN,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2020,Luana,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2020,Luger,regional_mvp,Turkish Championship League,Summer,Most Valuable Player
+2020,LvMao,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2020,Mikyx,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2020,Mikyx,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2020,Mission,regional_mvp,Pacific Championship Series,Spring,Most Valuable Player
+2020,Mojito,all_pro_1,Turkish Championship League,Winter,All Pro Team
+2020,Mole,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2020,Nemesis,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2020,Newbie,all_pro_1,Liga Latinoamerica,,All Pro Team
+2020,Newbie,regional_mvp,Liga Latinoamerica,,Most Valuable Player
+2020,Ning,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2020,Nisqy,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2020,Nisqy,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2020,Nuguri,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2020,Nuguri,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2020,Nuguri,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
+2020,Orome,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2020,Palette,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
+2020,Pancake,all_pro_1,Liga Latinoamerica,,All Pro Team
+2020,Patrik,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2020,Pbd,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2020,Perkz,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2020,Plugo,all_pro_1,Liga Latinoamerica,,All Pro Team
+2020,PowerOfEvil,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2020,PowerOfEvil,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2020,Rascal,all_pro_2,LoL Champions Korea,Spring,2nd All Pro Team
+2020,Rascal,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
+2020,RedBert,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2020,Rekkles,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2020,Rekkles,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2020,Rest,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2020,Rest,regional_mvp,Pacific Championship Series,Summer,Most Valuable Player
+2020,Rookie,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2020,Ruler,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2020,Santorin,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2020,Santorin,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2020,Selfmade,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2020,Serin,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2020,Shad0w,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2020,ShowMaker,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2020,ShowMaker,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
+2020,Slay,all_pro_2,Vietnam Championship Series,Summer,2nd All Pro Team
+2020,Slayder,all_pro_2,Vietnam Championship Series,Summer,2nd All Pro Team
+2020,Ssumday,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2020,Ssumday,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2020,Tactical,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2020,Teddy,all_pro_1,LoL Champions Korea,Spring,All Pro Team
+2020,TheShy,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2020,Uniboy,all_pro_1,Pacific Championship Series,Spring,All Pro Team
+2020,Uniboy,all_pro_1,Pacific Championship Series,Summer,All Pro Team
+2020,Upset,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2020,Vander,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2020,Vulcan,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2020,Vulcan,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2020,WeiWei,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2020,Wunder,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2020,Wunder,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2020,Xerxe,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2020,Zoom,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
+2020,Zven,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2020,Zven,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2020,bonO,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
+2020,fNb,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2020,knight,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
+2020,knight,regional_mvp,Tencent LoL Pro League,Summer,Most Valuable Player
+2020,ppgod,all_pro_3,Tencent LoL Pro League,Summer,3rd All Pro Team
+2020,tinowns,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2020,tinowns,regional_mvp,Circuit Brazilian League of Legends,,Most Valuable Player
+2019,Alex,regional_mvp,LoL Master Series,Spring,Most Valuable Player
+2019,Alphari,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2019,Alphari,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2019,Betty,all_pro_1,LoL Master Series,Spring,All Pro Team
+2019,Biofrost,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2019,Bjergsen,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2019,Bjergsen,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2019,Broken Blade,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2019,Broxah,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2019,Broxah,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2019,Bwipo,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2019,Cabochard,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2019,Canyon,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
+2019,Caps,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2019,Caps,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2019,Caps,regional_mvp,LoL EMEA Championship,Spring,Most Valuable Player
+2019,Chovy,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
+2019,Closer,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2019,Closer,regional_mvp,Turkish Championship League,Summer,Most Valuable Player
+2019,Cody Sun,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2019,CoreJJ,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2019,CoreJJ,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2019,CoreJJ,regional_mvp,League of Legends Championship Series,Spring,Most Valuable Player
+2019,Cyeol,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2019,Doinb,regional_mvp,Tencent LoL Pro League,Spring,Most Valuable Player
+2019,Doublelift,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2019,Doublelift,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2019,FoFo,all_pro_1,LoL Master Series,Spring,All Pro Team
+2019,Goku,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2019,Humanoid,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2019,Hylissang,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2019,Hylissang,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2019,IgNar,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2019,Impact,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2019,Impact,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2019,Jankos,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2019,Jankos,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2019,Jankos,regional_mvp,LoL EMEA Championship,Summer,Most Valuable Player
+2019,Jensen,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2019,Jensen,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2019,Jiizuke,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2019,K,all_pro_1,LoL Master Series,Spring,All Pro Team
+2019,Knight9,regional_mvp,Tencent LoL Pro League,Summer,Most Valuable Player
+2019,Kobbe,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2019,Kongyue,all_pro_1,LoL Master Series,Spring,All Pro Team
+2019,Kongyue,regional_mvp,LoL Master Series,Spring,MVP 2nd Place
+2019,Levi,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
+2019,Levi,regional_mvp,Vietnam Championship Series,Summer,Most Valuable Player
+2019,Leza,regional_mvp,Liga Latinoamerica,,Most Valuable Player
+2019,Licorice,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2019,Licorice,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2019,Luci,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2019,Mikyx,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2019,Mikyx,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2019,Nemesis,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2019,Nisqy,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2019,Nisqy,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2019,Nukeduck,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2019,Optimus,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
+2019,Optimus,all_pro_1,Vietnam Championship Series,Spring,All Pro Team
+2019,Palette,all_pro_1,Vietnam Championship Series,Spring,All Pro Team
+2019,Parang,regional_mvp,Liga Latinoamerica,,Most Valuable Player
+2019,Perkz,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2019,Pilot,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2019,Ragner,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2019,Rekkles,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2019,Rekkles,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2019,Rest,all_pro_1,LoL Master Series,Spring,All Pro Team
+2019,Rest,regional_mvp,LoL Master Series,Spring,MVP 3rd Place
+2019,Ruin,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2019,Santorin,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2019,Selfmade,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2019,Shrimp,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2019,Shrimp,regional_mvp,Circuit Brazilian League of Legends,,Most Valuable Player
+2019,Slay,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
+2019,Slayder,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
+2019,Slayder,all_pro_1,Vietnam Championship Series,Spring,All Pro Team
+2019,Smoothie,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2019,Sneaky,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2019,Stixxay,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2019,Svenskeren,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
+2019,Svenskeren,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2019,Svenskeren,regional_mvp,League of Legends Championship Series,Summer,Most Valuable Player
+2019,Tay,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2019,Teddy,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
+2019,Tian,worlds_finals_mvp,World Championship,,manual
+2019,Tolerant,all_pro_1,Turkish Championship League,Summer,All Pro Team
+2019,Upset,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2019,Upset,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2019,Wiggily,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2019,Wunder,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
+2019,Wunder,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2019,Xerxe,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2019,Xmithie,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2019,Xmithie,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
+2019,YiJin,all_pro_1,Vietnam Championship Series,Spring,All Pro Team
+2019,YiJin,regional_mvp,Vietnam Championship Series,Summer,Most Valuable Player
+2019,Zeros,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
+2019,Zeros,all_pro_1,Vietnam Championship Series,Spring,All Pro Team
+2019,Zeros,regional_mvp,Vietnam Championship Series,Spring,Most Valuable Player
+2019,Zeyzal,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2019,Zeyzal,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2019,Zven,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2019,brTT,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2019,mithy,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2018,Bdd,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
+2018,Bjergsen,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2018,Bjergsen,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2018,Broxah,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2018,Broxah,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2018,Bwipo,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2018,Cabochard,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2018,Caps,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2018,Caps,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2018,Caps,regional_mvp,Europe League Championship Series,Summer,Most Valuable Player
+2018,Cody Sun,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2018,Dardoch,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2018,Dardoch,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2018,Doublelift,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2018,Doublelift,regional_mvp,North America League Championship Series,Summer,Most Valuable Player
+2018,Febiven,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2018,Flame,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2018,Hakuho,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2018,Hans Sama,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2018,Hans Sama,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2018,Hauntzer,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2018,Huni,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2018,Hylissang,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2018,Hylissang,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2018,Impact,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2018,Jactroll,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2018,Jankos,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2018,Jensen,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2018,Jensen,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2018,Jiizuke,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2018,Khan,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
+2018,Kikis,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2018,Kobbe,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2018,Licorice,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2018,Maxlore,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2018,Meteos,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2018,Mikyx,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2018,Mikyx,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2018,Ning,worlds_finals_mvp,World Championship,,manual
+2018,Odoamne,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2018,Olleh,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2018,Perkz,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2018,Perkz,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2018,PowerOfEvil,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2018,PraY,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
+2018,Rekkles,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2018,Rekkles,regional_mvp,Europe League Championship Series,Spring,Most Valuable Player
+2018,Santorin,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2018,Score,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
+2018,Smoothie,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2018,Sneaky,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2018,Sneaky,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2018,Ssumday,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2018,Ssumday,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2018,Svenskeren,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2018,Upset,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2018,Wunder,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2018,Wunder,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2018,Xerxe,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2018,Xmithie,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2018,Zeyzal,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2018,Zven,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2018,Zven,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2018,aphromoo,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2018,aphromoo,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2018,aphromoo,regional_mvp,North America League Championship Series,Spring,Most Valuable Player
+2018,kaSing,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2018,nukeduck,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2018,sOAZ,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2018,sOAZ,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2017,4LaN,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2017,Arrow,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2017,Arrow,regional_mvp,North America League Championship Series,Spring,Most Valuable Player
+2017,Bdd,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
+2017,Biofrost,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2017,Bjergsen,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2017,Bjergsen,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2017,Bjergsen,regional_mvp,North America League Championship Series,Summer,Most Valuable Player
+2017,Broxah,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2017,Caps,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2017,Chei,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2017,Cody Sun,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2017,Contractz,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2017,Crown,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
+2017,Dardoch,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2017,Doublelift,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2017,Exileh,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2017,Expect,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2017,Febiven,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2017,Febiven,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2017,Flame,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2017,Hans Sama,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2017,Hauntzer,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2017,Hauntzer,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2017,Huhi,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2017,Hylissang,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2017,IgNar,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2017,Impact,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2017,Jankos,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2017,Jankos,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2017,Jensen,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2017,Jensen,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2017,Jesiz,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2017,Jockster,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2017,KaKAO,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2017,Khan,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
+2017,Kuro,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
+2017,LirA,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2017,LirA,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2017,Meteos,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2017,Odoamne,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2017,Odoamne,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2017,Olleh,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2017,Olleh,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2017,Peanut,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
+2017,PerkZ,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2017,Perkz,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2017,Rekkles,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2017,Rekkles,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2017,Rekkles,regional_mvp,Europe League Championship Series,Summer,Most Valuable Player
+2017,Ruler,worlds_finals_mvp,World Championship,,Finals MVP
+2017,Ryu,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2017,Samux,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2017,Smoothie,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2017,Smoothie,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2017,Sneaky,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2017,Sneaky,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2017,Ssumday,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2017,Ssumday,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2017,Stixxay,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2017,Trick,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2017,Trick,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2017,VVvert,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2017,VVvert,regional_mvp,Circuit Brazilian League of Legends,,Most Valuable Player
+2017,Vizicsacsi,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2017,Vizicsacsi,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2017,Vizicsacsi,regional_mvp,Europe League Championship Series,Spring,Most Valuable Player
+2017,Xmithie,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2017,Zven,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2017,Zven,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2017,aphromoo,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2017,brTT,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2017,mithy,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2017,mithy,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2017,sOAZ,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2017,tockers,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2016,Adrian,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2016,Adrian,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2016,Aphromoo,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2016,Balls,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2016,Biofrost,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2016,Bjergsen,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2016,Bjergsen,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2016,Bjergsen,regional_mvp,North America League Championship Series,Summer,Most Valuable Player
+2016,Cabochard,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2016,Dardoch,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2016,Dardoch,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2016,Darshan,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2016,Doublelift,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2016,Duke,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
+2016,Emperor,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2016,Faker,msi_mvp,Mid-Season Invitational,,MVP
+2016,Faker,worlds_finals_mvp,World Championship,,manual
+2016,FoFo,regional_mvp,LoL Master Series,Summer,Most Valuable Player
+2016,Forg1ven,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2016,Fox,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2016,Hai,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2016,Hauntzer,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2016,Huni,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2016,Huni,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2016,Hybrid,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2016,Impact,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2016,Jankos,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2016,Jankos,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2016,Jensen,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2016,Jensen,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2016,Kobbe,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2016,Kuro,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
+2016,Looper,msi_all_pro,Mid-Season Invitational,,All Pro Team
+2016,Mata,msi_all_pro,Mid-Season Invitational,,All Pro Team
+2016,Mikyx,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2016,NighT,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2016,Odoamne,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2016,PerkZ,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2016,Perkz,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2016,Piglet,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2016,Pobelter,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2016,Pobelter,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2016,Reignover,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2016,Reignover,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2016,Reignover,regional_mvp,North America League Championship Series,Spring,Most Valuable Player
+2016,Rekkles,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2016,Rush,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2016,Sencux,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2016,Shook,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2016,Smeb,regional_mvp,LoL Champions Korea,Spring,Most Valuable Player
+2016,Smeb,regional_mvp,LoL Champions Korea,Summer,Most Valuable Player
+2016,SmittyJ,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2016,Sneaky,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2016,Sneaky,all_pro_2,North America League Championship Series,Spring,2nd All Pro Team
+2016,Steeelback,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2016,Stixxay,msi_all_pro,Mid-Season Invitational,,All Pro Team
+2016,Svenskeren,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2016,Trashy,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2016,Trick,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2016,Trick,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2016,Trick,regional_mvp,Europe League Championship Series,Spring,Most Valuable Player
+2016,Trick,regional_mvp,Europe League Championship Series,Summer,Most Valuable Player
+2016,VandeR,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2016,Vander,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2016,Vizicsacsi,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2016,Vizicsacsi,all_pro_3,Europe League Championship Series,Spring,3rd All Pro Team
+2016,WildTurtle,all_pro_1,North America League Championship Series,Spring,All Pro Team
+2016,WildTurtle,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2016,Wunder,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2016,Zven,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2016,aphromoo,all_pro_3,North America League Championship Series,Spring,3rd All Pro Team
+2016,kaSing,all_pro_1,Europe League Championship Series,Spring,All Pro Team
+2016,mithy,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2016,mlxg,msi_all_pro,Mid-Season Invitational,,All Pro Team
+2016,nukeduck,all_pro_2,Europe League Championship Series,Spring,2nd All Pro Team
+2016,xiaohu,msi_all_pro,Mid-Season Invitational,,All Pro Team
+2015,Adrian,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2015,Altec,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2015,Amazing,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2015,Aphromoo,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2015,Bjergsen,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2015,Bjergsen,regional_mvp,North America League Championship Series,Spring,Most Valuable Player
+2015,BunnyFuFuu,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2015,Cabochard,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2015,Clearlove,msi_mvp,Mid-Season Invitational,,MSI MVP
+2015,Doublelift,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2015,Duke,regional_mvp,LoL The Champions,Spring,Most Valuable Player
+2015,Easyhoon,regional_mvp,LoL The Champions,Spring,Most Valuable Player
+2015,FORG1VENGRE,regional_mvp,Europe League Championship Series,Spring,Most Valuable Player
+2015,Faker,regional_mvp,LoL The Champions,Summer,Most Valuable Player
+2015,Febiven,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2015,FeniX,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2015,Hjarnan,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2015,Huni,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2015,IWillDominate,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2015,Impact,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2015,Jankos,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2015,Keane,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2015,MaRin,worlds_finals_mvp,World Championship,,manual
+2015,Move,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2015,Niels,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2015,Piglet,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2015,Quas,all_pro_2,North America League Championship Series,Summer,2nd All Pro Team
+2015,Reignover,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2015,Rekkles,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2015,Rush,all_pro_1,North America League Championship Series,Summer,All Pro Team
+2015,Rush,regional_mvp,North America League Championship Series,Summer,Most Valuable Player
+2015,Ryu,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2015,Ssumday,regional_mvp,LoL The Champions,Summer,Most Valuable Player
+2015,YellOwStaR,all_pro_1,Europe League Championship Series,Summer,All Pro Team
+2015,YellOwStaR,regional_mvp,Europe League Championship Series,Summer,Most Valuable Player
+2015,ZionSpartan,all_pro_3,North America League Championship Series,Summer,3rd All Pro Team
+2015,kaSing,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2015,mithy,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2015,sOAZ,all_pro_3,Europe League Championship Series,Summer,3rd All Pro Team
+2015,xPeke,all_pro_2,Europe League Championship Series,Summer,2nd All Pro Team
+2014,Faker,regional_mvp,LoL The Champions,Winter,Most Valuable Player
+2014,Froggen,regional_mvp,Europe League Championship Series,Spring,Most Valuable Player
+2014,KaKAO,regional_mvp,LoL The Champions,Summer,Most Valuable Player
+2014,Mata,worlds_mvp,World Championship,,Most Valuable Player
+2014,Rekkles,regional_mvp,Europe League Championship Series,Summer,Most Valuable Player
+2014,XiaoWeiXiao,regional_mvp,North America League Championship Series,Summer,Most Valuable Player
+2014,dade,regional_mvp,LoL The Champions,Spring,Most Valuable Player
+2013,Dade,regional_mvp,LoL The Champions,Spring,Most Valuable Player
+2013,Faker,regional_mvp,LoL The Champions,Summer,Most Valuable Player
+2013,Faker,worlds_finals_mvp,World Championship,,manual*
+2013,MaKNooN,regional_mvp,LoL The Champions,Winter,Most Valuable Player
+2012,Toyz,worlds_finals_mvp,World Championship,,manual*
+2011,Shushei,worlds_mvp,World Championship,,Most Valuable Player
