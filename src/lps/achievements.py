@@ -128,9 +128,9 @@ class BonusConfig:
     # achievements are grouped (intl by event+bucket, domestic by bucket, awards by token), ordered
     # by value (best kept whole), and the k-th (1-indexed) is scaled by repeat_decay**(k-1). So a
     # 6-time Worlds winner's titles are worth 1 + d + d^2 + ... rather than 6x. 1.0 = OFF (every
-    # win full). Rewards breadth of résumé over farming one dynasty. Tuned to consensus: 0.8 (a
-    # gentle taper -- repeats still count, just less each time).
-    repeat_decay: float = 0.8
+    # win full). Rewards breadth of résumé over farming one dynasty. Tuned to the consensus
+    # surveys: 0.6 (a moderate taper -- repeats still count, just noticeably less each time).
+    repeat_decay: float = 0.6
 
 
 _BONUS_COLS = ["intl_bonus", "title_bonus", "award_bonus"]

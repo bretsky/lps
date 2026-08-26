@@ -1,0 +1,43 @@
+{
+  "mean_rho": 0.7417,
+  "per_group_rho": {
+    "consensus_ratings:top": 0.761,
+    "consensus_ratings:jng": 0.592,
+    "consensus_ratings:mid": 0.803,
+    "consensus_ratings:bot": 0.84,
+    "consensus_ratings:sup": 0.857,
+    "consensus_ratings_2:top": 0.666,
+    "consensus_ratings_2:jng": 0.58,
+    "consensus_ratings_2:mid": 0.81,
+    "consensus_ratings_2:bot": 0.877,
+    "consensus_ratings_2:sup": 0.803,
+    "consensus_ratings_2:overall": 0.57
+  },
+  "ScoreWeights": {
+    "alpha": 0.75,
+    "lam": 2.0,
+    "beta": 0.0,
+    "region_exp": 2.0,
+    "w_playoff": 1.0
+  },
+  "w_regular": 1.0,
+  "intl_weight": 2.0,
+  "CLRConfig": {
+    "w_career": 1.6,
+    "w_pace": 0.8,
+    "w_peak": 1.0,
+    "pace_prior_games": 50.0,
+    "peak_band": 0.15,
+    "peak_len_bonus": 0.15,
+    "era_mults": [
+      1.6,
+      1.35,
+      1.0
+    ]
+  },
+  "BonusConfig": {
+    "w_bonus": 1.0,
+    "repeat_decay": 0.6,
+    "champ_per_weight": 4.6
+  }
+}

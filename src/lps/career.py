@@ -52,8 +52,8 @@ from .export_excel import (
     build_export_frame,
 )
 from .io_oracle import load_oracle_years
-from .scoring import REFERENCE_ELO, ScoreWeights, load_league_elos
-from .season import _DEMO_WEIGHTS, _LANE_NAMES, build_player_match_scores
+from .scoring import REFERENCE_ELO, ScoreWeights, load_league_elos, apply_scored_terms
+from .season import _DEMO_WEIGHTS, _LANE_NAMES, _SOURCES, build_player_match_scores
 from .team_leagues import resolve_home_leagues
 
 logger = logging.getLogger(__name__)
@@ -91,15 +91,15 @@ class CLRConfig:
     # drop from adding a year at the band edge). Both default safely above that floor.
     peak_band: float = 0.15  # within 15% of the best season counts as a peak year
     peak_len_bonus: float = (
-        0.10  # per extra peak year, as a fraction of the best season
+        0.15  # per extra peak year, as a fraction of the best season (tuned)
     )
     pace_prior_games: float = (
         50.0  # empirical-Bayes shrinkage strength (weighted games)
     )
-    w_career: float = 1.0
-    # Tuned against the per-lane consensus GOAT lists (mean Spearman ~0.75): rate/pace tracks the
-    # consensus least, so it's down-weighted vs career bulk and peak (which are kept at 1.0).
-    w_pace: float = 0.5
+    # Tuned against the consensus surveys: career bulk is up-weighted (1.6) and rate/pace stays
+    # comparatively low (0.8), with peak the 1.0 reference.
+    w_career: float = 1.6
+    w_pace: float = 0.8
     w_peak: float = 1.0
     # ERA ADJUSTMENT (discrete 3-era, per docs/holistic-lps-plan.md). Modern seasons offer more to
     # accumulate (more events, stronger-Elo leagues, richer box-score data) than early ones, so a
@@ -107,10 +107,9 @@ class CLRConfig:
     # under-credits the old-era greats the consensus rates highly. Each season's point totals are
     # multiplied by its era's entry here: (Era1 = <=2014 reduced-model era, Era2 = 2015-2017
     # graphics overhaul, Era3 = 2018+ Runes Reforged / modern). Ranking is scale-invariant, so Era3
-    # is the 1.0 reference and >1 on the older eras lifts them. Tuned to the consensus lists:
-    # (1.25, 1.15, 1.0) lifted mean per-lane Spearman ~0.752 -> ~0.765 (helping bot/sup/jng) while
-    # holding top lane, without over-boosting the thin early samples.
-    era_mults: tuple[float, float, float] = (1.25, 1.15, 1.0)
+    # is the 1.0 reference and >1 on the older eras lifts them. Tuned to the (combined) consensus
+    # surveys: (1.6, 1.35, 1.0) -- the reduced-model early era gets the biggest lift.
+    era_mults: tuple[float, float, float] = (1.6, 1.35, 1.0)
 
 
 # Columns that ACCUMULATE across years (summed).
@@ -309,13 +308,10 @@ def _combine_matches(
         & m["opp_league"].notna()
         & (m["own_league"] != m["opp_league"])
     )
-    peak = (
-        max(elos.values()) if elos else REFERENCE_ELO
-    )  # baseline vs the year's peak region
-    opp_elo = m["opp_league"].map(elos)
-    m["baseline"] = 1.0 / (1.0 + 10 ** ((peak - opp_elo) / 400.0))
-    m["baseline_term"] = weights.alpha * m["baseline"]
-    m["score"] = m["baseline_term"] + m["contribution_term"] + m["win_bonus"]
+    # Re-score across the union with the region-scaled formula (baseline re-derived from the
+    # re-resolved opp_league), so contribution/win_bonus pick up the correct per-game region
+    # factor too -- not just the baseline term. See scoring.apply_scored_terms.
+    apply_scored_terms(m, weights, elos, source_cols=_SOURCES)
     return m.dropna(subset=["baseline"]).reset_index(drop=True)
 
 

@@ -31,11 +31,15 @@ import pandas as pd
 
 from .config import DATA_DIR
 from .contribution import (
-    LANE_STATS, ROLES, contributions_for_frame, explain_team_game, train_win_prob_bundle,
+    LANE_STATS,
+    ROLES,
+    contributions_for_frame,
+    explain_team_game,
+    train_win_prob_bundle,
 )
 from .expected_stats import expected_reference_frame
 from .io_oracle import load_oracle_years
-from .scoring import REFERENCE_ELO, ScoreWeights, load_league_elos
+from .scoring import REFERENCE_ELO, ScoreWeights, load_league_elos, apply_scored_terms
 from .team_leagues import build_team_game_table, resolve_home_leagues
 from .win_probability import WinProbabilityConfig, build_team_features
 
@@ -64,10 +68,28 @@ _CONTRIB_Z_RESCALE: float = 0.05
 
 _CACHE_DIR = DATA_DIR / "cache"
 _INVARIANT_COLS = [
-    "gameid", "game", "date", "side", "position", "playername", "teamname", "opp_teamname",
-    "own_league", "opp_league", "is_international", "game_label", "phase", "result",
-    "p_model", "net_contribution", "c_kills", "c_deaths", "c_assists", "c_damage",
-    "c_fb", "baseline",
+    "gameid",
+    "game",
+    "date",
+    "side",
+    "position",
+    "playername",
+    "teamname",
+    "opp_teamname",
+    "own_league",
+    "opp_league",
+    "is_international",
+    "game_label",
+    "phase",
+    "result",
+    "p_model",
+    "net_contribution",
+    "c_kills",
+    "c_deaths",
+    "c_assists",
+    "c_damage",
+    "c_fb",
+    "baseline",
 ]
 # Per-source components of net_contribution (they sum to it): kills/deaths/assists/damage
 # from the lane, plus first blood (credited to the kill-getter / victim).
@@ -111,9 +133,18 @@ _BASELINE_SERIES_SHARE: bool = False
 # per-game factor so they still sum to the normalized contribution.
 _LANE_NORMALIZE: bool = True
 _LANE_COMPONENTS = ("c_kills", "c_deaths", "c_assists", "c_damage")
-_REMAP_KNOTS = 1001                              # quantile grid resolution for the CDF tables
-_REMAP_ORACLE_YEARS = tuple(range(2014, 2026))   # Oracle box-score years (define the reference)
-_REMAP_LP_YEARS = (2013, 2014, 2015, 2017, 2018, 2019)  # reduced (KDA+CS) LP years (gap fills + Rift Rivals)
+_REMAP_KNOTS = 1001  # quantile grid resolution for the CDF tables
+_REMAP_ORACLE_YEARS = tuple(
+    range(2014, 2026)
+)  # Oracle box-score years (define the reference)
+_REMAP_LP_YEARS = (
+    2013,
+    2014,
+    2015,
+    2017,
+    2018,
+    2019,
+)  # reduced (KDA+CS) LP years (gap fills + Rift Rivals)
 # The earliest years are KDA-ONLY (no reliable CS), a different contribution distribution, so
 # they get their own remap source and are pooled separately before mapping onto the Oracle ref.
 _REMAP_LP_KDA_YEARS = (2011, 2012)
@@ -134,7 +165,11 @@ def _pool_lane_loo() -> dict:
     def add(long: pd.DataFrame, source: str) -> None:
         if long.empty:
             return
-        fb = long["c_fb"].to_numpy(float) if "c_fb" in long.columns else np.zeros(len(long))
+        fb = (
+            long["c_fb"].to_numpy(float)
+            if "c_fb" in long.columns
+            else np.zeros(len(long))
+        )
         loo = long["net_contribution"].to_numpy(float) - fb
         pos = long["position"].to_numpy()
         for lane in ROLES:
@@ -171,27 +206,38 @@ def _pool_lane_loo() -> dict:
 def build_lane_remap(force_recompute: bool = False) -> dict:
     """Build (and disk-cache) the cross-year per-lane quantile-remap tables. With
     force_recompute, first rebuild every remap year's weight-invariant frame (after a model
-    change) so the pooled distributions are current; otherwise reuse whatever is cached."""
+    change) so the pooled distributions are current; otherwise reuse whatever is cached.
+    """
     from . import lp_reduced
 
     if force_recompute:
-        total = len(_REMAP_ORACLE_YEARS) + len(_REMAP_LP_YEARS) + len(_REMAP_LP_KDA_YEARS)
+        total = (
+            len(_REMAP_ORACLE_YEARS) + len(_REMAP_LP_YEARS) + len(_REMAP_LP_KDA_YEARS)
+        )
         done = 0
         for y in _REMAP_ORACLE_YEARS:
             done += 1
-            logging.info(f"[lane-norm] ({done}/{total}) rebuilding oracle {y} models ...")
+            logging.info(
+                f"[lane-norm] ({done}/{total}) rebuilding oracle {y} models ..."
+            )
             try:
                 _match_features(y, use_model1=True, force_recompute=True)
             except Exception as e:
-                logging.warning(f"[lane-norm] oracle {y} rebuild skipped ({type(e).__name__}: {e})")
+                logging.warning(
+                    f"[lane-norm] oracle {y} rebuild skipped ({type(e).__name__}: {e})"
+                )
         for y in _REMAP_LP_YEARS + _REMAP_LP_KDA_YEARS:
             done += 1
             logging.info(f"[lane-norm] ({done}/{total}) rebuilding lp {y} models ...")
             try:
                 lp_reduced._lp_features(y, force_recompute=True)
             except Exception as e:
-                logging.warning(f"[lane-norm] lp {y} rebuild skipped ({type(e).__name__}: {e})")
-        logging.info(f"[lane-norm] pooling {total} years into cross-year remap tables ...")
+                logging.warning(
+                    f"[lane-norm] lp {y} rebuild skipped ({type(e).__name__}: {e})"
+                )
+        logging.info(
+            f"[lane-norm] pooling {total} years into cross-year remap tables ..."
+        )
     elif _REMAP_CACHE.exists():
         return pd.read_pickle(_REMAP_CACHE)
 
@@ -209,7 +255,9 @@ def _get_lane_remap() -> dict:
     return build_lane_remap(force_recompute=False)
 
 
-def apply_lane_remap(long: pd.DataFrame, source: str, tables: Optional[dict] = None) -> pd.DataFrame:
+def apply_lane_remap(
+    long: pd.DataFrame, source: str, tables: Optional[dict] = None
+) -> pd.DataFrame:
     """Quantile-normalize each lane's per-game leave-one-out contribution onto the global
     reference distribution (so the Nth-percentile game is worth the same in every role), then
     re-add the role-neutral first-blood term. Stat components are rescaled to still sum to the
@@ -234,33 +282,36 @@ def apply_lane_remap(long: pd.DataFrame, source: str, tables: Optional[dict] = N
         m = pos == lane
         if not m.any():
             continue
-        u = np.interp(loo[m], lane_q, q_grid)      # this lane's empirical CDF -> percentile
-        new_loo[m] = np.interp(u, q_grid, ref_q)   # value at the same percentile in the reference
+        u = np.interp(loo[m], lane_q, q_grid)  # this lane's empirical CDF -> percentile
+        new_loo[m] = np.interp(
+            u, q_grid, ref_q
+        )  # value at the same percentile in the reference
 
     if comp:
         C = long[comp].to_numpy(float)
         with np.errstate(divide="ignore", invalid="ignore"):
             ratio = np.where(np.abs(loo) > 1e-9, new_loo / loo, np.nan)
         newC = C * ratio[:, None]
-        zero = ~np.isfinite(ratio)                 # loo ~ 0: split evenly (shares undefined)
+        zero = ~np.isfinite(ratio)  # loo ~ 0: split evenly (shares undefined)
         if zero.any():
             newC[zero] = (new_loo[zero] / len(comp))[:, None]
         long[comp] = newC
     long["net_contribution"] = new_loo + fb
     return long
 
+
 # Tournament importance weights derived from average peak concurrent viewership over the
 # last 3 years -- an objective proxy for how much each tournament matters. Keys are Oracle
 # game_labels; update as new data arrives. FST (First Stand) debuted 2025 so has 2 years.
 _TOURNAMENT_VIEWERSHIP = {
-    "WLDs":  [6752585, 6941610, 6402760],   # Worlds
-    "MSI":   [2315920, 3447582, 2829728],   # Mid-Season Invitational
-    "EWC":   [1477470, 1208123, 1123619],   # Esports World Cup
-    "FST":   [1106126, 1500730],            # First Stand (2025+; Oracle label to confirm)
-    "MSC":   [591496],              # Mid-Season Cup (2020; peak concurrent viewers)
-    "LTA":   [318462],              # LTA cross-conference championship (Americas, 2025)
-    "KeSPA": [173449, 110196, 66335],       # KeSPA Cup (domestic, KR)
-    "DCup":  [55751, 69654, 60238],         # Demacia Cup (domestic, CN)
+    "WLDs": [6752585, 6941610, 6402760],  # Worlds
+    "MSI": [2315920, 3447582, 2829728],  # Mid-Season Invitational
+    "EWC": [1477470, 1208123, 1123619],  # Esports World Cup
+    "FST": [1106126, 1500730],  # First Stand (2025+; Oracle label to confirm)
+    "MSC": [591496],  # Mid-Season Cup (2020; peak concurrent viewers)
+    "LTA": [318462],  # LTA cross-conference championship (Americas, 2025)
+    "KeSPA": [173449, 110196, 66335],  # KeSPA Cup (domestic, KR)
+    "DCup": [55751, 69654, 60238],  # Demacia Cup (domestic, CN)
 }
 
 # Small international / cross-region events without reliable viewership data: a flat 0.1
@@ -268,18 +319,18 @@ _TOURNAMENT_VIEWERSHIP = {
 # the viewership-derived numbers stay honest. (Minor DOMESTIC 2nd-tiers are dropped instead
 # -- see EXCLUDED_LEAGUES.)
 _MANUAL_TOURNAMENT_WEIGHTS = {
-    "IEM":  0.1,    # Intel Extreme Masters (3rd-party intl, top teams, off-season)
-    "ASI":  0.1,    # Asia Invitational (minor intl)
-    "IWCI": 0.1,    # International Wildcard Invitational (wildcard qualifier)
-    "Riot": 0.1,    # 2020 VCS x PCS cross-region event (MSI-cancelled COVID season)
+    "IEM": 0.1,  # Intel Extreme Masters (3rd-party intl, top teams, off-season)
+    "ASI": 0.1,  # Asia Invitational (minor intl)
+    "IWCI": 0.1,  # International Wildcard Invitational (wildcard qualifier)
+    "Riot": 0.1,  # 2020 VCS x PCS cross-region event (MSI-cancelled COVID season)
     # Early-era (2011-2012) events, scored as "tournament" phase (no regional Elo pre-2013 in
     # the region-keyed era). No reliable viewership numbers exist, so these are hand-set on the
     # Worlds=1.0 scale and are prime CALIBRATION targets against the consensus all-time list.
-    "OGN":  0.4,    # Champions Korea -- premier league of the dominant region (2012)
-    "IPL":  0.15,   # IGN Pro League (IPL5 drew top intl fields; other IPLs smaller)
-    "MLG":  0.1,    # MLG Pro Circuit (NA LAN)
-    "DH":   0.1,    # DreamHack (EU LAN)
-    "RR":   0.2,    # Rift Rivals (2017-2019 mid-season regional-rivalry exhibition, no damage data)
+    "OGN": 0.4,  # Champions Korea -- premier league of the dominant region (2012)
+    "IPL": 0.15,  # IGN Pro League (IPL5 drew top intl fields; other IPLs smaller)
+    "MLG": 0.1,  # MLG Pro Circuit (NA LAN)
+    "DH": 0.1,  # DreamHack (EU LAN)
+    "RR": 0.2,  # Rift Rivals (2017-2019 mid-season regional-rivalry exhibition, no damage data)
 }
 
 # Minor / secondary tiers (2nd divisions, academy & challenger leagues, regional feeders)
@@ -290,26 +341,38 @@ _MANUAL_TOURNAMENT_WEIGHTS = {
 # here safely: they are top-tier (rated) in some years and secondary feeders in others
 # (e.g. 2025, after the Pacific regions folded into LCP), and we only exclude the latter.
 EXCLUDED_LEAGUES = {
-    "NA CS", "EU CS",                       # NA / EU Challenger Series
-    "CK",                                    # Challengers Korea
-    "LSPL",                                  # LoL Secondary Pro League (CN 2nd div)
-    "OCS",                                   # Oceanic Challenger Series
-    "LJLCS",                                 # LJL Challenger Series (JP 2nd div)
-    "NACL",                                  # NA Challengers League
-    "CD", "CDF",                             # Circuito Desafiante (BR 2nd div) / minor cup
-    "BRCC", "CISC", "TCS",                   # minor / qualifier circuits
-    "LHE", "LMF", "DDH", "SL (LATAM)", "ASCI",  # LATAM minor / secondary
-    "EM",                                    # EMEA Masters (2nd-tier EU)
-    "NEST",                                  # domestic minor multi-title event (CN)
-    "Asia Master",                           # regional invitational feeder
-    "LRN", "LRS",                            # LTA North/South regional feeders (below LTA N/S)
-    "GPL",                                   # rest-of-SEA minor circuit 2016-2018 after Vietnam
-                                             # (VCS) + Taiwan (LMS) split off; no intl slot, so
-                                             # unrated -- rated guard keeps its rated 2013 season
-    "TCL",                                   # Turkey: rated region 2013-2023, then demoted to an
-                                             # EMEA ERL (no intl slot) in 2024+; rated guard keeps
-                                             # its 2013-2023 seasons, drops the ERL-tier years
-    "PCS", "VCS", "LJL", "LCO",              # top-tier in their years (rated guard keeps those)
+    "NA CS",
+    "EU CS",  # NA / EU Challenger Series
+    "CK",  # Challengers Korea
+    "LSPL",  # LoL Secondary Pro League (CN 2nd div)
+    "OCS",  # Oceanic Challenger Series
+    "LJLCS",  # LJL Challenger Series (JP 2nd div)
+    "NACL",  # NA Challengers League
+    "CD",
+    "CDF",  # Circuito Desafiante (BR 2nd div) / minor cup
+    "BRCC",
+    "CISC",
+    "TCS",  # minor / qualifier circuits
+    "LHE",
+    "LMF",
+    "DDH",
+    "SL (LATAM)",
+    "ASCI",  # LATAM minor / secondary
+    "EM",  # EMEA Masters (2nd-tier EU)
+    "NEST",  # domestic minor multi-title event (CN)
+    "Asia Master",  # regional invitational feeder
+    "LRN",
+    "LRS",  # LTA North/South regional feeders (below LTA N/S)
+    "GPL",  # rest-of-SEA minor circuit 2016-2018 after Vietnam
+    # (VCS) + Taiwan (LMS) split off; no intl slot, so
+    # unrated -- rated guard keeps its rated 2013 season
+    "TCL",  # Turkey: rated region 2013-2023, then demoted to an
+    # EMEA ERL (no intl slot) in 2024+; rated guard keeps
+    # its 2013-2023 seasons, drops the ERL-tier years
+    "PCS",
+    "VCS",
+    "LJL",
+    "LCO",  # top-tier in their years (rated guard keeps those)
 }
 
 # Year-aware league-label aliases: Oracle sometimes labels the Worlds regional-qualifier
@@ -361,26 +424,40 @@ def _remap_league_aliases(df: pd.DataFrame, rated: set[str]) -> pd.DataFrame:
     Remap source -> target only where the source ISN'T rated this year but the target IS,
     so it fires for the 2015-2018 gauntlet and never touches years where LCS/LEC/LCK are
     themselves the rated top league."""
-    active = {src: tgt for src, tgt in _LEAGUE_ALIASES.items()
-              if tgt in rated and src not in rated}
+    active = {
+        src: tgt
+        for src, tgt in _LEAGUE_ALIASES.items()
+        if tgt in rated and src not in rated
+    }
     if not active or "league" not in df.columns:
         return df
     hits = df["league"].isin(active)
     if hits.any():
         df = df.copy()
         df.loc[hits, "league"] = df.loc[hits, "league"].map(active)
-        logging.info(f"[leagues] remapped {int(hits.sum())} gauntlet game-rows "
-                     f"{ {k: active[k] for k in sorted(active)} }")
+        logging.info(
+            f"[leagues] remapped {int(hits.sum())} gauntlet game-rows "
+            f"{ {k: active[k] for k in sorted(active)} }"
+        )
     return df
 
 
 def _player_lane_table(df: pd.DataFrame) -> pd.DataFrame:
     """One row per (gameid, side, position): player, team, and first-blood roles."""
-    cols = ["gameid", "side", "position", "playername", "teamname",
-            "firstbloodkill", "firstbloodvictim"]
+    cols = [
+        "gameid",
+        "side",
+        "position",
+        "playername",
+        "teamname",
+        "firstbloodkill",
+        "firstbloodvictim",
+    ]
     d = df[[c for c in cols if c in df.columns]].copy()
     d["position"] = (
-        d["position"].astype(str).str.lower()
+        d["position"]
+        .astype(str)
+        .str.lower()
         .replace({"jungle": "jng", "adc": "bot", "support": "sup"})
     )
     d = d[d["position"].isin(ROLES)]
@@ -392,8 +469,12 @@ def _player_lane_table(df: pd.DataFrame) -> pd.DataFrame:
     return d.groupby(["gameid", "side", "position"], as_index=False).agg(**agg)
 
 
-def _match_features(year: int, use_model1: bool = True, force_recompute: bool = False,
-                    home_leagues: Optional[dict] = None) -> pd.DataFrame:
+def _match_features(
+    year: int,
+    use_model1: bool = True,
+    force_recompute: bool = False,
+    home_leagues: Optional[dict] = None,
+) -> pd.DataFrame:
     """
     Weight-INVARIANT per-(player, match) features: net_contribution, baseline, p_model,
     phase, league context. This is the expensive part (trains Model 1 + Model 2), so it's
@@ -411,7 +492,7 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
     tag = "_merged" if home_leagues is not None else ""
     # Cache holds RAW (un-normalized) contributions; cross-lane normalization is applied
     # downstream in build_player_match_scores from the global remap tables.
-    met = f"_{_CONTRIB_METRIC}"                  # bust the cache when the contribution scale changes
+    met = f"_{_CONTRIB_METRIC}"  # bust the cache when the contribution scale changes
     path = _CACHE_DIR / f"match_features_{year}_m1{int(use_model1)}{met}{tag}.pkl"
     if path.exists() and not force_recompute:
         return pd.read_pickle(path)
@@ -423,10 +504,14 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
     # Model 2 + per-team-game contributions, referenced against Model 1 expected values.
     bundle = train_win_prob_bundle(cfg)
     team_df = build_team_features(df, cfg).reset_index(drop=True)
-    expected_df = (expected_reference_frame(df, team_df, quantile=_REPLACEMENT_QUANTILE)
-                   if use_model1 else None)
-    contrib = contributions_for_frame(team_df, bundle, expected_df=expected_df,
-                                      metric=_CONTRIB_METRIC)
+    expected_df = (
+        expected_reference_frame(df, team_df, quantile=_REPLACEMENT_QUANTILE)
+        if use_model1
+        else None
+    )
+    contrib = contributions_for_frame(
+        team_df, bundle, expected_df=expected_df, metric=_CONTRIB_METRIC
+    )
     if _CONTRIB_METRIC == "z" and _CONTRIB_Z_RESCALE != 1.0:
         # Linear rescale onto a pp-comparable scale (state-independence preserved). The dz_*
         # per-feature columns are left RAW -- they only feed the ratio-based source split
@@ -445,24 +530,39 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
         sub["position"] = role
         net = contrib[role].to_numpy()
         sub["net_contribution"] = net
-        Dz = np.stack([contrib[f"dz_{role}_{s}"].to_numpy() for s in LANE_STATS], axis=1)
+        Dz = np.stack(
+            [contrib[f"dz_{role}_{s}"].to_numpy() for s in LANE_STATS], axis=1
+        )
         dz_sum = Dz.sum(axis=1)
         frac = np.where(np.abs(dz_sum)[:, None] > 1e-9, Dz / dz_sum[:, None], 0.25)
         split = net[:, None] * frac
         sub["c_kills"], sub["c_deaths"], sub["c_assists"], sub["c_damage"] = (
-            split[:, 0], split[:, 1], split[:, 2], split[:, 3]
+            split[:, 0],
+            split[:, 1],
+            split[:, 2],
+            split[:, 3],
         )
         frames.append(sub)
     long = pd.concat(frames, ignore_index=True)
 
     # Attach player names, team, and first-blood roles.
-    long = long.merge(_player_lane_table(df), on=["gameid", "side", "position"], how="left")
+    long = long.merge(
+        _player_lane_table(df), on=["gameid", "side", "position"], how="left"
+    )
 
     # First blood, folded into net_contribution: the team's FB term is credited to the
     # player who got the first-blood kill (+) or was the victim (-). LPL lacks
     # firstbloodvictim, so its non-FB side's debit is left unattributed.
-    fbk = long["firstbloodkill"].fillna(0).to_numpy() if "firstbloodkill" in long.columns else np.zeros(len(long))
-    fbv = long["firstbloodvictim"].fillna(0).to_numpy() if "firstbloodvictim" in long.columns else np.zeros(len(long))
+    fbk = (
+        long["firstbloodkill"].fillna(0).to_numpy()
+        if "firstbloodkill" in long.columns
+        else np.zeros(len(long))
+    )
+    fbv = (
+        long["firstbloodvictim"].fillna(0).to_numpy()
+        if "firstbloodvictim" in long.columns
+        else np.zeros(len(long))
+    )
     long["c_fb"] = np.where((fbk == 1) | (fbv == 1), long["team_fb"].to_numpy(), 0.0)
     long["net_contribution"] = long["net_contribution"] + long["c_fb"]
     # Resolve home leagues preferring RATED leagues, so teams that span an unrated + rated
@@ -473,10 +573,19 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
         # Carry-forward leagues rate the baseline but don't claim home from a team's
         # genuinely-anchored rated league (see _CARRYFORWARD_ELOS).
         carry = {lg for (y, lg) in _CARRYFORWARD_ELOS if y == year}
-        home_leagues = resolve_home_leagues(df, preferred=set(load_league_elos(year)) - carry)
+        home_leagues = resolve_home_leagues(
+            df, preferred=set(load_league_elos(year)) - carry
+        )
     tg = build_team_game_table(df, home_leagues)
-    tg_cols = ["gameid", "side", "opp_teamname", "own_league", "opp_league",
-               "is_international", "game_label"]
+    tg_cols = [
+        "gameid",
+        "side",
+        "opp_teamname",
+        "own_league",
+        "opp_league",
+        "is_international",
+        "game_label",
+    ]
     if "playoffs" in tg.columns:
         tg_cols.append("playoffs")
     long = long.merge(tg[tg_cols], on=["gameid", "side"], how="left")
@@ -504,13 +613,15 @@ def _match_features(year: int, use_model1: bool = True, force_recompute: bool = 
         po = np.zeros(len(long), dtype=int)
     is_rated = long["game_label"].isin(rated).to_numpy()
     long["phase"] = np.where(
-        is_rated, np.where(po == 1, "playoff", "regular"), "tournament",
+        is_rated,
+        np.where(po == 1, "playoff", "regular"),
+        "tournament",
     )
 
     # Keep only scorable rows (baseline computable + player known).
     long = long.dropna(subset=["baseline", "playername"])
     inv = long[[c for c in _INVARIANT_COLS if c in long.columns]].reset_index(drop=True)
-    inv.to_pickle(path)                  # default or '_merged' path per the tag above
+    inv.to_pickle(path)  # default or '_merged' path per the tag above
     return inv
 
 
@@ -532,24 +643,19 @@ def build_player_match_scores(
     if weights is None:
         weights = ScoreWeights()
 
-    m = _match_features(year, use_model1=use_model1, force_recompute=force_recompute,
-                        home_leagues=home_leagues).copy()
+    m = _match_features(
+        year,
+        use_model1=use_model1,
+        force_recompute=force_recompute,
+        home_leagues=home_leagues,
+    ).copy()
     # Cross-lane normalization: quantile-remap each lane's contribution onto the global
     # (all-years) reference so lanes are directly comparable (see apply_lane_remap).
     m = apply_lane_remap(m, "oracle")
-    # Baseline is measured against the year's PEAK region (not a fixed 1000), so each era's
-    # best region anchors at 0.5. Recomputed here from opp_league so it's a cheap post-cache
-    # transform -- no model retraining needed when the reference changes.
-    elos = load_league_elos(year)
-    peak = max(elos.values()) if elos else REFERENCE_ELO
-    m["baseline"] = 1.0 / (1.0 + 10 ** ((peak - m["opp_league"].map(elos)) / 400.0))
-    m["baseline_term"] = weights.alpha * m["baseline"]
-    m["contribution_term"] = weights.lam * m["net_contribution"]
-    m["win_bonus"] = weights.beta * (m["result"] - m["p_model"])
-    m["score"] = m["baseline_term"] + m["contribution_term"] + m["win_bonus"]
-    # Per-source weighted terms (kills/deaths/assists/damage/fb sum to contribution_term).
-    for s in _SOURCES:
-        m[f"{s}_term"] = weights.lam * m[s]
+    # Apply the (cheap) region-scaled score formula on top of the cached features -- baseline is
+    # recomputed vs the year's PEAK region and raised to the per-phase region exponent, so no
+    # model retraining is needed when the weights/exponents change. See scoring.apply_scored_terms.
+    apply_scored_terms(m, weights, load_league_elos(year), source_cols=_SOURCES)
     return m
 
 
@@ -597,8 +703,9 @@ def build_player_ratings(
     """
     rated = set(load_league_elos(year))
     if matches is None:
-        matches = build_player_match_scores(year, weights, use_model1=use_model1,
-                                            force_recompute=force_recompute)
+        matches = build_player_match_scores(
+            year, weights, use_model1=use_model1, force_recompute=force_recompute
+        )
     if rated_only:
         matches = matches[matches["own_league"].isin(rated)]
 
@@ -610,8 +717,10 @@ def build_player_ratings(
     if excl:
         drop = matches["game_label"].isin(excl)
         if drop.any():
-            logging.info(f"[leagues] {year}: dropped {int(drop.sum())} games from non-rated "
-                         f"minor tiers {sorted(matches.loc[drop, 'game_label'].unique())}")
+            logging.info(
+                f"[leagues] {year}: dropped {int(drop.sum())} games from non-rated "
+                f"minor tiers {sorted(matches.loc[drop, 'game_label'].unique())}"
+            )
             matches = matches[~drop]
 
     def _mode(s: pd.Series):
@@ -636,26 +745,33 @@ def build_player_ratings(
     # Per-(player, series) fractional credit for partial appearances. Series totals (games,
     # wins) must come from the FULL game set -- a sub's own rows cover only the games they
     # played -- so aggregate every player's rows per (series, team) first, then per player.
-    _team = (m.drop_duplicates(["seriesid", "teamname", "gameid"])
-             .groupby(["seriesid", "teamname"])
-             .agg(team_games=("gameid", "nunique"), team_wins=("result", "sum"))
-             .reset_index())
+    _team = (
+        m.drop_duplicates(["seriesid", "teamname", "gameid"])
+        .groupby(["seriesid", "teamname"])
+        .agg(team_games=("gameid", "nunique"), team_wins=("result", "sum"))
+        .reset_index()
+    )
     _team["team_won"] = _team["team_wins"] > (_team["team_games"] - _team["team_wins"])
-    _play = (m.drop_duplicates(["playername", "seriesid", "teamname", "gameid"])
-             .groupby(["playername", "seriesid", "teamname"])
-             .agg(games_played=("gameid", "nunique"), wins_present=("result", "sum"))
-             .reset_index()
-             .merge(_team, on=["seriesid", "teamname"], how="left"))
+    _play = (
+        m.drop_duplicates(["playername", "seriesid", "teamname", "gameid"])
+        .groupby(["playername", "seriesid", "teamname"])
+        .agg(games_played=("gameid", "nunique"), wins_present=("result", "sum"))
+        .reset_index()
+        .merge(_team, on=["seriesid", "teamname"], how="left")
+    )
     _tg = _play["team_games"].replace(0, np.nan)
-    _play["part_frac"] = (_play["games_played"] / _tg).fillna(1.0)         # fractional VOLUME
-    if _BASELINE_SERIES_SHARE:                        # GAME-SHARE: both teams, by games won
+    _play["part_frac"] = (_play["games_played"] / _tg).fillna(1.0)  # fractional VOLUME
+    if _BASELINE_SERIES_SHARE:  # GAME-SHARE: both teams, by games won
         _play["base_frac"] = (_play["wins_present"] / _tg).fillna(0.0)
-    else:                                             # WINNER-TAKE-ALL: winners, by wins present
+    else:  # WINNER-TAKE-ALL: winners, by wins present
         _need = _play["team_wins"].where(_play["team_won"]).replace(0, np.nan)
         _play["base_frac"] = np.where(
-            _play["team_won"], (_play["wins_present"] / _need).fillna(0.0), 0.0)
+            _play["team_won"], (_play["wins_present"] / _need).fillna(0.0), 0.0
+        )
     _credit = _play[["playername", "seriesid", "part_frac", "base_frac"]]
-    _vol_cols = [c for c in comps if c != "baseline_term"]   # scaled by participation fraction
+    _vol_cols = [
+        c for c in comps if c != "baseline_term"
+    ]  # scaled by participation fraction
 
     def _to_series(phase_df: pd.DataFrame) -> pd.DataFrame:
         """One row per (player, series): comps AVERAGED over the games the player played, then
@@ -665,25 +781,37 @@ def build_player_ratings(
         series while distributing them to who actually played; a full-time starter is unchanged.
         The per-region match normalization (below) keeps regions with more matches from being
         overweighted."""
-        cols = ["playername", "seriesid", "own_league", "game_label", "teamname",
-                "part_frac", "base_frac"]
+        cols = [
+            "playername",
+            "seriesid",
+            "own_league",
+            "game_label",
+            "teamname",
+            "part_frac",
+            "base_frac",
+        ]
         if phase_df.empty:
             return pd.DataFrame(columns=cols + comps)
         agg = {c: (c, "mean") for c in comps}
-        agg.update(own_league=("own_league", "first"), game_label=("game_label", "first"),
-                   teamname=("teamname", "first"))
+        agg.update(
+            own_league=("own_league", "first"),
+            game_label=("game_label", "first"),
+            teamname=("teamname", "first"),
+        )
         d = phase_df.groupby(["playername", "seriesid"], as_index=False).agg(**agg)
         d = d.merge(_credit, on=["playername", "seriesid"], how="left")
         d["part_frac"] = d["part_frac"].fillna(1.0)
         d["base_frac"] = d["base_frac"].fillna(0.0)
-        d["baseline_term"] = d["baseline_term"] * d["base_frac"]          # win-fraction credit
-        d[_vol_cols] = d[_vol_cols].mul(d["part_frac"], axis=0)           # fractional volume
+        d["baseline_term"] = d["baseline_term"] * d["base_frac"]  # win-fraction credit
+        d[_vol_cols] = d[_vol_cols].mul(d["part_frac"], axis=0)  # fractional volume
         return d
 
     reg = _to_series(m[m["phase"] == "regular"])
     plf = _to_series(m[m["phase"] == "playoff"])
     tourn = _to_series(m[m["phase"] == "tournament"])
-    tourn_games = m[m["phase"] == "tournament"]   # game-level, kept only for champion detection
+    tourn_games = m[
+        m["phase"] == "tournament"
+    ]  # game-level, kept only for champion detection
 
     # Reference volume = mean regular-season MATCHES (series) per player. The earliest years
     # (2011-2012) are 100% tournament (no domestic league in the data), so reg is empty; fall
@@ -701,10 +829,16 @@ def build_player_ratings(
 
     # Tournament weights: default = viewership-based (Worlds=1.0). Overridable. Any
     # tournament label without a weight is warned and counted as 0.
-    tw = _viewership_weights() if tournament_weights is None else dict(tournament_weights)
+    tw = (
+        _viewership_weights()
+        if tournament_weights is None
+        else dict(tournament_weights)
+    )
     unknown = sorted(set(tourn["game_label"].unique()) - set(tw))
     if unknown:
-        logging.warning(f"[tournaments] no weight for {unknown}; counting them as 0 -- add viewership.")
+        logging.warning(
+            f"[tournaments] no weight for {unknown}; counting them as 0 -- add viewership."
+        )
     tourn["w"] = tourn["game_label"].map(tw).fillna(0.0)
 
     # Tournament CAP + LENGTH NORMALIZATION, in MATCHES: each player's accumulation is capped
@@ -717,14 +851,22 @@ def build_player_ratings(
     _t = tourn_games.sort_values(["date", "gameid"])
     champ = _t[_t["result"] == 1].groupby("game_label")["teamname"].last().to_dict()
     champ_matches = {
-        lbl: tourn_games.loc[(tourn_games["game_label"] == lbl) & (tourn_games["teamname"] == team),
-                             "seriesid"].nunique()
+        lbl: tourn_games.loc[
+            (tourn_games["game_label"] == lbl) & (tourn_games["teamname"] == team),
+            "seriesid",
+        ].nunique()
         for lbl, team in champ.items()
     }
-    player_matches = tourn.groupby(["playername", "game_label"])["seriesid"].transform("size")
+    player_matches = tourn.groupby(["playername", "game_label"])["seriesid"].transform(
+        "size"
+    )
     cap = tourn["game_label"].map(champ_matches)
-    norm = cap.where(cap > 0, 1.0)  # per-tournament length normalizer (champion's match count)
-    tourn["w_eff"] = tourn["w"] * np.minimum(1.0, cap / player_matches).fillna(1.0) / norm
+    norm = cap.where(
+        cap > 0, 1.0
+    )  # per-tournament length normalizer (champion's match count)
+    tourn["w_eff"] = (
+        tourn["w"] * np.minimum(1.0, cap / player_matches).fillna(1.0) / norm
+    )
 
     # Normalize to the deepest capped-weighted run so the champion gets a full weighted phase.
     weighted_run = tourn.groupby("playername")["w_eff"].sum()
@@ -739,7 +881,12 @@ def build_player_ratings(
         d = series_df.copy()
         if d.empty:
             return pd.DataFrame(columns=comps), pd.Series(dtype=float)
-        run = d.groupby(["own_league", "playername"]).size().groupby(level="own_league").max()
+        run = (
+            d.groupby(["own_league", "playername"])
+            .size()
+            .groupby(level="own_league")
+            .max()
+        )
         d["w"] = n_ref / d["own_league"].map(run)
         # Comps already carry the fractional credit (baseline x base_frac, volume x part_frac),
         # so they're summed at full match weight w; the accumulation WEIGHT (the per-game-average
@@ -750,12 +897,23 @@ def build_player_ratings(
 
     reg_c, reg_w = _accumulate(reg)
     plf_c, plf_w = _accumulate(plf)
+    # Per-phase point multipliers (regular = reference; tournaments are scaled by intl_weight in
+    # tourn_scale below). Scale BOTH the points and the accumulation weight so the weighted per-game
+    # average within a phase is unchanged -- only the phase's share of the career total moves.
+    reg_c = reg_c * weights.w_regular
+    reg_w = reg_w * weights.w_regular
+    plf_c = plf_c * weights.w_playoff
+    plf_w = plf_w * weights.w_playoff
 
     # Tournaments: accumulate per MATCH weighted by tournament importance (w_eff = weight x cap),
     # normalized to the deepest capped-weighted run.
     tourn_weighted = tourn[comps].mul(tourn["w_eff"], axis=0)
     tourn_c = tourn_weighted.groupby(tourn["playername"]).sum() * tourn_scale
-    tourn_w = (tourn["w_eff"] * tourn["part_frac"] * tourn_scale).groupby(tourn["playername"]).sum()
+    tourn_w = (
+        (tourn["w_eff"] * tourn["part_frac"] * tourn_scale)
+        .groupby(tourn["playername"])
+        .sum()
+    )
 
     # Per-player TOTAL accumulation weight = Σ weight_g over all games (the same weights that
     # built total_score = Σ score_g·weight_g). It's the denominator for a scale-comparable
@@ -763,28 +921,46 @@ def build_player_ratings(
     # but dividing by the total weight keeps it comparable across leagues/schedules.
     total_weight = reg_w.add(plf_w, fill_value=0.0).add(tourn_w, fill_value=0.0)
 
-    rename = {"baseline_term": "base_pts", "contribution_term": "contrib_pts", "win_bonus": "wbonus_pts"}
-    rename.update({f"{s}_term": f"{s[2:]}_pts" for s in _SOURCES})  # c_kills_term -> kills_pts, c_fb_term -> fb_pts
-    src = reg_c.add(plf_c, fill_value=0.0).add(tourn_c, fill_value=0.0).rename(columns=rename)
+    rename = {
+        "baseline_term": "base_pts",
+        "contribution_term": "contrib_pts",
+        "win_bonus": "wbonus_pts",
+    }
+    rename.update(
+        {f"{s}_term": f"{s[2:]}_pts" for s in _SOURCES}
+    )  # c_kills_term -> kills_pts, c_fb_term -> fb_pts
+    src = (
+        reg_c.add(plf_c, fill_value=0.0)
+        .add(tourn_c, fill_value=0.0)
+        .rename(columns=rename)
+    )
     src["total_score"] = src[["base_pts", "contrib_pts", "wbonus_pts"]].sum(axis=1)
 
     # Phase totals sum only the real score components (baseline/contrib/win_bonus) -- NOT
     # the source-decomposition terms (which decompose contribution) or the fb diagnostic.
     score_comps = ["baseline_term", "contribution_term", "win_bonus"]
-    phase_tot = pd.DataFrame({
-        "reg_pts": reg_c[score_comps].sum(axis=1),
-        "playoff_pts": plf_c[score_comps].sum(axis=1),
-        "tourn_pts": tourn_c[score_comps].sum(axis=1),
-    })
+    phase_tot = pd.DataFrame(
+        {
+            "reg_pts": reg_c[score_comps].sum(axis=1),
+            "playoff_pts": plf_c[score_comps].sum(axis=1),
+            "tourn_pts": tourn_c[score_comps].sum(axis=1),
+        }
+    )
 
     # Per-tournament breakdown: each tournament's contribution (they sum to tourn_pts).
     tourn = tourn.assign(_tsc=tourn[score_comps].sum(axis=1) * tourn["w_eff"])
     by_tourn = (
-        tourn.groupby(["playername", "game_label"])["_tsc"].sum().unstack(fill_value=0.0) * tourn_scale
+        tourn.groupby(["playername", "game_label"])["_tsc"]
+        .sum()
+        .unstack(fill_value=0.0)
+        * tourn_scale
     )
     by_tourn.columns = [f"{c}_pts" for c in by_tourn.columns]
-    tourn_cols = [f"{lbl}_pts" for lbl in sorted(tw, key=lambda k: -tw[k])
-                  if f"{lbl}_pts" in by_tourn.columns]
+    tourn_cols = [
+        f"{lbl}_pts"
+        for lbl in sorted(tw, key=lambda k: -tw[k])
+        if f"{lbl}_pts" in by_tourn.columns
+    ]
 
     meta = matches.groupby("playername").agg(
         team=("teamname", _mode),
@@ -799,8 +975,20 @@ def build_player_ratings(
 
     r = meta.join(src).join(phase_tot).join(by_tourn)
     r["total_weight"] = total_weight
-    pts = (["base_pts", "contrib_pts", "wbonus_pts", "total_score", "reg_pts", "playoff_pts",
-            "tourn_pts", "total_weight"] + [f"{s[2:]}_pts" for s in _SOURCES] + tourn_cols)
+    pts = (
+        [
+            "base_pts",
+            "contrib_pts",
+            "wbonus_pts",
+            "total_score",
+            "reg_pts",
+            "playoff_pts",
+            "tourn_pts",
+            "total_weight",
+        ]
+        + [f"{s[2:]}_pts" for s in _SOURCES]
+        + tourn_cols
+    )
     # Cast to float BEFORE fillna: all-tournament years (2011-2012) leave the empty regular/
     # playoff accumulators as object dtype, which would make fillna silently downcast (a pandas
     # FutureWarning). Coercing first keeps fillna on numeric columns.
@@ -814,7 +1002,13 @@ def build_player_ratings(
     return r
 
 
-_LANE_NAMES = {"top": "TOP", "jng": "JUNGLE", "mid": "MID", "bot": "BOT", "sup": "SUPPORT"}
+_LANE_NAMES = {
+    "top": "TOP",
+    "jng": "JUNGLE",
+    "mid": "MID",
+    "bot": "BOT",
+    "sup": "SUPPORT",
+}
 
 
 def _print_outliers(matches: pd.DataFrame, n: int = 5) -> None:
@@ -822,13 +1016,17 @@ def _print_outliers(matches: pd.DataFrame, n: int = 5) -> None:
     import logging
 
     def show(sel: pd.DataFrame, col: str) -> None:
-        metric = col.replace("contribution_term", "contrib").replace("win_bonus", "wbonus")
+        metric = col.replace("contribution_term", "contrib").replace(
+            "win_bonus", "wbonus"
+        )
         for _, r in sel.iterrows():
             res = "W" if r["result"] == 1 else "L"
             date = str(r.get("date", ""))[:10]
             g = r.get("game", None)
             gtag = f"G{int(g)}" if pd.notna(g) else "--"
-            matchup = f"{str(r['teamname'])[:16]} vs {str(r.get('opp_teamname', ''))[:16]}"
+            matchup = (
+                f"{str(r['teamname'])[:16]} vs {str(r.get('opp_teamname', ''))[:16]}"
+            )
             logging.info(
                 f"      {date}  {str(r['game_label']):<5} {matchup:<38} {gtag:<3} "
                 f"{r['position']:<4} {r['playername']:<12} {res} p={r['p_model']:.2f}  "
@@ -841,7 +1039,9 @@ def _print_outliers(matches: pd.DataFrame, n: int = 5) -> None:
     show(matches.nsmallest(n, "contribution_term"), "contribution_term")
     # win_bonus is team-level (same for all 5), so dedupe to one row per team-game.
     wb = matches.drop_duplicates(subset=["gameid", "side"])
-    logging.info("    Biggest upset wins (win_bonus -- won when model expected a loss):")
+    logging.info(
+        "    Biggest upset wins (win_bonus -- won when model expected a loss):"
+    )
     show(wb.nlargest(n, "win_bonus"), "win_bonus")
     logging.info("    Biggest chokes (win_bonus -- lost when model expected a win):")
     show(wb.nsmallest(n, "win_bonus"), "win_bonus")
@@ -858,7 +1058,9 @@ _DEMO_WEIGHTS = ScoreWeights(alpha=0.75, lam=2.0, beta=0.0)
 _MAJOR = {"LCK", "LPL", "LEC", "LCS"}
 
 
-def explain_upsets(year: int = 2024, n: int = 5, weights: Optional[ScoreWeights] = None) -> None:
+def explain_upsets(
+    year: int = 2024, n: int = 5, weights: Optional[ScoreWeights] = None
+) -> None:
     """
     For the top-n upset wins, decompose the winning team's Model 2 win-prob so you can see
     which lanes/stats made the model rate them a near-certain loss -- and sanity-check that
@@ -872,12 +1074,18 @@ def explain_upsets(year: int = 2024, n: int = 5, weights: Optional[ScoreWeights]
     cfg = WinProbabilityConfig(years=(year,))
     df = load_oracle_years(cfg.years)
     bundle = train_win_prob_bundle(cfg)
-    team_df = build_team_features(df, cfg).reset_index(drop=True).set_index(["gameid", "side"])
+    team_df = (
+        build_team_features(df, cfg)
+        .reset_index(drop=True)
+        .set_index(["gameid", "side"])
+    )
 
     m = build_player_match_scores(year, weights=weights)
     wb = m.drop_duplicates(subset=["gameid", "side"]).nlargest(n, "win_bonus")
 
-    logging.info(f"\n=== Why the top {n} upsets had low p_model (winning team's OWN box score) ===")
+    logging.info(
+        f"\n=== Why the top {n} upsets had low p_model (winning team's OWN box score) ==="
+    )
     for _, r in wb.iterrows():
         row = team_df.loc[(r["gameid"], r["side"])]
         ex = explain_team_game(row, bundle)
@@ -887,7 +1095,9 @@ def explain_upsets(year: int = 2024, n: int = 5, weights: Optional[ScoreWeights]
             f"\n  {str(r.get('date', ''))[:10]}  {r['game_label']}  "
             f"{r['teamname']} vs {r['opp_teamname']}  {gtag}  -> WON at p={ex['p']:.3f} (z={ex['z']:+.2f})"
         )
-        logging.info(f"    {'lane':<6} {'K':>3} {'D':>3} {'A':>3} {'dmg':>6}  {'log-odds':>8}")
+        logging.info(
+            f"    {'lane':<6} {'K':>3} {'D':>3} {'A':>3} {'dmg':>6}  {'log-odds':>8}"
+        )
         for role in ROLES:
             logging.info(
                 f"    {role:<6} {row.get(f'{role}_kills_nonfb', 0):>3.0f} "
@@ -912,7 +1122,9 @@ def _demo(year: int = 2024, per_lane: int = 20) -> None:
     n_ref = ratings.attrs.get("n_ref", 0)
     tw = ratings.attrs.get("tournament_weights", {})
 
-    tw_str = ", ".join(f"{k}={v:.2f}" for k, v in sorted(tw.items(), key=lambda kv: -kv[1]))
+    tw_str = ", ".join(
+        f"{k}={v:.2f}" for k, v in sorted(tw.items(), key=lambda kv: -kv[1])
+    )
     logging.info(
         f"\n{year} player ratings  (alpha={w.alpha}, lam={w.lam}, beta={w.beta}, min 15 games)\n"
         f"Phases: regular & playoffs accumulate by MATCH (Bo3/Bo5 averaged to one unit; a "
@@ -927,8 +1139,10 @@ def _demo(year: int = 2024, per_lane: int = 20) -> None:
     for lane in ROLES:
         sub = ratings[ratings["position"] == lane].head(per_lane)
         logging.info(f"\n=== {_LANE_NAMES[lane]} (top {per_lane}) ===")
-        header = (f"  {'#':>2}  {'player':<13} {'team':<15} {'lg':<4} {'reg':>6} {'plf':>6}"
-                  f"{tourn_hdr} {'total':>7} {'wr':>4}")
+        header = (
+            f"  {'#':>2}  {'player':<13} {'team':<15} {'lg':<4} {'reg':>6} {'plf':>6}"
+            f"{tourn_hdr} {'total':>7} {'wr':>4}"
+        )
         logging.info(header)
         logging.info("  " + "-" * (len(header) - 2))
         for i, (name, r) in enumerate(sub.iterrows(), 1):
@@ -948,15 +1162,23 @@ def _demo(year: int = 2024, per_lane: int = 20) -> None:
         f"  Win-prob impact per game: getting first blood {got.mean() * 100:+.2f}pp (killer), "
         f"being the victim {lost.mean() * 100:+.2f}pp."
     )
-    logging.info("  Top 10 by cumulative first-blood points (fb_pts, part of contrib/total):")
+    logging.info(
+        "  Top 10 by cumulative first-blood points (fb_pts, part of contrib/total):"
+    )
     for name, r in ratings.sort_values("fb_pts", ascending=False).head(10).iterrows():
-        logging.info(f"    {name:<13} {str(r['team'])[:16]:<16} {r['position']:<4} "
-                     f"fb_pts={r['fb_pts']:+5.2f}   (total={r['total_score']:.1f})")
+        logging.info(
+            f"    {name:<13} {str(r['team'])[:16]:<16} {r['position']:<4} "
+            f"fb_pts={r['fb_pts']:+5.2f}   (total={r['total_score']:.1f})"
+        )
 
     logging.info("\n\n=== Single-game outliers: OVERALL (all scored games) ===")
     _print_outliers(matches)
-    major_intl = matches[matches["own_league"].isin(_MAJOR) | (matches["phase"] == "tournament")]
-    logging.info("\n=== Single-game outliers: MAJOR REGIONS (LCK/LPL/LEC/LCS) + INTERNATIONAL ===")
+    major_intl = matches[
+        matches["own_league"].isin(_MAJOR) | (matches["phase"] == "tournament")
+    ]
+    logging.info(
+        "\n=== Single-game outliers: MAJOR REGIONS (LCK/LPL/LEC/LCS) + INTERNATIONAL ==="
+    )
     _print_outliers(major_intl)
 
 

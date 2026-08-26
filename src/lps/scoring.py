@@ -37,7 +37,9 @@ import csv
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Sequence
+
+import numpy as np
 
 from .config import INFO_DIR
 
@@ -50,11 +52,30 @@ REFERENCE_ELO = 1000.0
 
 @dataclass
 class ScoreWeights:
-    """Tunable weights for the scoring formula: alpha*baseline + lam*contrib + beta*wbonus."""
+    """Tunable weights for the per-match scoring formula:
 
-    alpha: float = 1.0  # weight on the league baseline (lower => contrib/wbonus matter more)
-    lam: float = 1.0    # weight on individual net contribution
+        score = baseline**region_exp_<phase> * (alpha + lam*contribution + beta*winbonus)
+
+    where baseline = winrate(opponent league vs the year's peak region). The baseline acts as a
+    REGION SCALING FACTOR on the whole per-game value (raised to a per-phase exponent), so a
+    weak-region season is worth less; a higher exponent punishes weaker regions harder (fixes
+    over-valuing non-eastern domestic play). alpha is now a FLAT base credit (win-gated downstream
+    via base_frac), NOT a multiplier on baseline. exp=0 removes region scaling entirely; exp=1 =
+    plain winrate; exp>1 = steeper."""
+
+    alpha: float = 1.0  # flat base credit per (winning) game, before the region factor
+    lam: float = 1.0  # weight on individual net contribution
     beta: float = 0.25  # weight on the win bonus (result - p_model)
+    # Region factor: baseline (winrate vs the year's peak region) ^ region_exp scales the whole
+    # per-game value. A SINGLE constant exponent for all phases; higher => weaker regions punished
+    # harder (exp=0 removes region scaling, exp=1 = plain winrate). Tuned to the consensus surveys
+    # (2.0): the plain winrate was too generous to lesser (non-eastern) regions.
+    region_exp: float = 2.0
+    # Per-PHASE point multipliers (like the era multipliers): each phase's accumulated points are
+    # scaled by its multiplier. Regular season is the reference (w_regular, usually 1.0); playoffs by
+    # w_playoff. The TOURNAMENT phase is scaled by build_player_ratings' existing `intl_weight`.
+    w_regular: float = 1.0
+    w_playoff: float = 1.0
 
 
 def expected_score(elo_a: float, elo_b: float) -> float:
@@ -68,7 +89,8 @@ def expected_score(elo_a: float, elo_b: float) -> float:
 
 def peak_elo(elos: dict[str, float]) -> float:
     """The strongest region's Elo that year -- the reference the baseline is measured against
-    (so each era's best region anchors at 0.5, rewarding it equally despite Elo inflation)."""
+    (so each era's best region anchors at 0.5, rewarding it equally despite Elo inflation).
+    """
     return max(elos.values()) if elos else REFERENCE_ELO
 
 
@@ -142,6 +164,34 @@ def league_baseline(
     return expected_score(opp_elo, peak_elo(elos))
 
 
+def apply_scored_terms(
+    m, weights: "ScoreWeights", elos: dict, source_cols: Sequence[str] = ()
+):
+    """Compute the per-match score component columns IN PLACE on a DataFrame `m`, applying the
+    region-scaled formula on top of the cached weight-invariant features (cheap; no retraining):
+
+        baseline = winrate(opp league vs the year's PEAK region)
+        factor   = baseline ** region_exp                 # region scaling (single constant exp)
+        score    = factor * (alpha + lam*net_contribution + beta*(result - p_model))
+
+    Sets: baseline, baseline_term (= factor*alpha), contribution_term, win_bonus, <s>_term for
+    each source col, and score. The alpha 'baseline' credit is win-gated DOWNSTREAM in
+    build_player_ratings (base_frac, winner-take-all), so here it is the full per-game credit.
+    Requires columns: opp_league, phase, net_contribution, result, p_model (+ each source col).
+    """
+    peak = max(elos.values()) if elos else REFERENCE_ELO
+    baseline = 1.0 / (1.0 + 10 ** ((peak - m["opp_league"].map(elos)) / 400.0))
+    factor = np.power(baseline, weights.region_exp)  # region scaling (single exponent)
+    m["baseline"] = baseline
+    m["baseline_term"] = factor * weights.alpha  # flat base credit, region-scaled
+    m["contribution_term"] = factor * weights.lam * m["net_contribution"]
+    m["win_bonus"] = factor * weights.beta * (m["result"] - m["p_model"])
+    for s in source_cols:
+        m[f"{s}_term"] = factor * weights.lam * m[s]
+    m["score"] = m["baseline_term"] + m["contribution_term"] + m["win_bonus"]
+    return m
+
+
 def score_player_match(
     *,
     league: str,
@@ -180,9 +230,11 @@ def score_player_match(
     if baseline is None:
         return None
 
-    baseline_term = weights.alpha * baseline
-    contribution_term = weights.lam * net_contribution
-    win_bonus = weights.beta * (result - p_model)
+    # Region factor = baseline^exp.
+    factor = baseline**weights.region_exp
+    baseline_term = factor * weights.alpha
+    contribution_term = factor * weights.lam * net_contribution
+    win_bonus = factor * weights.beta * (result - p_model)
     total = baseline_term + contribution_term + win_bonus
 
     return {
@@ -202,7 +254,9 @@ def _demo(year: int = 2024) -> None:
         return
 
     peak = peak_elo(elos)
-    logging.info(f"League baselines for {year} (expected win rate vs the peak region, Elo {int(peak)}):")
+    logging.info(
+        f"League baselines for {year} (expected win rate vs the peak region, Elo {int(peak)}):"
+    )
     logging.info(f"  {'League':<8} {'Elo':<10} {'Baseline':<10}")
     logging.info("  " + "-" * 30)
     for league, elo in sorted(elos.items(), key=lambda kv: kv[1], reverse=True):
@@ -211,9 +265,16 @@ def _demo(year: int = 2024) -> None:
 
     # Worked example: your -0.05 contribution in a 0.75-ish league, won a game the
     # model gave 60%.
-    logging.info("\nWorked example (LCS player, net_contribution=-0.05, won a p_model=0.60 game):")
+    logging.info(
+        "\nWorked example (LCS player, net_contribution=-0.05, won a p_model=0.60 game):"
+    )
     result = score_player_match(
-        league="LCS", year=year, net_contribution=-0.05, result=1, p_model=0.60, elos=elos
+        league="LCS",
+        year=year,
+        net_contribution=-0.05,
+        result=1,
+        p_model=0.60,
+        elos=elos,
     )
     if result is None:
         logging.info("  LCS has no baseline this year.")
