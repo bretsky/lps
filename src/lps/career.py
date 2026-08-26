@@ -91,7 +91,7 @@ class CLRConfig:
     # drop from adding a year at the band edge). Both default safely above that floor.
     peak_band: float = 0.15  # within 15% of the best season counts as a peak year
     peak_len_bonus: float = (
-        0.15  # per extra peak year, as a fraction of the best season (tuned)
+        0.10  # per extra peak year, as a fraction of the best season (tuned)
     )
     pace_prior_games: float = (
         50.0  # empirical-Bayes shrinkage strength (weighted games)

@@ -133,8 +133,9 @@ _BONUS_CACHE: dict = {}
 
 def _bonus_long(roster, bcfg: BonusConfig):
     """score_bonuses depends only on the roster + bonus point structure (repeat_decay,
-    champ_per_weight), NOT on scoring weights or CLR params -- so cache by those."""
-    key = (bcfg.repeat_decay, bcfg.champ_per_weight)
+    champ_per_weight, award_weight), NOT on scoring weights or CLR params -- so cache by those.
+    """
+    key = (bcfg.repeat_decay, bcfg.champ_per_weight, bcfg.award_weight)
     if key not in _BONUS_CACHE:
         _BONUS_CACHE[key] = score_bonuses(roster, bcfg)
     return _BONUS_CACHE[key]
@@ -166,6 +167,7 @@ INNER_SPACE = {
     ("bonus", "w_bonus"): [0.5, 0.75, 1.0, 1.25, 1.5],
     ("bonus", "repeat_decay"): [0.6, 0.7, 0.8, 0.9, 1.0],
     ("bonus", "champ_per_weight"): [3.5, 4.6, 5.5],
+    ("bonus", "award_weight"): [0.5, 0.75, 1.0, 1.5, 2.0],
 }
 # OUTER (expensive) params live on ScoreWeights (+ intl_weight, carried alongside). region_exp is a
 # single constant; w_playoff and intl_weight are the playoff/tourney phase multipliers (regular is
@@ -194,6 +196,7 @@ def _mk_cfgs(inner: dict) -> tuple[CLRConfig, BonusConfig]:
         w_bonus=inner[("bonus", "w_bonus")],
         repeat_decay=inner[("bonus", "repeat_decay")],
         champ_per_weight=inner[("bonus", "champ_per_weight")],
+        award_weight=inner[("bonus", "award_weight")],
     )
     return clr, bcfg
 
@@ -258,6 +261,7 @@ def main() -> None:
         ("bonus", "w_bonus"): 1.0,
         ("bonus", "repeat_decay"): 0.8,
         ("bonus", "champ_per_weight"): 4.6,
+        ("bonus", "award_weight"): 1.0,
     }
     inner_passes = 1 if args.quick else 2
     outer_space = dict(OUTER_SPACE)
@@ -348,6 +352,7 @@ def main() -> None:
             "w_bonus": bcfg.w_bonus,
             "repeat_decay": bcfg.repeat_decay,
             "champ_per_weight": bcfg.champ_per_weight,
+            "award_weight": bcfg.award_weight,
         },
     }
     logger.info("\n" + "=" * 70 + "\n[tune] BEST CONFIG\n" + "=" * 70)

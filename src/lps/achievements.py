@@ -80,7 +80,7 @@ class BonusConfig:
     intl_champion_anchors: dict[str, float] = field(
         default_factory=lambda: {"WLDs": 6.0, "MSI": 3.0}
     )
-    champ_per_weight: float = 4.6
+    champ_per_weight: float = 5.5  # tuned to the consensus surveys
     intl_bucket: dict[str, float] = field(
         default_factory=lambda: {
             "champion": 1.0,
@@ -117,6 +117,10 @@ class BonusConfig:
             "all_pro_3": 0.15,
         }
     )
+    # Family weight on ALL individual awards: multiplies award_bonus (the MVP/All-Pro family) before
+    # w_bonus, so awards can be scaled up/down RELATIVE to team titles/placements without editing
+    # each token. The award analogue of champ_per_weight (tournaments). 1.0 = award_points as-is.
+    award_weight: float = 1.0
     # Overall resume-bonus weight into CLR. Kept < 1 so the resume BOOSTS individual performance
     # rather than swamping it (raw bonus points for the most-decorated players rival the entire
     # base CLR); also, team achievements credit every player on a winning roster equally, so a
@@ -380,7 +384,9 @@ def score_bonuses(roster: pd.DataFrame, cfg: BonusConfig | None = None) -> pd.Da
                 for a, y, c in zip(aw["award"], aw["year"], code)
             ]
         )
-        aw["pts"] = base * sc
+        aw["pts"] = (
+            base * sc * cfg.award_weight
+        )  # family weight on all individual awards
         aw["cat"] = np.where(aw["award"].isin(_MVP_AWARDS), "mvp", "allpro")
         aw = aw[aw["pts"] > 0]
         aw = aw.join(pos.rename("position"), on=["_nlc", "year"], how="inner")
