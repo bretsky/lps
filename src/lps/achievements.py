@@ -28,6 +28,7 @@ import numpy as np
 import pandas as pd
 
 from .fetch_achievements import ACHIEVEMENTS_CSV, AWARDS_CSV
+from .player_identity import resolve_label
 from .scoring import load_league_elos
 from .season import _viewership_weights
 
@@ -340,9 +341,14 @@ def score_bonuses(roster: pd.DataFrame, cfg: BonusConfig | None = None) -> pd.Da
     ach = ach[ach["pts"] > 0]
 
     # Explode rosters -> one row per (achievement, player), keep only players in our universe.
-    ex = ach.assign(_nlc=ach["players"].astype(str).str.split(";")).explode("_nlc")
-    ex["_nlc"] = ex["_nlc"].str.strip().str.lower()
-    ex = ex[ex["_nlc"] != ""]
+    # Bridge each Leaguepedia handle to its canonical identity label using the achievement's
+    # region, so a title lands on the right same-handle player (e.g. the LPL vs VCS "Knight").
+    ex = ach.assign(_hraw=ach["players"].astype(str).str.split(";")).explode("_hraw")
+    ex["_hraw"] = ex["_hraw"].str.strip()
+    ex = ex[ex["_hraw"] != ""]
+    _ex_reg = ex["league_full"].map(FULL2CODE)
+    ex["_nlc"] = [resolve_label(h, r) for h, r in zip(ex["_hraw"], _ex_reg)]
+    ex["_nlc"] = ex["_nlc"].astype(str).str.lower()
     ex = ex.join(pos.rename("position"), on=["_nlc", "year"], how="inner")
     ex = ex.join(cname.rename("cname"), on=["_nlc", "year"])
     parts = []
@@ -371,13 +377,15 @@ def score_bonuses(roster: pd.DataFrame, cfg: BonusConfig | None = None) -> pd.Da
         aw["year"] = pd.to_numeric(aw["year"], errors="coerce")
         aw = aw[aw["year"].notna()]
         aw["year"] = aw["year"].astype(int)
-        aw["_nlc"] = aw["playername"].astype(str).str.lower()
         base = aw["award"].map(cfg.award_points).fillna(0.0).to_numpy()
         code = (
             aw["league_full"].map(FULL2CODE)
             if "league_full" in aw.columns
             else pd.Series([None] * len(aw), index=aw.index)
         )
+        # Bridge each award's Leaguepedia handle to its canonical identity label (by region).
+        aw["_nlc"] = [resolve_label(h, r) for h, r in zip(aw["playername"], code)]
+        aw["_nlc"] = aw["_nlc"].astype(str).str.lower()
         sc = np.array(
             [
                 1.0 if a in FLAT_AWARDS else scale.get((y, c), 0.0)

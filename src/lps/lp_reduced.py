@@ -31,6 +31,7 @@ from sklearn.preprocessing import StandardScaler
 
 from .contribution import ROLES
 from .lp_ingest import load_year
+from .player_identity import resolve_label
 from .scoring import REFERENCE_ELO, ScoreWeights, load_league_elos, apply_scored_terms
 from .season import (
     _CACHE_DIR,
@@ -351,6 +352,12 @@ def _lp_features(
     # Phase: rated domestic label -> regular (no playoff flag in source); else tournament.
     rated = set(elos)
     long["phase"] = np.where(long["game_label"].isin(rated), "regular", "tournament")
+    # Bridge Leaguepedia handles to the canonical identity label (by handle+home league) so
+    # gap-year rows share an identity with the same player's Oracle years and same-handle
+    # collisions stay separate; unbridged (Leaguepedia-only) handles keep their raw name.
+    long["playername"] = [
+        resolve_label(h, r) for h, r in zip(long["playername"], long["own_league"])
+    ]
     long = long.dropna(subset=["baseline", "playername"])
     inv = long[[c for c in _INVARIANT_COLS if c in long.columns]].reset_index(drop=True)
     inv.to_pickle(path)

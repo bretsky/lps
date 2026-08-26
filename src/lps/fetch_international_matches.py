@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
+from datetime import datetime
 from typing import Any
 
 from tqdm import tqdm
@@ -44,7 +45,7 @@ INTERNATIONAL_TOURNAMENTS = {
 
 # Year range to fetch
 START_YEAR = 2010  # LoL esports started around 2010-2011
-END_YEAR = 2025  # Current year + 1 for safety
+END_YEAR = datetime.now().year  # roll over automatically each season
 
 
 def sanitize_filename(name: str) -> str:

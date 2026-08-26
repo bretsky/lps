@@ -39,6 +39,7 @@ from .contribution import (
 )
 from .expected_stats import expected_reference_frame
 from .io_oracle import load_oracle_years
+from .player_identity import label_map as player_label_map
 from .scoring import REFERENCE_ELO, ScoreWeights, load_league_elos, apply_scored_terms
 from .team_leagues import build_team_game_table, resolve_home_leagues
 from .win_probability import WinProbabilityConfig, build_team_features
@@ -310,7 +311,9 @@ _TOURNAMENT_VIEWERSHIP = {
     "FST": [1106126, 1500730],  # First Stand (2025+; Oracle label to confirm)
     "MSC": [591496],  # Mid-Season Cup (2020; peak concurrent viewers)
     "LTA": [318462],  # LTA cross-conference championship (Americas, 2025)
+    "AC": [238904], # Americas Cup
     "KeSPA": [173449, 110196, 66335],  # KeSPA Cup (domestic, KR)
+    "KeSPA Cup": [173449, 110196, 66335],  # 2026 KeSPA Cup label, using same weights as previous years
     "DCup": [55751, 69654, 60238],  # Demacia Cup (domestic, CN)
 }
 
@@ -373,6 +376,7 @@ EXCLUDED_LEAGUES = {
     "VCS",
     "LJL",
     "LCO",  # top-tier in their years (rated guard keeps those)
+    "PCL", # Pacific Challengers League
 }
 
 # Year-aware league-label aliases: Oracle sometimes labels the Worlds regional-qualifier
@@ -443,12 +447,18 @@ def _remap_league_aliases(df: pd.DataFrame, rated: set[str]) -> pd.DataFrame:
 
 
 def _player_lane_table(df: pd.DataFrame) -> pd.DataFrame:
-    """One row per (gameid, side, position): player, team, and first-blood roles."""
+    """One row per (gameid, side, position): player, team, and first-blood roles.
+
+    `playername` is replaced by the disambiguated identity label (see player_identity) so
+    that same-handle-different-person cases (e.g. the LPL/VCS/NA "Knight"s) stay separate
+    downstream. Falls back to the raw handle when a row has no usable playerid.
+    """
     cols = [
         "gameid",
         "side",
         "position",
         "playername",
+        "playerid",
         "teamname",
         "firstbloodkill",
         "firstbloodvictim",
@@ -462,11 +472,18 @@ def _player_lane_table(df: pd.DataFrame) -> pd.DataFrame:
     )
     d = d[d["position"].isin(ROLES)]
     agg = dict(playername=("playername", "first"), teamname=("teamname", "first"))
+    if "playerid" in d.columns:
+        agg["playerid"] = ("playerid", "first")
     if "firstbloodkill" in d.columns:
         agg["firstbloodkill"] = ("firstbloodkill", "first")
     if "firstbloodvictim" in d.columns:
         agg["firstbloodvictim"] = ("firstbloodvictim", "first")
-    return d.groupby(["gameid", "side", "position"], as_index=False).agg(**agg)
+    out = d.groupby(["gameid", "side", "position"], as_index=False).agg(**agg)
+    if "playerid" in out.columns:
+        labels = out["playerid"].astype(str).str.strip().map(player_label_map())
+        out["playername"] = labels.fillna(out["playername"])
+        out = out.drop(columns=["playerid"])
+    return out
 
 
 def _match_features(

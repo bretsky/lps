@@ -35,7 +35,19 @@ from pathlib import Path
 
 INFO = Path("info")
 SNAP = INFO / "_rerun_snapshot"
-YEARS = list(range(2011, 2026))
+
+
+def _discover_years() -> list[int]:
+    """2011 through the newest year that has a starting_elos_<year>.csv seed."""
+    seeded = sorted(
+        int(p.stem.split("_")[-1])
+        for p in INFO.glob("starting_elos_*.csv")
+        if p.stem.split("_")[-1].isdigit()
+    )
+    return list(range(2011, (seeded[-1] if seeded else 2025) + 1))
+
+
+YEARS = _discover_years()
 DEFAULT_ELO = 1000.0
 
 Rows = list[tuple[str, float, int]]

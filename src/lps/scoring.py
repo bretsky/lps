@@ -68,9 +68,9 @@ class ScoreWeights:
     beta: float = 0.25  # weight on the win bonus (result - p_model)
     # Region factor: baseline (winrate vs the year's peak region) ^ region_exp scales the whole
     # per-game value. A SINGLE constant exponent for all phases; higher => weaker regions punished
-    # harder (exp=0 removes region scaling, exp=1 = plain winrate). Tuned to the consensus surveys
-    # (2.0): the plain winrate was too generous to lesser (non-eastern) regions.
-    region_exp: float = 2.0
+    # harder (exp=0 removes region scaling, exp=1 = plain winrate). Consensus tuning preferred 2.0
+    # (plain winrate over-values lesser/non-eastern regions); set to 1.5 to soften that penalty.
+    region_exp: float = 1.5
     # Per-PHASE point multipliers (like the era multipliers): each phase's accumulated points are
     # scaled by its multiplier. Regular season is the reference (w_regular, usually 1.0); playoffs by
     # w_playoff. The TOURNAMENT phase is scaled by build_player_ratings' existing `intl_weight`.

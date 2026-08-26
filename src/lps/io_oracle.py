@@ -26,6 +26,24 @@ def list_oracle_files() -> list[Path]:
 	return sorted(ORACLE_DIR.glob("*.csv"))
 
 
+def available_oracle_years() -> list[int]:
+	"""Years for which an Oracle CSV is present on disk, ascending.
+
+	Single source of truth for "how far the box-score data goes" -- prefer this
+	over hardcoding an upper year bound so the pipeline rolls over automatically
+	when a new season's CSV is dropped into data/oracle/.
+	"""
+	return sorted(
+		{y for p in list_oracle_files() if (y := _infer_year_from_name(p)) is not None}
+	)
+
+
+def latest_oracle_year(default: int = 2025) -> int:
+	"""Newest year with an Oracle CSV, or `default` if the directory is empty."""
+	years = available_oracle_years()
+	return years[-1] if years else default
+
+
 def load_oracle_year(year: int) -> pd.DataFrame:
 	"""
 	Load a single year of Oracle's Elixir data.

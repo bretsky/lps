@@ -27,6 +27,7 @@ import argparse
 import csv
 import logging
 import re
+from datetime import datetime
 from typing import Optional
 
 from .config import INFO_DIR
@@ -41,7 +42,7 @@ AWARDS_RAW_CSV = INFO_DIR / "player_awards_raw.csv"  # everything, annotated
 
 # Our data range. Leaguepedia carries future/placeholder tournament pages (e.g. a 2027 MSI
 # stub); bound to the seasons we actually score so the committed CSV stays clean.
-MIN_YEAR, MAX_YEAR = 2011, 2025
+MIN_YEAR, MAX_YEAR = 2011, datetime.now().year
 
 # Leaguepedia League full-names whose split PLAYOFFS titles we credit (i.e. rated majors/regions;
 # unrated years still score 0 via missing Elo downstream). Used only to bound the roster pull.

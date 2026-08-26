@@ -51,7 +51,7 @@ from .export_excel import (
     _write_sheet,
     build_export_frame,
 )
-from .io_oracle import load_oracle_years
+from .io_oracle import available_oracle_years, latest_oracle_year, load_oracle_years
 from .scoring import REFERENCE_ELO, ScoreWeights, load_league_elos, apply_scored_terms
 from .season import _DEMO_WEIGHTS, _LANE_NAMES, _SOURCES, build_player_match_scores
 from .team_leagues import resolve_home_leagues
@@ -59,8 +59,8 @@ from .team_leagues import resolve_home_leagues
 logger = logging.getLogger(__name__)
 
 YEARS_DEFAULT = tuple(
-    range(2011, 2026)
-)  # 2011-2013 via reduced Leaguepedia model; 2014-2025 Oracle
+    range(2011, latest_oracle_year() + 1)
+)  # 2011-2013 via reduced Leaguepedia model; 2014+ Oracle (upper bound = newest CSV)
 # (2011+2012 share one pooled KDA-only model; see lp_reduced.MODEL_GROUPS)
 
 
@@ -178,8 +178,9 @@ def run_year_frames(
     records: list[dict] = []
     all_tourn: list[str] = []
     failed: list[str] = []
+    oracle_years = set(available_oracle_years())  # upper bound = newest CSV on disk
     for year in years:
-        oracle_ok = 2014 <= year <= 2025
+        oracle_ok = year >= 2014 and year in oracle_years
         lp_ok = year in lp_reduced.GAP_LEAGUES
         # When both sources exist, resolve home leagues across their UNION so an Eastern team
         # whose only Oracle games are Worlds (home would be 'WLDs' -> games drop) inherits its
@@ -1139,7 +1140,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(
         description="Build per-year + cumulative career LPS workbooks."
     )
-    ap.add_argument("--years", type=str, default="2011-2025")
+    ap.add_argument("--years", type=str, default=f"2011-{latest_oracle_year()}")
     ap.add_argument("--min-games", type=int, default=3)
     ap.add_argument("--intl-weight", type=float, default=2.0)
     ap.add_argument("--alpha", type=float, default=_DEMO_WEIGHTS.alpha)

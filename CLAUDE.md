@@ -30,6 +30,7 @@ Credentials live in `.env` (gitignored): `LP_USERNAME` / `LP_PASSWORD` are Leagu
 
 | Module | Role |
 |---|---|
+| `update_all.py` | **Master driver** — pull latest LP/Oracle data → recompute Elos → rebuild all scores/rankings. Start here (see below). |
 | `config.py` | Paths + env. **Single source of truth for directory locations.** |
 | `io_oracle.py` | Load Oracle's Elixir CSVs by year → concatenated `DataFrame`. |
 | `lp_client.py` | `LPClient` — Leaguepedia Cargo query wrapper with exponential backoff. |
@@ -65,6 +66,25 @@ The Elo pipeline chains year to year — each year's `ending_elos` seed the next
 4. Create `info/starting_elos_<year>.csv`, then `python -m lps.regional_elo --year <year>` → writes `ending_elos_<year>.csv`.
 
 Elo config lives as module constants in `regional_elo.py` (`DEFAULT_ELO=1000`, `K_FACTOR=64`). Teams with region `N/A` are excluded.
+
+## Master update (`update_all.py`) — the one command to run
+
+`python -m lps.update_all` orchestrates the whole "new data upstream → refreshed workbooks on disk" flow via subprocess (same driver pattern as `rerun_elos.py`). Two modes:
+
+- **Incremental (default)** — refresh only the *latest* year end-to-end, reuse everything cached for prior years. The day-to-day run.
+- **Full (`--full`)** — re-pull everything, recompute the entire `2011→latest` Elo chain (via `rerun_elos.py --run`) and every per-year score. Use after a model/scoring change or region edits.
+
+Pipeline order: **preflight** (resolve target year from newest Oracle CSV; verify CSV + LP creds) → **pull LP** (force-refresh current-year match JSONs + re-fetch achievements) → **region guard** → **regional Elo** → **scores** (`career.py`).
+
+Non-obvious behaviors that keep it safe — preserve these if you touch it:
+
+- **Never calls `extract_team_names`** — that script overwrites *every* `team_regions_<year>.csv` with a blank `region` column, wiping hand-filled mappings. `update_all` instead reuses `extract_team_names_by_year` read-only, **appends** only brand-new teams (blank region, existing rows untouched), and then **halts** if any current-year team is unmapped (Elo is only correct once every international team has a region).
+- **Force-refreshes current-year match JSONs** by deleting `data/leaguepedia/matches/*<year>*.json` (excluding `*_all.json`) before `fetch_international_matches`, because that fetcher is cache-only (`force_refetch=False`) and won't otherwise re-pull an in-progress event. Older years' caches are left alone.
+- **Incremental recompute** busts *only* `data/cache/match_features_<year>_*.pkl`, then runs `career --no-recompute` — which rebuilds that one year and reuses the rest (see `season._match_features` cache logic).
+- **Backs up** `info/achievements*.csv` / `info/player_awards*.csv` to `info/backup_auto/` before `fetch_achievements` overwrites them.
+- A brand-new year with no `starting_elos_<year>.csv` halts and points to `--full` (only `rerun_elos.py` knows how to reseed boundaries across renames/merges).
+
+Useful flags: `--dry-run` (print the plan, run nothing), `--year N`, `--skip-fetch` (recompute from cache, no network), `--skip-elo`, `--skip-achievements`, `--skip-regions`. Exit codes: `2` = halted on a human-only prerequisite, `1` = a subcommand failed.
 
 ## Conventions
 

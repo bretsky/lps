@@ -1,4 +1,34 @@
 year,category,event,league_full,split,team,place,bucket,players,page
+2026,domestic,,Circuit Brazilian League of Legends,,FURIA,1,champion,Ayu;Guigo;JoJo;Tatu;Tutsz,CBLOL/2026 Season/Split 1 Playoffs
+2026,domestic,,Circuit Brazilian League of Legends,,,1,champion,,CBLOL/2026 Season/Split 2 Playoffs
+2026,domestic,,Circuit Brazilian League of Legends,,LØS,2,finalist,Ackerman;Curse;Duduhh;Feisty;Zest,CBLOL/2026 Season/Split 1 Playoffs
+2026,domestic,,Circuit Brazilian League of Legends,,,2,finalist,,CBLOL/2026 Season/Split 2 Playoffs
+2026,domestic,,League of Legends Championship Pacific,,Team Secret Whales,1,champion,Bie;Dire;Eddie;Hizto;Pun,LCP/2026 Season/Split 1 Playoffs
+2026,domestic,,League of Legends Championship Pacific,,Team Secret Whales,1,champion,Bie;Dire;Eddie;Hizto;Pun,LCP/2026 Season/Split 2 Playoffs
+2026,domestic,,League of Legends Championship Pacific,,Deep Cross Gaming,2,finalist,Feng;Flauren;HongSuo;Pop9;ShiauC,LCP/2026 Season/Split 1 Playoffs
+2026,domestic,,League of Legends Championship Pacific,,Deep Cross Gaming,2,finalist,Feng;Flauren;HongSuo;Pop9;ShiauC,LCP/2026 Season/Split 2 Playoffs
+2026,domestic,,League of Legends Championship Series,Spring,LYON (2024 American Team),1,champion,Berserker;Dhokla;Inspired;Isles;Saint,LCS/2026 Season/Spring Playoffs
+2026,domestic,,League of Legends Championship Series,Spring,Team Liquid,2,finalist,CoreJJ;Josedeodo;Morgan;Quid;Yeon,LCS/2026 Season/Spring Playoffs
+2026,domestic,,League of Legends Championship Series,Summer,,1,champion,,LCS/2026 Season/Summer Playoffs
+2026,domestic,,League of Legends Championship Series,Summer,,2,finalist,,LCS/2026 Season/Summer Playoffs
+2026,domestic,,LoL Champions Korea,,,1,champion,,LCK/2026 Season/Season Playoffs
+2026,domestic,,LoL Champions Korea,,,2,finalist,,LCK/2026 Season/Season Playoffs
+2026,domestic,,LoL EMEA Championship,,G2 Esports,1,champion,BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,LEC/2026 Season/Versus Playoffs
+2026,domestic,,LoL EMEA Championship,,Karmine Corp,2,finalist,Busio;Caliste;Canna;Yike;kyeahoo,LEC/2026 Season/Versus Playoffs
+2026,domestic,,LoL EMEA Championship,Spring,G2 Esports,1,champion,BrokenBIade;BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,LEC/2026 Season/Spring Playoffs
+2026,domestic,,LoL EMEA Championship,Spring,Karmine Corp,2,finalist,Busio;Caliste;Canna;Yike;kyeahoo,LEC/2026 Season/Spring Playoffs
+2026,domestic,,LoL EMEA Championship,Summer,,1,champion,,LEC/2026 Season/Summer Playoffs
+2026,domestic,,LoL EMEA Championship,Summer,,2,finalist,,LEC/2026 Season/Summer Playoffs
+2026,domestic,,Tencent LoL Pro League,,Bilibili Gaming,1,champion,Bin;Knight;ON;Viper;Xun,LPL/2026 Season/Split 1 Playoffs
+2026,domestic,,Tencent LoL Pro League,,Bilibili Gaming,1,champion,Bin;Knight;ON;Viper;Xun,LPL/2026 Season/Split 2 Playoffs
+2026,domestic,,Tencent LoL Pro League,,JD Gaming,2,finalist,GALA;HongQ;JunJia;Vampire;Xiaoxu,LPL/2026 Season/Split 1 Playoffs
+2026,domestic,,Tencent LoL Pro League,,Top Esports,2,finalist,Creme;JackeyLove;Tian;ZUIAN;fengyue,LPL/2026 Season/Split 2 Playoffs
+2026,domestic,,Turkish Championship League,Spring,Misa Esports,1,champion,113;Carry;Kofte;Ragner;Ruep,TCL/2026 Season/Spring Playoffs
+2026,domestic,,Turkish Championship League,Spring,PCIFIC Esports,2,finalist,Aytekn;Beplush;FireAscept;Nawa;stalken,TCL/2026 Season/Spring Playoffs
+2026,domestic,,Vietnam Championship Series,Spring,MVK Esports Academy,1,champion,Callian;Chika;Harky;NPC;SanSan;Seany;SiuLoong;Steller,VCS/2026 Season/Spring Playoffs
+2026,domestic,,Vietnam Championship Series,Spring,Saigon Warriors,2,finalist,AisyL;Kairi;LDK;Nern;TT;monkey0;tiphat,VCS/2026 Season/Spring Playoffs
+2026,domestic,,Vietnam Championship Series,Summer,Saigon Warriors,1,champion,AisyL;Aomine;Kairi;Nern;j1n5,VCS/2026 Season/Summer Playoffs
+2026,domestic,,Vietnam Championship Series,Summer,Saigon Dino,2,finalist,Easylove;Elio;Emo;Virgo2;rayq,VCS/2026 Season/Summer Playoffs
 2025,domestic,,League of Legends Championship Pacific,,Team Optimus,1,champion,,LCP/2025 Season/Season Finals Playoffs/Showmatch
 2025,domestic,,League of Legends Championship Pacific,,Team Killerqueen,2,finalist,,LCP/2025 Season/Season Finals Playoffs/Showmatch
 2025,domestic,,League of Legends Championship Pacific,Season Finals,CTBC Flying Oyster,1,champion,Doggo;Driver;HongQ;JunJia;Kaiwing;Rest,LCP/2025 Season/Season Finals Playoffs
@@ -421,6 +451,23 @@ year,category,event,league_full,split,team,place,bucket,players,page
 2013,domestic,,Tencent LoL Pro League,Spring,Positive Energy,2,finalist,Aluka;Jing;JoJo;NaMei;Sicca,LPL/2013 Season/Spring Playoffs
 2013,domestic,,Tencent LoL Pro League,Summer,Positive Energy,1,champion,Aluka;Jing;JoJo;NaMei;Sicca;qingzhi,LPL/2013 Season/Summer Playoffs
 2013,domestic,,Tencent LoL Pro League,Summer,Oh My God,2,finalist,Cool;Gogoing;LoveLing;comA;san,LPL/2013 Season/Summer Playoffs
+2026,domestic_cup,KeSPA,,,T1,1,champion,Doran;Faker;Keria;Oner;Peyz,2025 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,DN SOOPers,1,champion,Clozer;DuDu;Peter;Sharvel;deokdam,2026 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,Japan (National Team),10-12,group,Enty;RayFarky;Recap;Yuhi;hachamecha,2025 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,Vietnam (National Team),10-12,group,Gury;Kati;Kratos;Puddin;Seany;SiuLoong,2025 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,OKSavingsBank BRION,13-14,group,Casting;Fisher;GIDEON;Namgung;Teddy,2025 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,Hanwha Life Esports,2,finalist,Delight;Gumayusi;Kanavi;Zeka;Zeus,2025 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,Nongshim RedForce,2,finalist,Diable;Kingen;Lehends;Scout;Sponge,2026 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,Dplus Kia,3,semifinalist,Career;Lucid;Sharvel;ShowMaker;Siwoo;Smash,2025 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,Cloud9,5,group,APA;Blaber;Thanatos;Vulcan;Zven,2025 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,Gen.G,5,group,Canyon;Chovy;Courage;Duro;Kemish;Kiin;Lumos;MUDAI;Ripple;Ruler,2026 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,DN Freecs,6,group,DDoiV;Enosh;Flip;Lancer;Quantum,2025 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,Kiwoom DRX,6,group,Aiming;Andil;Jiwoo;LazyFeel;Rich;Ucal;Willer,2026 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,HANJIN BRION,7,group,Casting;GIDEON;Namgung;Roamer;Teddy,2026 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,BNK FEARX,7-9,group,Clear;Diable;Kellin;Raptor;VicLa,2025 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,DRX,7-9,group,Andil;Jiwoo;Rich;Ucal;Vincenzo;Willer,2025 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,Team Liquid,7-9,group,CoreJJ;Josedeodo;Morgan;Quid;Yeon,2025 LoL KeSPA Cup
+2026,domestic_cup,KeSPA,,,KT Rolster,8,group,Aiming;Bdd;Cuzz;Effort;FenRir;Hwichan;PerfecT;Pollu;Sero;Sylvie,2026 LoL KeSPA Cup
 2025,domestic_cup,DCup,,,Invictus Gaming,1,champion,Jwei;Photic;Renard;Soboro;Wei,Demacia Cup 2025
 2025,domestic_cup,DCup,,,Bilibili Gaming,11-12,group,Bin;ON;Viper;Xun;Yxl,Demacia Cup 2025
 2025,domestic_cup,DCup,,,Team WE,11-12,group,About;Cube;Karis;Monki;yaoyao,Demacia Cup 2025
@@ -773,6 +820,60 @@ year,category,event,league_full,split,team,place,bucket,players,page
 2015,domestic_cup,DCup,,,Invictus Gaming,2,finalist,KaKAO;Kitties;RoOk1E;Time;Zz1tai,2015 Demacia Cup/Grand Finals
 2015,domestic_cup,DCup,,,Oh My God,3-4,semifinalist,Cool;Scenery;Uzi;Xiyang;amazing,2015 Demacia Cup/Grand Finals
 2015,domestic_cup,DCup,,,Snake Esports,3-4,semifinalist,Ella;Flandre;U;Zzr;kRYST4L,2015 Demacia Cup/Grand Finals
+2026,intl,EWC,,,Dplus Kia,1,champion,Career;Lucid;ShowMaker;Siwoo;Smash,Esports World Cup 2026
+2026,intl,EWC,,,FURIA,13-16,group,Ayu;Guigo;JoJo;Tatu;Tutsz,Esports World Cup 2026
+2026,intl,EWC,,,LYON (2024 American Team),13-16,group,Berserker;Dhokla;Inspired;Isles;Saint,Esports World Cup 2026
+2026,intl,EWC,,,Movistar KOI,13-16,group,Alvaro;Elyoya;Jojopyun;Myrwn;Supa,Esports World Cup 2026
+2026,intl,EWC,,,Team Secret (Vietnamese Team),13-16,group,Bie;Dire;Eddie;Hizto;Pun,Esports World Cup 2026
+2026,intl,EWC,,,Karmine Corp,2,finalist,Busio;Caliste;Canna;Yike;kyeahoo,Esports World Cup 2026
+2026,intl,EWC,,,Gen.G,3,semifinalist,Canyon;Chovy;Duro;Kiin;Ruler,Esports World Cup 2026
+2026,intl,EWC,,,T1,4,semifinalist,Doran;Faker;Keria;Oner;Peyz,Esports World Cup 2026
+2026,intl,EWC,,,AG.AL,5-8,quarterfinalist,Flandre;Hope;Kael;Shanks;Tarzan,Esports World Cup 2026
+2026,intl,EWC,,,Bilibili Gaming,5-8,quarterfinalist,Bin;Knight;ON;Viper;Xun,Esports World Cup 2026
+2026,intl,EWC,,,Hanwha Life Esports,5-8,quarterfinalist,Delight;Gumayusi;Kanavi;Zeka;Zeus,Esports World Cup 2026
+2026,intl,EWC,,,JD Gaming,5-8,quarterfinalist,GALA;HongQ;JunJia;Vampire;Xiaoxu,Esports World Cup 2026
+2026,intl,EWC,,,G2 Esports,9-12,group,BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,Esports World Cup 2026
+2026,intl,EWC,,,GAM Esports,9-12,group,Artemis;Draktharr;Gloryy;Kiaya;Taki,Esports World Cup 2026
+2026,intl,EWC,,,MIBR.LOS,9-12,group,Ackerman;Curse;Duduhh;Feisty;Zest,Esports World Cup 2026
+2026,intl,EWC,,,Sentinels,9-12,group,DARKWINGS;HamBak;Impact;Rahel;huhi,Esports World Cup 2026
+2026,intl,FST,,,Bilibili Gaming,1,champion,Bin;Knight;ON;Viper;Xun,2026 First Stand
+2026,intl,FST,,,G2 Esports,2,finalist,BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,2026 First Stand
+2026,intl,FST,,,Gen.G,3-4,semifinalist,Canyon;Chovy;Duro;Kiin;Ruler,2026 First Stand
+2026,intl,FST,,,JD Gaming,3-4,semifinalist,GALA;HongQ;JunJia;Vampire;Xiaoxu,2026 First Stand
+2026,intl,FST,,,BNK FEARX,5-6,quarterfinalist,Clear;Diable;Kellin;Raptor;VicLa,2026 First Stand
+2026,intl,FST,,,LYON (2024 American Team),5-6,quarterfinalist,Berserker;Dhokla;Inspired;Isles;Saint,2026 First Stand
+2026,intl,FST,,,LOUD,7-8,quarterfinalist,Bull;Envy;RedBert;Xyno;YoungJae,2026 First Stand
+2026,intl,FST,,,Team Secret Whales,7-8,quarterfinalist,Bie;Dire;Eddie;Hizto;Pun,2026 First Stand
+2026,intl,MSI,,,Hanwha Life Esports,1,champion,Delight;Gumayusi;Kanavi;Zeka;Zeus,2026 Mid-Season Invitational
+2026,intl,MSI,,,Karmine Corp,10,group,Busio;Caliste;Canna;Yike;kyeahoo,2026 Mid-Season Invitational
+2026,intl,MSI,,,Deep Cross Gaming,11,group,Feng;Flauren;HongSuo;Pop9;ShiauC,2026 Mid-Season Invitational
+2026,intl,MSI,,,Bilibili Gaming,2,finalist,Bin;Knight;ON;Viper;Xun,2026 Mid-Season Invitational
+2026,intl,MSI,,,LYON (2024 American Team),3,semifinalist,Berserker;Dhokla;Inspired;Isles;Saint,2026 Mid-Season Invitational
+2026,intl,MSI,,,G2 Esports,4,semifinalist,BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,2026 Mid-Season Invitational
+2026,intl,MSI,,,T1,5-6,quarterfinalist,Doran;Faker;Keria;Oner;Peyz,2026 Mid-Season Invitational
+2026,intl,MSI,,,Team Secret Whales,5-6,quarterfinalist,Bie;Dire;Eddie;Hizto;Pun,2026 Mid-Season Invitational
+2026,intl,MSI,,,FURIA,7-8,quarterfinalist,Ayu;Guigo;JoJo;Tatu;Tutsz,2026 Mid-Season Invitational
+2026,intl,MSI,,,Top Esports,7-8,quarterfinalist,Creme;JackeyLove;Tian;ZUIAN;fengyue,2026 Mid-Season Invitational
+2026,intl,MSI,,,Team Liquid,9,group,CoreJJ;Josedeodo;Morgan;Quid;Yeon,2026 Mid-Season Invitational
+2026,intl,WLDs,,,,1,champion,,2026 Season World Championship
+2026,intl,WLDs,,,,12-14,group,,2026 Season World Championship
+2026,intl,WLDs,,,,12-14,group,,2026 Season World Championship
+2026,intl,WLDs,,,,12-14,group,,2026 Season World Championship
+2026,intl,WLDs,,,,15-16,group,,2026 Season World Championship
+2026,intl,WLDs,,,,15-16,group,,2026 Season World Championship
+2026,intl,WLDs,,,,17,group,,2026 Season World Championship
+2026,intl,WLDs,,,,18,group,,2026 Season World Championship
+2026,intl,WLDs,,,,19,group,,2026 Season World Championship
+2026,intl,WLDs,,,,2,finalist,,2026 Season World Championship
+2026,intl,WLDs,,,,3-4,semifinalist,,2026 Season World Championship
+2026,intl,WLDs,,,,3-4,semifinalist,,2026 Season World Championship
+2026,intl,WLDs,,,,5-8,quarterfinalist,,2026 Season World Championship
+2026,intl,WLDs,,,,5-8,quarterfinalist,,2026 Season World Championship
+2026,intl,WLDs,,,,5-8,quarterfinalist,,2026 Season World Championship
+2026,intl,WLDs,,,,5-8,quarterfinalist,,2026 Season World Championship
+2026,intl,WLDs,,,,9-11,group,,2026 Season World Championship
+2026,intl,WLDs,,,,9-11,group,,2026 Season World Championship
+2026,intl,WLDs,,,,9-11,group,,2026 Season World Championship
 2025,intl,ASI,,,BNK FEARX,1,champion,Clear;Diable;Kellin;Raptor;VicLa,2025 League of Legends Asia Invitational
 2025,intl,ASI,,,Dplus Kia,2,finalist,Aiming;BeryL;Lucid;ShowMaker;Siwoo,2025 League of Legends Asia Invitational
 2025,intl,ASI,,,Nongshim RedForce,3,semifinalist,Calix;GIDEON;Jiwoo;Kingen;Lehends,2025 League of Legends Asia Invitational

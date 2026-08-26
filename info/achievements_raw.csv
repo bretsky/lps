@@ -1,4 +1,180 @@
 year,category,event,league_full,split,team,place,bucket,players,page,drop_reason
+2026,domestic,,4 Nations,Spring,Brod n Friends,1,champion,,4 Nations/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,4 Nations,Spring,Absolved,2,finalist,,4 Nations/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,4 Nations,Summer,,1,champion,,4 Nations/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,4 Nations,Summer,,2,finalist,,4 Nations/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Arabian League,Spring,Anubis Gaming,1,champion,,Arabian League/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Arabian League,Spring,FN Esports,2,finalist,,Arabian League/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Arabian League,Summer,,1,champion,,Arabian League/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Arabian League,Summer,,2,finalist,,Arabian League/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Arabian League,Winter,FN Esports,1,champion,,Arabian League/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Arabian League,Winter,Baam Esports,2,finalist,,Arabian League/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Arabian League 2nd Division,Spring,Pyramid IV Esports,1,champion,,Arabian League 2nd Division/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Arabian League 2nd Division,Spring,NextGeneration Esports,2,finalist,,Arabian League 2nd Division/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Benelux Ascend Series,Spring,SNOOZE Esports,1,champion,,Benelux Ascend Series/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Benelux Ascend Series,Spring,Mind Blue eSports,2,finalist,,Benelux Ascend Series/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Benelux Ascend Series,Summer,,1,champion,,Benelux Ascend Series/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Benelux Ascend Series,Summer,,2,finalist,,Benelux Ascend Series/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Benelux Ascend Series Rising,Spring,Last Dance (Benelux Team),1,champion,,Benelux Ascend Series Rising/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Benelux Ascend Series Rising,Spring,Nameless (Benelux Team),2,finalist,,Benelux Ascend Series Rising/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Benelux Ascend Series Rising,Summer,,1,champion,,Benelux Ascend Series Rising/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Benelux Ascend Series Rising,Summer,,2,finalist,,Benelux Ascend Series Rising/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,CELOL,,Clã NKZ,1,champion,,LigaGG/CELOL Série A/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,CELOL,,Filhos do Moita,1,champion,,LigaGG/CELOL Série B/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,CELOL,,Smoke Tram,2,finalist,,LigaGG/CELOL Série A/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,CELOL,,SharkBite Furious Gaming Black,2,finalist,,LigaGG/CELOL Série B/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,CELOL 2026,,,1,champion,,LigaGG/CELOL Série A/2026 Season/Split 2 Playoffs,minor/unrated league
+2026,domestic,,CELOL 2026,,,2,finalist,,LigaGG/CELOL Série A/2026 Season/Split 2 Playoffs,minor/unrated league
+2026,domestic,,Circuit Brazilian League of Legends,,FURIA,1,champion,Ayu;Guigo;JoJo;Tatu;Tutsz,CBLOL/2026 Season/Split 1 Playoffs,
+2026,domestic,,Circuit Brazilian League of Legends,,,1,champion,,CBLOL/2026 Season/Split 2 Playoffs,
+2026,domestic,,Circuit Brazilian League of Legends,,LØS,2,finalist,Ackerman;Curse;Duduhh;Feisty;Zest,CBLOL/2026 Season/Split 1 Playoffs,
+2026,domestic,,Circuit Brazilian League of Legends,,,2,finalist,,CBLOL/2026 Season/Split 2 Playoffs,
+2026,domestic,,Circuito Desafiante,,Vivo Keyd Stars Academy,1,champion,,Circuito Desafiante/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,Circuito Desafiante,,,1,champion,,Circuito Desafiante/2026 Season/Split 2 Playoffs,minor/unrated league
+2026,domestic,,Circuito Desafiante,,KaBuM! Ilha das Lendas,2,finalist,,Circuito Desafiante/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,Circuito Desafiante,,,2,finalist,,Circuito Desafiante/2026 Season/Split 2 Playoffs,minor/unrated league
+2026,domestic,,Equal Esports Cup,,,1,champion,,Equal Esports Cup 2026/Playoffs,minor/unrated league
+2026,domestic,,Equal Esports Cup,,,2,finalist,,Equal Esports Cup 2026/Playoffs,minor/unrated league
+2026,domestic,,Esports Balkan League,Spring,Partizan Sangal,1,champion,,Esports Balkan League/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Esports Balkan League,Spring,Magaza Esports,2,finalist,,Esports Balkan League/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Esports Balkan League,Summer,,1,champion,,Esports Balkan League/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Esports Balkan League,Summer,,2,finalist,,Esports Balkan League/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Esports Balkan League,Winter,Partizan Sangal,1,champion,,Esports Balkan League/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Esports Balkan League,Winter,Lupus Esports,2,finalist,,Esports Balkan League/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,FLASH Oceania,,,1,champion,,FLASH Oceania/2026 Season/Playoffs,minor/unrated league
+2026,domestic,,FLASH Oceania,,,2,finalist,,FLASH Oceania/2026 Season/Playoffs,minor/unrated league
+2026,domestic,,Finnish Pro League,Summer,,1,champion,,Finnish Pro League/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Finnish Pro League,Summer,,2,finalist,,Finnish Pro League/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Finnish Pro League,Winter,BlueWhites,1,champion,,Finnish Pro League/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Finnish Pro League,Winter,Epic Avalanche,2,finalist,,Finnish Pro League/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Hellenic Challengers Cup,Spring,Zerolag Esports,1,champion,,Hellenic Challengers Cup/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Hellenic Challengers Cup,Spring,EKSI EPTA,2,finalist,,Hellenic Challengers Cup/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Hellenic Challengers Cup,Summer,Alpha Impact,1,champion,,Hellenic Challengers Cup/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Hellenic Challengers Cup,Summer,Panathinaikos Esports,2,finalist,,Hellenic Challengers Cup/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Hellenic Challengers Cup,Winter,Zerolag Esports,1,champion,,Hellenic Challengers Cup/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Hellenic Challengers Cup,Winter,Paranormal Invaders,2,finalist,,Hellenic Challengers Cup/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Hellenic Legends League,Spring,WLGaming Esports,1,champion,,Hellenic Legends League/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Hellenic Legends League,Spring,GOAL,2,finalist,,Hellenic Legends League/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Hellenic Legends League,Summer,,1,champion,,Hellenic Legends League/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Hellenic Legends League,Summer,,2,finalist,,Hellenic Legends League/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Hellenic Legends League,Winter,WLGaming Esports,1,champion,,Hellenic Legends League/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Hellenic Legends League,Winter,Team Phantasma,2,finalist,,Hellenic Legends League/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Hitpoint Challengers,Spring,Ethereal Enigmas,1,champion,,Hitpoint 2nd Division Challengers/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Hitpoint Challengers,Spring,Priority,2,finalist,,Hitpoint 2nd Division Challengers/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Hitpoint Masters,Spring,CITA Kaizen,1,champion,,Hitpoint Masters/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Hitpoint Masters,Spring,Nightbirds,2,finalist,,Hitpoint Masters/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Icelandic Esports League,Spring,Snákarnir,1,champion,,Icelandic Esports League/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Icelandic Esports League,Spring,Whisky,2,finalist,,Icelandic Esports League/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Komplettligaen,Spring,VES Japan,1,champion,,Komplettligaen/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Komplettligaen,Spring,Bitfix RG,2,finalist,,Komplettligaen/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,LCK Academy Series,,Dplus Kia Youth,1,champion,,LCK Academy Series/2026 Season/1st Championship Playoffs,minor/unrated league
+2026,domestic,,LCK Academy Series,,,1,champion,,LCK Academy Series/2026 Season/2nd Championship Playoffs,minor/unrated league
+2026,domestic,,LCK Academy Series,,T1 Esports Academy Rookies,2,finalist,,LCK Academy Series/2026 Season/1st Championship Playoffs,minor/unrated league
+2026,domestic,,LCK Academy Series,,,2,finalist,,LCK Academy Series/2026 Season/2nd Championship Playoffs,minor/unrated league
+2026,domestic,,LCK Challengers League,,,1,champion,,LCK CL/2026 Season/Season Playoffs,minor/unrated league
+2026,domestic,,LCK Challengers League,,,2,finalist,,LCK CL/2026 Season/Season Playoffs,minor/unrated league
+2026,domestic,,LCP Wildcard League,,,1,champion,,LCP Wildcard/2026 Season/Playoffs,minor/unrated league
+2026,domestic,,LCP Wildcard League,,,2,finalist,,LCP Wildcard/2026 Season/Playoffs,minor/unrated league
+2026,domestic,,LIT,Spring,HMBLE,1,champion,,LIT/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,LIT,Spring,GMBLERS Esports,2,finalist,,LIT/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,LIT,Summer,,1,champion,,LIT/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,LIT,Summer,,2,finalist,,LIT/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,LIT,Winter,HMBLE,1,champion,,LIT/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,LIT,Winter,Colossal Gaming,2,finalist,,LIT/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,LOL DK Ligaen,Spring,Sørby eSport,1,champion,,LOL DK Ligaen/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,LOL DK Ligaen,Spring,DMG Esports Denmark,2,finalist,,LOL DK Ligaen/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,LOL DK Ligaen,Summer,,1,champion,,LOL DK Ligaen/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,LOL DK Ligaen,Summer,,2,finalist,,LOL DK Ligaen/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,La Ligue Française,Spring,Solary,1,champion,,LFL/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,La Ligue Française,Spring,Galions,2,finalist,,LFL/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,La Ligue Française,Summer,,1,champion,,LFL/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,La Ligue Française,Summer,,2,finalist,,LFL/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,League of Legends Championship Pacific,,Team Secret Whales,1,champion,Bie;Dire;Eddie;Hizto;Pun,LCP/2026 Season/Split 1 Playoffs,
+2026,domestic,,League of Legends Championship Pacific,,Team Secret Whales,1,champion,Bie;Dire;Eddie;Hizto;Pun,LCP/2026 Season/Split 2 Playoffs,
+2026,domestic,,League of Legends Championship Pacific,,Deep Cross Gaming,2,finalist,Feng;Flauren;HongSuo;Pop9;ShiauC,LCP/2026 Season/Split 1 Playoffs,
+2026,domestic,,League of Legends Championship Pacific,,Deep Cross Gaming,2,finalist,Feng;Flauren;HongSuo;Pop9;ShiauC,LCP/2026 Season/Split 2 Playoffs,
+2026,domestic,,League of Legends Championship Series,Spring,LYON (2024 American Team),1,champion,Berserker;Dhokla;Inspired;Isles;Saint,LCS/2026 Season/Spring Playoffs,
+2026,domestic,,League of Legends Championship Series,Spring,Team Liquid,2,finalist,CoreJJ;Josedeodo;Morgan;Quid;Yeon,LCS/2026 Season/Spring Playoffs,
+2026,domestic,,League of Legends Championship Series,Summer,,1,champion,,LCS/2026 Season/Summer Playoffs,
+2026,domestic,,League of Legends Championship Series,Summer,,2,finalist,,LCS/2026 Season/Summer Playoffs,
+2026,domestic,,League of Legends Game Changers,,,1,champion,,LoL Game Changers/2026 Season/Playoffs,minor/unrated league
+2026,domestic,,League of Legends Game Changers,,,2,finalist,,LoL Game Changers/2026 Season/Playoffs,minor/unrated league
+2026,domestic,,Legends Academy,,powrut z emerytury,1,champion,,Legends Academy/2026/Season 0 Playoffs,minor/unrated league
+2026,domestic,,Legends Academy,,Tibijczycy,1,champion,,Legends Academy/2026/Season 1 Playoffs,minor/unrated league
+2026,domestic,,Legends Academy,,Reżim,1,champion,,Legends Academy/2026/Season 2 Playoffs,minor/unrated league
+2026,domestic,,Legends Academy,,,1,champion,,Legends Academy/2026/Season 3 Playoffs,minor/unrated league
+2026,domestic,,Legends Academy,,Grube Ryby,2,finalist,,Legends Academy/2026/Season 0 Playoffs,minor/unrated league
+2026,domestic,,Legends Academy,,Domino Computer,2,finalist,,Legends Academy/2026/Season 1 Playoffs,minor/unrated league
+2026,domestic,,Legends Academy,,LOLDOGS,2,finalist,,Legends Academy/2026/Season 2 Playoffs,minor/unrated league
+2026,domestic,,Legends Academy,,,2,finalist,,Legends Academy/2026/Season 3 Playoffs,minor/unrated league
+2026,domestic,,Liga Española de League of Legends,Spring,Team Heretics Academy,1,champion,,LES/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Liga Española de League of Legends,Spring,UCAM Esports,2,finalist,,LES/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Liga Española de League of Legends,Summer,Movistar KOI Fénix,1,champion,,LES/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Liga Española de League of Legends,Summer,Team Heretics Academy,2,finalist,,LES/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Liga Galactica,,Kuma e-Sports,1,champion,,Liga Galactica/Série A/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,Liga Galactica,,Clã NKZ Rising,1,champion,,Liga Galactica/Série B/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,Liga Galactica,,Clã NKZ,1,champion,,Liga Galactica/Série S/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,Liga Galactica,,Creed Gaming Academy,2,finalist,,Liga Galactica/Série A/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,Liga Galactica,,Juventus Gaming White,2,finalist,,Liga Galactica/Série B/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,Liga Galactica,,Smoke Tram,2,finalist,,Liga Galactica/Série S/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,Liga Portuguesa,Spring,Otter Side,1,champion,,LPLOL/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Liga Portuguesa,Spring,Bubliki,2,finalist,,LPLOL/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Liga Regional Norte,,Fuego,1,champion,,Liga Regional Norte/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,Liga Regional Norte,,,1,champion,,Liga Regional Norte/2026 Season/Split 2 Playoffs,minor/unrated league
+2026,domestic,,Liga Regional Norte,,G3V E-sports,2,finalist,,Liga Regional Norte/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,Liga Regional Norte,,,2,finalist,,Liga Regional Norte/2026 Season/Split 2 Playoffs,minor/unrated league
+2026,domestic,,Liga Regional Sur,,Volticons,1,champion,,Liga Regional Sur/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,Liga Regional Sur,,,1,champion,,Liga Regional Sur/2026 Season/Split 2 Playoffs,minor/unrated league
+2026,domestic,,Liga Regional Sur,,Golden Lions,2,finalist,,Liga Regional Sur/2026 Season/Split 1 Playoffs,minor/unrated league
+2026,domestic,,Liga Regional Sur,,,2,finalist,,Liga Regional Sur/2026 Season/Split 2 Playoffs,minor/unrated league
+2026,domestic,,LoL Champions Korea,,,1,champion,,LCK/2026 Season/Season Playoffs,
+2026,domestic,,LoL Champions Korea,,,2,finalist,,LCK/2026 Season/Season Playoffs,
+2026,domestic,,LoL EMEA Championship,,G2 Esports,1,champion,BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,LEC/2026 Season/Versus Playoffs,
+2026,domestic,,LoL EMEA Championship,,Karmine Corp,2,finalist,Busio;Caliste;Canna;Yike;kyeahoo,LEC/2026 Season/Versus Playoffs,
+2026,domestic,,LoL EMEA Championship,Spring,G2 Esports,1,champion,BrokenBIade;BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,LEC/2026 Season/Spring Playoffs,
+2026,domestic,,LoL EMEA Championship,Spring,Karmine Corp,2,finalist,Busio;Caliste;Canna;Yike;kyeahoo,LEC/2026 Season/Spring Playoffs,
+2026,domestic,,LoL EMEA Championship,Summer,,1,champion,,LEC/2026 Season/Summer Playoffs,
+2026,domestic,,LoL EMEA Championship,Summer,,2,finalist,,LEC/2026 Season/Summer Playoffs,
+2026,domestic,,Nexus League,Spring,Karmine Corp Blue Stars,1,champion,,Nexus League/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Nexus League,Spring,Project Conquerors,2,finalist,,Nexus League/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Nexus League,Summer,,1,champion,,Nexus League/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Nexus League,Summer,,2,finalist,,Nexus League/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,North American Challengers League,Spring,Conviction,1,champion,,North American Challengers League/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,North American Challengers League,Spring,CCG Esports,2,finalist,,North American Challengers League/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,North American Challengers League,Summer,,1,champion,,North American Challengers League/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,North American Challengers League,Summer,,2,finalist,,North American Challengers League/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Northern League of Legends Championship,Spring,Verdant,1,champion,,NLC/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Northern League of Legends Championship,Spring,Ruddy Corporation,2,finalist,,NLC/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Northern League of Legends Championship,Winter,Verdant,1,champion,,NLC/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Northern League of Legends Championship,Winter,Arctic Pandas,2,finalist,,NLC/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Prime League 1st Division,,VfB eSports,1,champion,,Prime League 2nd Division/2026 Season/Fall Playoffs,minor/unrated league
+2026,domestic,,Prime League 1st Division,,6GPA,2,finalist,,Prime League 2nd Division/2026 Season/Fall Playoffs,minor/unrated league
+2026,domestic,,Prime League 1st Division,Spring,CGN Esports,1,champion,,Prime League 2nd Division/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Prime League 1st Division,Spring,All for One Gaming,2,finalist,,Prime League 2nd Division/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Prime League 1st Division,Winter,CGN Esports,1,champion,,Prime League 2nd Division/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Prime League 1st Division,Winter,VfB eSports,2,finalist,,Prime League 2nd Division/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Prime League Pro Division,Spring,G2 NORD,1,champion,,Prime League 1st Division/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Prime League Pro Division,Spring,Eintracht Spandau,2,finalist,,Prime League 1st Division/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Prime League Pro Division,Summer,,1,champion,,Prime League 1st Division/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Prime League Pro Division,Summer,,2,finalist,,Prime League 1st Division/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,Rift Legends,Spring,Forsaken (Polish Team),1,champion,,Rift Legends/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Rift Legends,Spring,Bomba Team,2,finalist,,Rift Legends/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,Tencent LoL Pro League,,Bilibili Gaming,1,champion,Bin;Knight;ON;Viper;Xun,LPL/2026 Season/Split 1 Playoffs,
+2026,domestic,,Tencent LoL Pro League,,Bilibili Gaming,1,champion,Bin;Knight;ON;Viper;Xun,LPL/2026 Season/Split 2 Playoffs,
+2026,domestic,,Tencent LoL Pro League,,JD Gaming,2,finalist,GALA;HongQ;JunJia;Vampire;Xiaoxu,LPL/2026 Season/Split 1 Playoffs,
+2026,domestic,,Tencent LoL Pro League,,Top Esports,2,finalist,Creme;JackeyLove;Tian;ZUIAN;fengyue,LPL/2026 Season/Split 2 Playoffs,
+2026,domestic,,TransIP Road Of Legends,Spring,Frites Esports Club,1,champion,,Road Of Legends/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,TransIP Road Of Legends,Spring,mCon esports,2,finalist,,Road Of Legends/2026 Season/Spring Playoffs,minor/unrated league
+2026,domestic,,TransIP Road Of Legends,Summer,,1,champion,,Road Of Legends/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,TransIP Road Of Legends,Summer,,2,finalist,,Road Of Legends/2026 Season/Summer Playoffs,minor/unrated league
+2026,domestic,,TransIP Road Of Legends,Winter,Frites Esports Club,1,champion,,Road Of Legends/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,TransIP Road Of Legends,Winter,The Bandits,2,finalist,,Road Of Legends/2026 Season/Winter Playoffs,minor/unrated league
+2026,domestic,,Turkish Championship League,Spring,Misa Esports,1,champion,113;Carry;Kofte;Ragner;Ruep,TCL/2026 Season/Spring Playoffs,
+2026,domestic,,Turkish Championship League,Spring,PCIFIC Esports,2,finalist,Aytekn;Beplush;FireAscept;Nawa;stalken,TCL/2026 Season/Spring Playoffs,
+2026,domestic,,Vietnam Championship Series,Spring,MVK Esports Academy,1,champion,Callian;Chika;Harky;NPC;SanSan;Seany;SiuLoong;Steller,VCS/2026 Season/Spring Playoffs,
+2026,domestic,,Vietnam Championship Series,Spring,Saigon Warriors,2,finalist,AisyL;Kairi;LDK;Nern;TT;monkey0;tiphat,VCS/2026 Season/Spring Playoffs,
+2026,domestic,,Vietnam Championship Series,Summer,Saigon Warriors,1,champion,AisyL;Aomine;Kairi;Nern;j1n5,VCS/2026 Season/Summer Playoffs,
+2026,domestic,,Vietnam Championship Series,Summer,Saigon Dino,2,finalist,Easylove;Elio;Emo;Virgo2;rayq,VCS/2026 Season/Summer Playoffs,
 2025,domestic,,4 Nations,Spring,Venomcrest Serpents,1,champion,,4 Nations/2025 Season/Spring Playoffs,minor/unrated league
 2025,domestic,,4 Nations,Spring,Int Quick,2,finalist,,4 Nations/2025 Season/Spring Playoffs,minor/unrated league
 2025,domestic,,4 Nations,Summer,Brod n Friends,1,champion,,4 Nations/2025 Season/Summer Playoffs,minor/unrated league
@@ -1385,6 +1561,8 @@ year,category,event,league_full,split,team,place,bucket,players,page,drop_reason
 2020,domestic,,League of Legends Championship Series,Spring,FlyQuest,2,finalist,IgNar;PowerOfEvil;Santorin;Solo;V1per;WildTurtle,LCS/2020 Season/Spring Playoffs,
 2020,domestic,,League of Legends Championship Series,Summer,TSM,1,champion,Biofrost;Bjergsen;Broken Blade;Doublelift;Spica;Treatz,LCS/2020 Season/Summer Playoffs,
 2020,domestic,,League of Legends Championship Series,Summer,FlyQuest,2,finalist,IgNar;PowerOfEvil;Santorin;Solo;WildTurtle,LCS/2020 Season/Summer Playoffs,
+2020,domestic,,League of Legends University Championship,,,1,champion,,League of Legends University Championship/2026 Season/Playoffs,minor/unrated league
+2020,domestic,,League of Legends University Championship,,,2,finalist,,League of Legends University Championship/2026 Season/Playoffs,minor/unrated league
 2020,domestic,,Liga Latinoamerica,,Rainbow7,1,champion,Acce;Aloned;Josedeodo;Leza;Shadow,LLA/2020 Season/Closing Playoffs,
 2020,domestic,,Liga Latinoamerica,,All Knights,1,champion,Alive;Jisu;Newbie;Pancake;Plugo,LLA/2020 Season/Opening Playoffs,
 2020,domestic,,Liga Latinoamerica,,All Knights,2,finalist,Alive;Grell;Jisu;Kiefer;Newbie,LLA/2020 Season/Closing Playoffs,
@@ -2107,6 +2285,23 @@ year,category,event,league_full,split,team,place,bucket,players,page,drop_reason
 2013,domestic,,Tencent LoL Pro League,Spring,Positive Energy,2,finalist,Aluka;Jing;JoJo;NaMei;Sicca,LPL/2013 Season/Spring Playoffs,
 2013,domestic,,Tencent LoL Pro League,Summer,Positive Energy,1,champion,Aluka;Jing;JoJo;NaMei;Sicca;qingzhi,LPL/2013 Season/Summer Playoffs,
 2013,domestic,,Tencent LoL Pro League,Summer,Oh My God,2,finalist,Cool;Gogoing;LoveLing;comA;san,LPL/2013 Season/Summer Playoffs,
+2026,domestic_cup,KeSPA,,,T1,1,champion,Doran;Faker;Keria;Oner;Peyz,2025 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,DN SOOPers,1,champion,Clozer;DuDu;Peter;Sharvel;deokdam,2026 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,Japan (National Team),10-12,group,Enty;RayFarky;Recap;Yuhi;hachamecha,2025 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,Vietnam (National Team),10-12,group,Gury;Kati;Kratos;Puddin;Seany;SiuLoong,2025 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,OKSavingsBank BRION,13-14,group,Casting;Fisher;GIDEON;Namgung;Teddy,2025 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,Hanwha Life Esports,2,finalist,Delight;Gumayusi;Kanavi;Zeka;Zeus,2025 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,Nongshim RedForce,2,finalist,Diable;Kingen;Lehends;Scout;Sponge,2026 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,Dplus Kia,3,semifinalist,Career;Lucid;Sharvel;ShowMaker;Siwoo;Smash,2025 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,Cloud9,5,group,APA;Blaber;Thanatos;Vulcan;Zven,2025 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,Gen.G,5,group,Canyon;Chovy;Courage;Duro;Kemish;Kiin;Lumos;MUDAI;Ripple;Ruler,2026 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,DN Freecs,6,group,DDoiV;Enosh;Flip;Lancer;Quantum,2025 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,Kiwoom DRX,6,group,Aiming;Andil;Jiwoo;LazyFeel;Rich;Ucal;Willer,2026 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,HANJIN BRION,7,group,Casting;GIDEON;Namgung;Roamer;Teddy,2026 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,BNK FEARX,7-9,group,Clear;Diable;Kellin;Raptor;VicLa,2025 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,DRX,7-9,group,Andil;Jiwoo;Rich;Ucal;Vincenzo;Willer,2025 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,Team Liquid,7-9,group,CoreJJ;Josedeodo;Morgan;Quid;Yeon,2025 LoL KeSPA Cup,
+2026,domestic_cup,KeSPA,,,KT Rolster,8,group,Aiming;Bdd;Cuzz;Effort;FenRir;Hwichan;PerfecT;Pollu;Sero;Sylvie,2026 LoL KeSPA Cup,
 2025,domestic_cup,DCup,,,Invictus Gaming,1,champion,Jwei;Photic;Renard;Soboro;Wei,Demacia Cup 2025,
 2025,domestic_cup,DCup,,,Bilibili Gaming,11-12,group,Bin;ON;Viper;Xun;Yxl,Demacia Cup 2025,
 2025,domestic_cup,DCup,,,Team WE,11-12,group,About;Cube;Karis;Monki;yaoyao,Demacia Cup 2025,
@@ -2459,6 +2654,60 @@ year,category,event,league_full,split,team,place,bucket,players,page,drop_reason
 2015,domestic_cup,DCup,,,Invictus Gaming,2,finalist,KaKAO;Kitties;RoOk1E;Time;Zz1tai,2015 Demacia Cup/Grand Finals,
 2015,domestic_cup,DCup,,,Oh My God,3-4,semifinalist,Cool;Scenery;Uzi;Xiyang;amazing,2015 Demacia Cup/Grand Finals,
 2015,domestic_cup,DCup,,,Snake Esports,3-4,semifinalist,Ella;Flandre;U;Zzr;kRYST4L,2015 Demacia Cup/Grand Finals,
+2026,intl,EWC,,,Dplus Kia,1,champion,Career;Lucid;ShowMaker;Siwoo;Smash,Esports World Cup 2026,
+2026,intl,EWC,,,FURIA,13-16,group,Ayu;Guigo;JoJo;Tatu;Tutsz,Esports World Cup 2026,
+2026,intl,EWC,,,LYON (2024 American Team),13-16,group,Berserker;Dhokla;Inspired;Isles;Saint,Esports World Cup 2026,
+2026,intl,EWC,,,Movistar KOI,13-16,group,Alvaro;Elyoya;Jojopyun;Myrwn;Supa,Esports World Cup 2026,
+2026,intl,EWC,,,Team Secret (Vietnamese Team),13-16,group,Bie;Dire;Eddie;Hizto;Pun,Esports World Cup 2026,
+2026,intl,EWC,,,Karmine Corp,2,finalist,Busio;Caliste;Canna;Yike;kyeahoo,Esports World Cup 2026,
+2026,intl,EWC,,,Gen.G,3,semifinalist,Canyon;Chovy;Duro;Kiin;Ruler,Esports World Cup 2026,
+2026,intl,EWC,,,T1,4,semifinalist,Doran;Faker;Keria;Oner;Peyz,Esports World Cup 2026,
+2026,intl,EWC,,,AG.AL,5-8,quarterfinalist,Flandre;Hope;Kael;Shanks;Tarzan,Esports World Cup 2026,
+2026,intl,EWC,,,Bilibili Gaming,5-8,quarterfinalist,Bin;Knight;ON;Viper;Xun,Esports World Cup 2026,
+2026,intl,EWC,,,Hanwha Life Esports,5-8,quarterfinalist,Delight;Gumayusi;Kanavi;Zeka;Zeus,Esports World Cup 2026,
+2026,intl,EWC,,,JD Gaming,5-8,quarterfinalist,GALA;HongQ;JunJia;Vampire;Xiaoxu,Esports World Cup 2026,
+2026,intl,EWC,,,G2 Esports,9-12,group,BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,Esports World Cup 2026,
+2026,intl,EWC,,,GAM Esports,9-12,group,Artemis;Draktharr;Gloryy;Kiaya;Taki,Esports World Cup 2026,
+2026,intl,EWC,,,MIBR.LOS,9-12,group,Ackerman;Curse;Duduhh;Feisty;Zest,Esports World Cup 2026,
+2026,intl,EWC,,,Sentinels,9-12,group,DARKWINGS;HamBak;Impact;Rahel;huhi,Esports World Cup 2026,
+2026,intl,FST,,,Bilibili Gaming,1,champion,Bin;Knight;ON;Viper;Xun,2026 First Stand,
+2026,intl,FST,,,G2 Esports,2,finalist,BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,2026 First Stand,
+2026,intl,FST,,,Gen.G,3-4,semifinalist,Canyon;Chovy;Duro;Kiin;Ruler,2026 First Stand,
+2026,intl,FST,,,JD Gaming,3-4,semifinalist,GALA;HongQ;JunJia;Vampire;Xiaoxu,2026 First Stand,
+2026,intl,FST,,,BNK FEARX,5-6,quarterfinalist,Clear;Diable;Kellin;Raptor;VicLa,2026 First Stand,
+2026,intl,FST,,,LYON (2024 American Team),5-6,quarterfinalist,Berserker;Dhokla;Inspired;Isles;Saint,2026 First Stand,
+2026,intl,FST,,,LOUD,7-8,quarterfinalist,Bull;Envy;RedBert;Xyno;YoungJae,2026 First Stand,
+2026,intl,FST,,,Team Secret Whales,7-8,quarterfinalist,Bie;Dire;Eddie;Hizto;Pun,2026 First Stand,
+2026,intl,MSI,,,Hanwha Life Esports,1,champion,Delight;Gumayusi;Kanavi;Zeka;Zeus,2026 Mid-Season Invitational,
+2026,intl,MSI,,,Karmine Corp,10,group,Busio;Caliste;Canna;Yike;kyeahoo,2026 Mid-Season Invitational,
+2026,intl,MSI,,,Deep Cross Gaming,11,group,Feng;Flauren;HongSuo;Pop9;ShiauC,2026 Mid-Season Invitational,
+2026,intl,MSI,,,Bilibili Gaming,2,finalist,Bin;Knight;ON;Viper;Xun,2026 Mid-Season Invitational,
+2026,intl,MSI,,,LYON (2024 American Team),3,semifinalist,Berserker;Dhokla;Inspired;Isles;Saint,2026 Mid-Season Invitational,
+2026,intl,MSI,,,G2 Esports,4,semifinalist,BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,2026 Mid-Season Invitational,
+2026,intl,MSI,,,T1,5-6,quarterfinalist,Doran;Faker;Keria;Oner;Peyz,2026 Mid-Season Invitational,
+2026,intl,MSI,,,Team Secret Whales,5-6,quarterfinalist,Bie;Dire;Eddie;Hizto;Pun,2026 Mid-Season Invitational,
+2026,intl,MSI,,,FURIA,7-8,quarterfinalist,Ayu;Guigo;JoJo;Tatu;Tutsz,2026 Mid-Season Invitational,
+2026,intl,MSI,,,Top Esports,7-8,quarterfinalist,Creme;JackeyLove;Tian;ZUIAN;fengyue,2026 Mid-Season Invitational,
+2026,intl,MSI,,,Team Liquid,9,group,CoreJJ;Josedeodo;Morgan;Quid;Yeon,2026 Mid-Season Invitational,
+2026,intl,WLDs,,,,1,champion,,2026 Season World Championship,
+2026,intl,WLDs,,,,12-14,group,,2026 Season World Championship,
+2026,intl,WLDs,,,,12-14,group,,2026 Season World Championship,
+2026,intl,WLDs,,,,12-14,group,,2026 Season World Championship,
+2026,intl,WLDs,,,,15-16,group,,2026 Season World Championship,
+2026,intl,WLDs,,,,15-16,group,,2026 Season World Championship,
+2026,intl,WLDs,,,,17,group,,2026 Season World Championship,
+2026,intl,WLDs,,,,18,group,,2026 Season World Championship,
+2026,intl,WLDs,,,,19,group,,2026 Season World Championship,
+2026,intl,WLDs,,,,2,finalist,,2026 Season World Championship,
+2026,intl,WLDs,,,,3-4,semifinalist,,2026 Season World Championship,
+2026,intl,WLDs,,,,3-4,semifinalist,,2026 Season World Championship,
+2026,intl,WLDs,,,,5-8,quarterfinalist,,2026 Season World Championship,
+2026,intl,WLDs,,,,5-8,quarterfinalist,,2026 Season World Championship,
+2026,intl,WLDs,,,,5-8,quarterfinalist,,2026 Season World Championship,
+2026,intl,WLDs,,,,5-8,quarterfinalist,,2026 Season World Championship,
+2026,intl,WLDs,,,,9-11,group,,2026 Season World Championship,
+2026,intl,WLDs,,,,9-11,group,,2026 Season World Championship,
+2026,intl,WLDs,,,,9-11,group,,2026 Season World Championship,
 2025,intl,ASI,,,BNK FEARX,1,champion,Clear;Diable;Kellin;Raptor;VicLa,2025 League of Legends Asia Invitational,
 2025,intl,ASI,,,Dplus Kia,2,finalist,Aiming;BeryL;Lucid;ShowMaker;Siwoo,2025 League of Legends Asia Invitational,
 2025,intl,ASI,,,Nongshim RedForce,3,semifinalist,Calix;GIDEON;Jiwoo;Kingen;Lehends,2025 League of Legends Asia Invitational,
