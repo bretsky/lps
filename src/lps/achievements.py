@@ -80,7 +80,7 @@ class BonusConfig:
     intl_champion_anchors: dict[str, float] = field(
         default_factory=lambda: {"WLDs": 6.0, "MSI": 3.0}
     )
-    champ_per_weight: float = 5.5  # tuned to the consensus surveys
+    champ_per_weight: float = 5.0  # tuned to the consensus surveys (set to 5.0)
     intl_bucket: dict[str, float] = field(
         default_factory=lambda: {
             "champion": 1.0,
