@@ -86,6 +86,17 @@ Non-obvious behaviors that keep it safe — preserve these if you touch it:
 
 Useful flags: `--dry-run` (print the plan, run nothing), `--year N`, `--skip-fetch` (recompute from cache, no network), `--skip-elo`, `--skip-achievements`, `--skip-regions`. Exit codes: `2` = halted on a human-only prerequisite, `1` = a subcommand failed.
 
+### Adding a new season (first-time setup for year `YYYY`)
+
+The "latest year" is dynamic (`io_oracle.latest_oracle_year`, from the newest Oracle CSV), so most of the rollover is automatic — but a brand-new year has two human-only gates that `update_all` deliberately halts on:
+
+1. Drop the `YYYY` Oracle CSV into `data/oracle/` (filename must contain the year).
+2. `update_all` → **halts at the region guard**; fill `region` in `info/team_regions_YYYY.csv` (use `N/A` to exclude a team — a *blank* keeps halting).
+3. Seed `info/starting_elos_YYYY.csv` from `ending_elos_<YYYY-1>.csv` (rename `ending_elo`→`starting_elo`; apply any region merges/renames at this boundary). Skipping it makes `update_all` carry the prior year forward with a warning; `--full` reseeds every boundary via `rerun_elos.py`.
+4. Re-run `update_all` (`--skip-fetch` to reuse the first run's pull).
+
+Watch for the annual "current year = 2025"-style caps if you add cross-year logic — they've bitten before (`career.oracle_ok`, `rerun_elos.YEARS`, `fetch_*` year bounds all now derive from data/`datetime` instead of a literal).
+
 ## Conventions
 
 - **Config via `@dataclass`**: models take a typed config dataclass (e.g. `EnsembleConfig`, `ExpectedPerformanceConfig`, `TopLaneConfig`) with hyperparameters as fields and sensible defaults. Add tunables there rather than as loose function args.
