@@ -94,14 +94,14 @@ data/*.csv
 *.sqlite
 *.sqlite3
 
-# Generated outputs / scratch
+# Generated outputs / scratch (backend now lives under backend/)
 player_above_expected_metrics.csv
 season_out.txt
 *.stackdump
-info/backup/
-info/backup2/
-info/backup_auto/
-info/_rerun_snapshot/
+backend/info/backup/
+backend/info/backup2/
+backend/info/backup_auto/
+backend/info/_rerun_snapshot/
 
 # OS
 Thumbs.db

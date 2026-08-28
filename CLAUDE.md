@@ -10,11 +10,19 @@ Guidance for working in this repo. Read alongside `README.md` (user-facing setup
 2. **Regional Elo estimation** — derived from international tournament results scraped from Leaguepedia.
 3. **Data ingestion** — loaders for Oracle CSVs and a Leaguepedia (Cargo) API client.
 
-Python 3.12+, managed with **Poetry**, src-layout package under `src/lps/`.
+Python 3.12+, managed with **Poetry**, src-layout package under `backend/src/lps/`.
+
+## Repo layout
+
+The repo is split into `backend/` (this Python system) and `frontend/` (the rankings website, see
+`docs/website-plan.md`). **All backend commands run from `backend/`** and all paths below
+(`src/lps/`, `data/`, `info/`, generated `player_ratings_*.xlsx`) are relative to `backend/`.
+`config.PROJECT_ROOT` resolves to `backend/`. `README.md`/`CLAUDE.md`/`docs/` stay at the repo root.
 
 ## Environment & commands
 
 ```bash
+cd backend                                  # all backend commands run from here
 poetry install                              # install deps + dev tools
 poetry run python -m lps.<module>           # run any module's main()
 poetry run pytest                           # tests (pytest configured, few/none exist yet)
