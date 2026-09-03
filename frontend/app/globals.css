@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: #0a0e14;
+  color: #e6ecf3;
+}
+
+body {
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Custom scrollbar in the board list */
+.board-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.board-scroll::-webkit-scrollbar-track {
+  background: #0f151d;
+}
+.board-scroll::-webkit-scrollbar-thumb {
+  background: #1e2a38;
+  border-radius: 5px;
+}
+.board-scroll::-webkit-scrollbar-thumb:hover {
+  background: #2c3e52;
+}
