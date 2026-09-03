@@ -3,8 +3,11 @@ Web export: turn the latest career workbook into the static JSON bundle the
 rankings site consumes.
 
 Reads `player_ratings_career_<first>_<last>.xlsx` (the workbook `career.py`
-writes) and emits a build-versioned bundle under
-`frontend/public/data/<build_id>/`:
+writes) and emits the bundle under `frontend/public/data/current/`. The
+previous `current/` (if any) is auto-moved to
+`frontend/public/data/archive/<its_build_id>/` -- past snapshots stay
+recoverable locally, but only `current/` is tracked in git. The current
+build's own id + generated timestamp live in `current/meta.json`. Contents:
 
     index.json          -- slim ranking rows (the rated pool) for the board
     lanes/<lane>.json   -- same slim rows per position
@@ -44,6 +47,7 @@ import datetime as _dt
 import json
 import logging
 import re
+import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable, Optional
@@ -621,7 +625,23 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
     wb = cfg.workbook or _latest_career_workbook()
     out_root = cfg.out_root or (PROJECT_ROOT.parent / "frontend" / "public" / "data")
     build_id = cfg.build_id or _dt.date.today().isoformat()
-    out_dir = out_root / build_id
+    # The site always serves current/. Any existing current/ is moved to
+    # archive/<its_build_id>/ so past snapshots are recoverable locally; the
+    # archive dir is gitignored (only current/ ships in the repo).
+    out_dir = out_root / "current"
+    if out_dir.exists():
+        prev_meta = out_dir / "meta.json"
+        prev_build = build_id
+        try:
+            prev_build = json.loads(prev_meta.read_text("utf-8")).get("build_id", build_id)
+        except Exception:
+            pass
+        archive_dst = out_root / "archive" / prev_build
+        if archive_dst.exists():
+            shutil.rmtree(archive_dst)
+        archive_dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(out_dir), str(archive_dst))
+        logger.info("[web] archived previous build to %s", archive_dst)
     (out_dir / "players").mkdir(parents=True, exist_ok=True)
     (out_dir / "lanes").mkdir(parents=True, exist_ok=True)
 
@@ -823,11 +843,6 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
         "radar_axes": [{"key": a, "source": c, "inverted": inv} for a, c, inv in _RADAR_AXES],
     }
     _write_json(out_dir / "meta.json", meta)
-
-    # meta.json also at a stable path outside the versioned dir, pointing at
-    # the current build -- so the frontend can cache /data/meta.json short and
-    # everything under /data/<build_id>/ forever.
-    _write_json(out_root / "meta.json", {"build_id": build_id, "generated": meta["generated"]})
 
     # glossary.json
     _write_json(out_dir / "glossary.json",

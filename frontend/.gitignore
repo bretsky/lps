@@ -5,3 +5,6 @@ next-env.d.ts
 tsconfig.tsbuildinfo
 .env*.local
 *.log
+
+# Only current/ ships; past snapshots are auto-archived locally by export_web.
+public/data/archive/
