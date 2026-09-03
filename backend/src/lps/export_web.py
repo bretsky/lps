@@ -79,7 +79,7 @@ RATED_MIN_GAMES = 100  # inclusion floor for the public board (see plan §11.1)
 # rather than "top 20 today".  Membership counts drift as the data grows;
 # the numbers don't.  Tune here.
 _TIERS: list[dict] = [
-    {"key": "goats", "label": "GOATs", "clr_min": 70.0, "color": "#f5c15b"},
+    {"key": "goats", "label": "GOATs", "clr_min": 75.0, "color": "#f5c15b"},
     {"key": "legends", "label": "Legends", "clr_min": 50.0, "color": "#d97757"},
     {"key": "greats", "label": "Greats", "clr_min": 30.0, "color": "#a685e2"},
     {"key": "elite", "label": "Elite", "clr_min": 15.0, "color": "#6aa7e6"},
