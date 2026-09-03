@@ -391,6 +391,13 @@ def orchestrate(args: argparse.Namespace) -> int:
         args.start_year, year, full=args.full, weight_args=weight_args, dry_run=args.dry_run
     )
 
+    # -- phase 5: website JSON bundle (turns the fresh career workbook into
+    # frontend/public/data/<build_id>/*.json for the rankings site)
+    if args.skip_web:
+        logger.info("\n[web] skipped (--skip-web)")
+    else:
+        run(_module_cmd("export_web"), dry_run=args.dry_run)
+
     logger.info("\n%s", "=" * 70)
     logger.info("Done. Outputs:")
     logger.info(
@@ -401,6 +408,8 @@ def orchestrate(args: argparse.Namespace) -> int:
     logger.info("  * player_ratings_<year>.xlsx       (per-year workbooks)")
     if not args.skip_elo:
         logger.info("  * info/ending_elos_%s.csv     (refreshed regional Elos)", year)
+    if not args.skip_web:
+        logger.info("  * frontend/public/data/<build_id>/  (website JSON bundle)")
     logger.info("=" * 70)
     return 0
 
@@ -426,6 +435,7 @@ def main() -> int:
     ap.add_argument("--skip-achievements", action="store_true", help="don't re-fetch achievements")
     ap.add_argument("--skip-regions", action="store_true", help="skip the unmapped-team guard")
     ap.add_argument("--skip-elo", action="store_true", help="don't recompute regional Elo")
+    ap.add_argument("--skip-web", action="store_true", help="don't rebuild the website JSON bundle")
     ap.add_argument("--dry-run", action="store_true", help="print the plan; run nothing")
     # Scoring knobs -- default None so career.py's finalized defaults win unless set.
     ap.add_argument("--min-games", type=int, default=None)

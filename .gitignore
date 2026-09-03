@@ -10,7 +10,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/backend/lib/
 lib64/
 parts/
 sdist/
@@ -85,9 +85,9 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
-# Data files
-data/
-data/*.csv
+# Data files (backend only -- frontend/public/data/ is the deployed bundle)
+/backend/data/
+/backend/data/*.csv
 *.xlsx
 *.xls
 *.db
