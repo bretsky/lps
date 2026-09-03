@@ -1152,6 +1152,7 @@ def main() -> None:
     ap.add_argument("--alpha", type=float, default=_DEMO_WEIGHTS.alpha)
     ap.add_argument("--lam", type=float, default=_DEMO_WEIGHTS.lam)
     ap.add_argument("--beta", type=float, default=_DEMO_WEIGHTS.beta)
+    ap.add_argument("--region-exp", type=float, default=_DEMO_WEIGHTS.region_exp)
     ap.add_argument(
         "--no-recompute", action="store_true", help="reuse cached per-year models"
     )
@@ -1181,7 +1182,9 @@ def main() -> None:
     )
     args = ap.parse_args()
 
-    weights = ScoreWeights(alpha=args.alpha, lam=args.lam, beta=args.beta)
+    weights = ScoreWeights(
+        alpha=args.alpha, lam=args.lam, beta=args.beta, region_exp=args.region_exp
+    )
     bonus_cfg = BonusConfig(repeat_decay=args.repeat_decay, w_bonus=args.w_bonus)
     clr_cfg = CLRConfig()
     if args.era_mults:

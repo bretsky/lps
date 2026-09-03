@@ -347,7 +347,11 @@ def score_bonuses(roster: pd.DataFrame, cfg: BonusConfig | None = None) -> pd.Da
     ex["_hraw"] = ex["_hraw"].str.strip()
     ex = ex[ex["_hraw"] != ""]
     _ex_reg = ex["league_full"].map(FULL2CODE)
-    ex["_nlc"] = [resolve_label(h, r) for h, r in zip(ex["_hraw"], _ex_reg)]
+    _ex_team = ex["team"] if "team" in ex.columns else pd.Series([None] * len(ex), index=ex.index)
+    ex["_nlc"] = [
+        resolve_label(h, r, t, y)
+        for h, r, t, y in zip(ex["_hraw"], _ex_reg, _ex_team, ex["year"])
+    ]
     ex["_nlc"] = ex["_nlc"].astype(str).str.lower()
     ex = ex.join(pos.rename("position"), on=["_nlc", "year"], how="inner")
     ex = ex.join(cname.rename("cname"), on=["_nlc", "year"])
