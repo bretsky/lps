@@ -79,6 +79,20 @@ export interface Meta {
 
 export type RadarAxes = "peak" | "longevity" | "consistency" | "resume" | "impact" | "clutch" | "dominance";
 
+export type TournamentFamily =
+  | "worlds"
+  | "msi"
+  | "intl"
+  | "domestic"
+  | "cup";
+
+export type Medal = "gold" | "silver" | "bronze";
+
+export type YearAchievements = Partial<Record<TournamentFamily, Partial<Record<Medal, number>>>> & {
+  mvp?: number;
+  allpro?: number;
+};
+
 export interface PlayerDetail {
   rank: number;
   slug: string;
@@ -140,6 +154,8 @@ export interface PlayerDetail {
     hn_global: number;
     hn_global_yrs: string;
   }>;
+  hn_year_ranks: Record<string, { global: number; lane: number }>;
+  year_achievements: Record<string, YearAchievements>;
   resume_breakdown: Partial<Record<string, { n: number; pts: number }>>;
   tournaments: Record<string, number>;
   trajectory: Record<string, number>;
