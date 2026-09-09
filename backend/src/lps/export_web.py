@@ -55,6 +55,7 @@ from typing import Iterable, Optional
 import numpy as np
 import pandas as pd
 
+from .achievements import _ach_category, _MVP_AWARDS, load_achievements, load_awards
 from .career import _career_layout, YEARS_DEFAULT, CLRConfig
 from .config import INFO_DIR, PROJECT_ROOT
 from .contribution import ROLES
@@ -314,6 +315,170 @@ def _trajectory(row: pd.Series, years: tuple[int, ...]) -> dict:
     return out
 
 
+def _year_achievements(
+    playernames: Iterable[str],
+) -> dict[str, dict[str, dict]]:
+    """Per-(playername, year) achievement badges for the trajectory chart.
+
+    Two axes: **tournament family** (cup silhouette) × **placement** (medal
+    tint). Tournament families:
+      - worlds   : Worlds (intl / event=WLDs)
+      - msi      : MSI (intl / event=MSI)
+      - intl     : every other international event (IEM, EWC, MSC, Rift Rivals…)
+      - domestic : LCK/LPL/LCS/LEC etc. split playoffs
+      - cup      : domestic cups (KeSPA, Demacia, …)
+
+    Placement medal comes from the achievement's `bucket`:
+      - champion       → gold
+      - finalist       → silver
+      - semifinalist   → bronze
+      - group/quarterfinalist → skipped (not a "notable" achievement)
+
+    Awards are kept flat (no placement axis):
+      - mvp      : any MVP-family award (worlds/msi/finals/regional MVP)
+      - allpro   : any All-Pro selection
+
+    Only non-zero entries are stored. Example shape:
+
+        { "2016": {
+            "worlds":   {"gold": 1},
+            "msi":      {"gold": 1},
+            "intl":     {"gold": 1},              # e.g. IEM 2016
+            "domestic": {"gold": 1},              # LCK spring
+            "cup":      {"gold": 1},              # KeSPA
+            "mvp": 2,
+            "allpro": 1,
+          }, ... }
+
+    Player names are matched case-insensitively against the semicolon-separated
+    `players` list in achievements.csv (same rule as `achievements.score_bonuses`).
+    """
+    names_lc = {str(n).lower(): str(n) for n in playernames}
+
+    out: dict[str, dict[str, dict]] = {}
+
+    def _bump_medal(name_lc: str, year: int, family: str, medal: str) -> None:
+        canonical = names_lc.get(name_lc)
+        if canonical is None:
+            return
+        by_year = out.setdefault(canonical, {}).setdefault(str(year), {})
+        fam = by_year.setdefault(family, {})
+        fam[medal] = fam.get(medal, 0) + 1
+
+    def _bump_award(name_lc: str, year: int, kind: str) -> None:
+        canonical = names_lc.get(name_lc)
+        if canonical is None:
+            return
+        by_year = out.setdefault(canonical, {}).setdefault(str(year), {})
+        by_year[kind] = by_year.get(kind, 0) + 1
+
+    _BUCKET_TO_MEDAL = {
+        "champion": "gold",
+        "finalist": "silver",
+        "semifinalist": "bronze",
+    }
+
+    def _family(category: str, event: str) -> Optional[str]:
+        if category == "intl":
+            if event == "WLDs":
+                return "worlds"
+            if event == "MSI":
+                return "msi"
+            return "intl"
+        if category == "domestic":
+            return "domestic"
+        if category == "domestic_cup":
+            return "cup"
+        return None
+
+    ach = load_achievements()
+    if not ach.empty and "players" in ach.columns:
+        ach = ach.copy()
+        ach["year"] = pd.to_numeric(ach["year"], errors="coerce")
+        ach = ach[ach["year"].notna() & ach["players"].notna()]
+        ach["year"] = ach["year"].astype(int)
+        for _, row in ach.iterrows():
+            medal = _BUCKET_TO_MEDAL.get(str(row.get("bucket") or ""))
+            if medal is None:
+                continue  # group / quarterfinalist / unknown — skip
+            fam = _family(str(row.get("category") or ""), str(row.get("event") or ""))
+            if fam is None:
+                continue
+            year = int(row["year"])
+            for p in str(row.get("players") or "").split(";"):
+                _bump_medal(p.strip().lower(), year, fam, medal)
+
+    aw = load_awards()
+    if not aw.empty and "playername" in aw.columns and "award" in aw.columns:
+        aw = aw.copy()
+        aw["year"] = pd.to_numeric(aw["year"], errors="coerce")
+        aw = aw[aw["year"].notna() & aw["playername"].notna()]
+        aw["year"] = aw["year"].astype(int)
+        for _, row in aw.iterrows():
+            kind = "mvp" if str(row.get("award") or "") in _MVP_AWARDS else "allpro"
+            _bump_award(str(row["playername"]).lower(), int(row["year"]), kind)
+
+    return out
+
+
+def _year_rankings(
+    lanes: dict[str, pd.DataFrame], years: tuple[int, ...]
+) -> dict[str, dict[str, dict[str, int]]]:
+    """Per-(player, year) HN-style peer ranks — mirrors `career._high_noon`
+    exactly, but keeps *every* participating year rather than only aggregating
+    the best N.
+
+    Each year's per-lane per-year `total_score` (the workbook's `yYYYY` col on
+    the lane sheets) is ranked in two ways: globally across all lanes, and
+    within lane. For players who split roles inside a year we keep the *best*
+    (lowest) rank across their lane rows — same choice HN makes. Returns:
+
+        { playername: { "2013": {"global": 5, "lane": 1}, ... } }
+
+    Only years the player actually participated in appear. Zero-LPS rows are
+    dropped (they aren't 'seasons' for HN purposes).
+    """
+    stacked: list[pd.DataFrame] = []
+    for lane, df in lanes.items():
+        if "playername" not in df.columns:
+            continue
+        for y in years:
+            col = f"y{y}"
+            if col not in df.columns:
+                continue
+            sub = df[["playername", col]].rename(columns={col: "lps"})
+            sub = sub[sub["lps"].notna() & (sub["lps"] != 0)]
+            if not len(sub):
+                continue
+            sub = sub.assign(lane=lane, year=int(y))
+            stacked.append(sub[["playername", "lane", "year", "lps"]])
+    if not stacked:
+        return {}
+    allrows = pd.concat(stacked, ignore_index=True)
+    allrows["rank_global"] = (
+        allrows.groupby("year")["lps"].rank(ascending=False, method="min").astype(int)
+    )
+    allrows["rank_lane"] = (
+        allrows.groupby(["year", "lane"])["lps"]
+        .rank(ascending=False, method="min")
+        .astype(int)
+    )
+    agg = (
+        allrows.groupby(["playername", "year"], as_index=False)
+        .agg(rank_global=("rank_global", "min"), rank_lane=("rank_lane", "min"))
+    )
+    out: dict[str, dict[str, dict[str, int]]] = {}
+    for name, sub in agg.groupby("playername", sort=False):
+        yr_map: dict[str, dict[str, int]] = {}
+        for _, r in sub.iterrows():
+            yr_map[str(int(r["year"]))] = {
+                "global": int(r["rank_global"]),
+                "lane": int(r["rank_lane"]),
+            }
+        out[str(name)] = yr_map
+    return out
+
+
 def _splits(row: pd.Series) -> dict:
     """Pre-formatted 'T1 (245.3), ...' strings AND their structured
     counterparts. The strings are kept for backwards-compatible consumers; the
@@ -330,17 +495,22 @@ def _splits(row: pd.Series) -> dict:
 
 
 def _resume_breakdown(row: pd.Series) -> dict:
-    """9-category (count, pts) breakdown that sums (Pt) to `resume_bonus`."""
+    """14-category (count, pts) breakdown that sums (pts) to `resume_bonus`."""
     cats = [
-        ("wlds_title", "rb_wlds_title_n", "rb_wlds_title_pts"),
-        ("wlds_deep", "rb_wlds_deep_n", "rb_wlds_deep_pts"),
-        ("msi", "rb_msi_n", "rb_msi_pts"),
-        ("other_intl", "rb_othr_intl_n", "rb_othr_intl_pts"),
-        ("dom_champ", "rb_dom_champ_n", "rb_dom_champ_pts"),
-        ("dom_final", "rb_dom_final_n", "rb_dom_final_pts"),
-        ("dom_cup", "rb_dom_cup_n", "rb_dom_cup_pts"),
-        ("mvp", "rb_mvp_n", "rb_mvp_pts"),
-        ("allpro", "rb_allpro_n", "rb_allpro_pts"),
+        ("wlds_title",      "rb_wlds_title_n",         "rb_wlds_title_pts"),
+        ("wlds_final",      "rb_wlds_final_n",         "rb_wlds_final_pts"),
+        ("wlds_semi",       "rb_wlds_semi_n",          "rb_wlds_semi_pts"),
+        ("msi_title",       "rb_msi_title_n",          "rb_msi_title_pts"),
+        ("msi_final",       "rb_msi_final_n",          "rb_msi_final_pts"),
+        ("msi_semi",        "rb_msi_semi_n",           "rb_msi_semi_pts"),
+        ("othr_intl_champ", "rb_othr_intl_champ_n",   "rb_othr_intl_champ_pts"),
+        ("othr_intl_final", "rb_othr_intl_final_n",   "rb_othr_intl_final_pts"),
+        ("othr_intl_semi",  "rb_othr_intl_semi_n",    "rb_othr_intl_semi_pts"),
+        ("dom_champ",       "rb_dom_champ_n",          "rb_dom_champ_pts"),
+        ("dom_final",       "rb_dom_final_n",          "rb_dom_final_pts"),
+        ("dom_cup",         "rb_dom_cup_n",            "rb_dom_cup_pts"),
+        ("mvp",             "rb_mvp_n",                "rb_mvp_pts"),
+        ("allpro",          "rb_allpro_n",             "rb_allpro_pts"),
     ]
     out: dict[str, dict] = {}
     for key, n_col, p_col in cats:
@@ -372,7 +542,9 @@ _DETAIL_HIGH_NOON = ["hn_lane_best", "hn_lane", "hn_lane_yrs",
 
 def _detail_json(row: pd.Series, tourn_cols: list[str], years: tuple[int, ...],
                  radar_global: dict, radar_lane: dict, idx_in_global: int,
-                 idx_in_lane: Optional[int]) -> dict:
+                 idx_in_lane: Optional[int],
+                 hn_year_ranks: dict[str, dict[str, int]],
+                 year_achievements: dict[str, dict]) -> dict:
     def _grp(cols):
         return {c: _round(_clean(row.get(c))) for c in cols if c in row}
 
@@ -385,6 +557,8 @@ def _detail_json(row: pd.Series, tourn_cols: list[str], years: tuple[int, ...],
         "sources": _grp(_DETAIL_SOURCES),
         "rates": _grp(_DETAIL_RATES),
         "high_noon": _grp(_DETAIL_HIGH_NOON),
+        "hn_year_ranks": hn_year_ranks,
+        "year_achievements": year_achievements,
         "resume_breakdown": _resume_breakdown(row),
         "tournaments": _tournament_dict(row, tourn_cols),
         "trajectory": _trajectory(row, years),
@@ -798,6 +972,19 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
         lf["position"] = lane  # this file IS the lane page; label with this lane
         _write_json(out_dir / "lanes" / f"{lane}.json", [_index_row(r) for _, r in lf.iterrows()])
 
+    # Per-(player, year) HN ranks — used by the trajectory chart to label each
+    # season with its global/lane peer rank. Computed once over all lane sheets.
+    hn_year_ranks_by_name = _year_rankings(lanes, years)
+    logger.info(
+        "[web] per-year HN ranks: %d players with ≥1 ranked season",
+        len(hn_year_ranks_by_name),
+    )
+    year_achievements_by_name = _year_achievements(ov["playername"].tolist())
+    logger.info(
+        "[web] per-year achievements: %d players with ≥1 credited achievement",
+        len(year_achievements_by_name),
+    )
+
     # players/<slug>.json  (every player, rated or not -- shared links still work)
     # Attach slug + rank + tier from the rated pool where present; unrated get
     # tier=null and their un-rated Overview rank.
@@ -815,7 +1002,9 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
         lane_radar = radar_by_lane.get(lane, {}) if isinstance(lane, str) else {}
         detail = _detail_json(r_row, tourn_cols, years, radar_global, lane_radar,
                               idx_global if slug in slug_to_global_idx else 0,
-                              idx_lane if slug in rated_by_slug.index else None)
+                              idx_lane if slug in rated_by_slug.index else None,
+                              hn_year_ranks_by_name.get(row["playername"], {}),
+                              year_achievements_by_name.get(row["playername"], {}))
         detail["rated"] = slug in rated_by_slug.index
         _write_json(out_dir / "players" / f"{slug}.json", detail)
 

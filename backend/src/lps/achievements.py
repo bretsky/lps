@@ -152,17 +152,21 @@ FLAT_AWARDS = {
     "intl_all_pro",
 }
 
-# Resume BREAKDOWN categories: a partition of every scored resume achievement into 9 buckets so a
+# Resume BREAKDOWN categories: a partition of every scored resume achievement into 14 buckets so a
 # per-player count + summed points can be shown for each, and the points reconcile exactly to the
 # three headline bonuses (intl/title/award) and thus to Resume. Order is display order.
-#   wlds_title = Worlds champion         msi       = any MSI placement    dom_champ/dom_final = splits
-#   wlds_deep  = Worlds finalist..group  othr_intl = every other intl event   dom_cup = KeSPA/Demacia
-#   mvp/allpro = award families
+#   Worlds and MSI each split by placement (title/finals/semis); other intl similarly;
+#   dom_champ/dom_final = domestic splits; dom_cup = KeSPA/Demacia; mvp/allpro = award families.
 _RB_CATS = [
-    "wlds_title",
-    "wlds_deep",
-    "msi",
-    "othr_intl",
+    "wlds_title",       # Worlds champion
+    "wlds_final",       # Worlds finalist
+    "wlds_semi",        # Worlds semifinalist or quarterfinalist
+    "msi_title",        # MSI champion
+    "msi_final",        # MSI finalist
+    "msi_semi",         # MSI semifinalist
+    "othr_intl_champ",  # Other intl champion (IEM, EWC, MSC, Rift Rivals…)
+    "othr_intl_final",  # Other intl finalist
+    "othr_intl_semi",   # Other intl semifinalist or quarterfinalist
     "dom_champ",
     "dom_final",
     "dom_cup",
@@ -176,9 +180,14 @@ RESUME_BREAKDOWN_COLS = _RB_N + _RB_PTS
 _RB_TO_BONUS = {
     "intl_bonus": [
         "rb_wlds_title_pts",
-        "rb_wlds_deep_pts",
-        "rb_msi_pts",
-        "rb_othr_intl_pts",
+        "rb_wlds_final_pts",
+        "rb_wlds_semi_pts",
+        "rb_msi_title_pts",
+        "rb_msi_final_pts",
+        "rb_msi_semi_pts",
+        "rb_othr_intl_champ_pts",
+        "rb_othr_intl_final_pts",
+        "rb_othr_intl_semi_pts",
     ],
     "title_bonus": ["rb_dom_champ_pts", "rb_dom_final_pts", "rb_dom_cup_pts"],
     "award_bonus": ["rb_mvp_pts", "rb_allpro_pts"],
@@ -197,15 +206,28 @@ _MVP_AWARDS = {
 
 
 def _ach_category(category: str, event: str, bucket: str) -> str:
-    """Map a scored achievement row to one of the 9 resume-breakdown buckets."""
+    """Map a scored achievement row to one of the 14 resume-breakdown buckets."""
     if category == "domestic_cup":
         return "dom_cup"
     if category == "intl":
         if event == "WLDs":
-            return "wlds_title" if bucket == "champion" else "wlds_deep"
+            if bucket == "champion":
+                return "wlds_title"
+            if bucket == "finalist":
+                return "wlds_final"
+            return "wlds_semi"  # semifinalist, quarterfinalist
         if event == "MSI":
-            return "msi"
-        return "othr_intl"  # EWC / First Stand / MSC / LTA / Rift Rivals / ASI / ...
+            if bucket == "champion":
+                return "msi_title"
+            if bucket == "finalist":
+                return "msi_final"
+            return "msi_semi"  # semifinalist
+        # Other international events (EWC, First Stand, MSC, LTA, Rift Rivals, ASI, …)
+        if bucket == "champion":
+            return "othr_intl_champ"
+        if bucket == "finalist":
+            return "othr_intl_final"
+        return "othr_intl_semi"  # semifinalist, quarterfinalist
     return "dom_champ" if bucket == "champion" else "dom_final"
 
 
