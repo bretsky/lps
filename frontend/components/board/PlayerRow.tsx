@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { IndexRow } from "@/lib/types";
 import { fmt, fmtInt, fmtPct, laneLabel, yearsLabel } from "@/lib/format";
 import { ClrBar } from "./ClrBar";
@@ -5,6 +6,7 @@ import { HolCrown, StatusDot } from "./StatusBadges";
 
 export function PlayerRow({ row, maxClr }: { row: IndexRow; maxClr: number }) {
   const isHol = row.hall_of_legends;
+  const href = row.slug ? `/player/${row.slug}` : null;
   return (
     <div
       className={`grid grid-cols-[3rem_minmax(0,1fr)_5rem_5rem_6rem_5rem_1fr_5rem] items-center gap-3 border-b border-border/60 px-4 py-2 text-sm hover:bg-bg-card/60 ${
@@ -18,9 +20,18 @@ export function PlayerRow({ row, maxClr }: { row: IndexRow; maxClr: number }) {
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <StatusDot row={row} />
-          <span className={`truncate font-semibold ${isHol ? "text-accent-gold" : ""}`}>
-            {row.playername}
-          </span>
+          {href ? (
+            <Link
+              href={href}
+              className={`truncate font-semibold hover:underline ${isHol ? "text-accent-gold" : ""}`}
+            >
+              {row.playername}
+            </Link>
+          ) : (
+            <span className={`truncate font-semibold ${isHol ? "text-accent-gold" : ""}`}>
+              {row.playername}
+            </span>
+          )}
         </div>
         <div className="truncate text-xs text-text-dim">
           {row.current_team ?? "—"} · {row.current_league ?? "—"}
