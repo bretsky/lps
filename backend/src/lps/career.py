@@ -729,17 +729,28 @@ def _career_layout(
         ("title_bonus", "Titles", _PTS, 7),
         ("award_bonus", "Awards", _PTS, 7),
         # Resume breakdown: a count (#) + weighted points (Pt) per category; the Pt columns sum to
-        # Resume. Intl = WldsChmp+WldsRun+MSIPlc+OthIntl; Titles = DomChmp+DomFin+DomCup;
-        # Awards = MVP+AllPro. OthIntl = every other cross-region event (EWC/First Stand/MSC/LTA/
-        # Rift Rivals/ASI/...); DomCup = KeSPA + Demacia cups.
+        # Resume. Intl = WldsChmp+WldsFin+WldsSemi+MSIChmp+MSIFin+MSISemi+IntlChmp+IntlFin+IntlSemi;
+        # Titles = DomChmp+DomFin+DomCup; Awards = MVP+AllPro.
+        # Intl = Worlds/MSI/Other split by placement tier; OthIntl = EWC/First Stand/MSC/LTA/
+        # Rift Rivals/ASI/...; DomCup = KeSPA + Demacia cups.
         ("rb_wlds_title_n", "WldsChmp#", _INT, 9),
         ("rb_wlds_title_pts", "WldsChmpPt", _PTS, 10),
-        ("rb_wlds_deep_n", "WldsRun#", _INT, 9),
-        ("rb_wlds_deep_pts", "WldsRunPt", _PTS, 9),
-        ("rb_msi_n", "MSIPlc#", _INT, 8),
-        ("rb_msi_pts", "MSIPlcPt", _PTS, 9),
-        ("rb_othr_intl_n", "OthIntl#", _INT, 8),
-        ("rb_othr_intl_pts", "OthIntlPt", _PTS, 9),
+        ("rb_wlds_final_n", "WldsFin#", _INT, 9),
+        ("rb_wlds_final_pts", "WldsFinPt", _PTS, 9),
+        ("rb_wlds_semi_n", "WldsSemi#", _INT, 9),
+        ("rb_wlds_semi_pts", "WldsSemiPt", _PTS, 9),
+        ("rb_msi_title_n", "MSIChmp#", _INT, 8),
+        ("rb_msi_title_pts", "MSIChmpPt", _PTS, 9),
+        ("rb_msi_final_n", "MSIFin#", _INT, 8),
+        ("rb_msi_final_pts", "MSIFinPt", _PTS, 9),
+        ("rb_msi_semi_n", "MSISemi#", _INT, 8),
+        ("rb_msi_semi_pts", "MSISemiPt", _PTS, 9),
+        ("rb_othr_intl_champ_n", "IntlChmp#", _INT, 9),
+        ("rb_othr_intl_champ_pts", "IntlChmpPt", _PTS, 10),
+        ("rb_othr_intl_final_n", "IntlFin#", _INT, 8),
+        ("rb_othr_intl_final_pts", "IntlFinPt", _PTS, 9),
+        ("rb_othr_intl_semi_n", "IntlSemi#", _INT, 8),
+        ("rb_othr_intl_semi_pts", "IntlSemiPt", _PTS, 9),
         ("rb_dom_champ_n", "DomChmp#", _INT, 9),
         ("rb_dom_champ_pts", "DomChmpPt", _PTS, 10),
         ("rb_dom_final_n", "DomFin#", _INT, 8),
@@ -1131,7 +1142,33 @@ def build_and_write(
     logger.info(
         f"[career] wrote {out.name}  ({len(career_all)} players, {len(got)} years)"
     )
+    _write_yearly_breakdown(allyears, out.parent)
     return out
+
+
+def _write_yearly_breakdown(allyears: pd.DataFrame, out_dir: Path) -> None:
+    """Write per-(player, year) component breakdown used by the web trajectory chart."""
+    import json as _json
+
+    comp_cols = [
+        "kills_pts", "deaths_pts", "assists_pts", "damage_pts", "fb_pts",
+        "reg_pts", "playoff_pts", "tourn_pts",
+    ]
+    avail = [c for c in comp_cols if c in allyears.columns]
+    if not avail:
+        return
+    grp = allyears.groupby(["playername", "year"])[avail].sum()
+    out: dict[str, dict[str, dict[str, float]]] = {}
+    for (player, year), row in grp.iterrows():
+        yr = str(int(year))
+        d = {k: round(float(row[k]), 3) for k in avail if abs(float(row[k])) > 0.001}
+        if d:
+            out.setdefault(str(player), {})[yr] = d
+    path = out_dir / "player_yearly_breakdown.json"
+    path.write_text(
+        _json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
+    )
+    logger.info(f"[career] wrote per-year breakdown -> {path.name}")
 
 
 def _parse_years(s: str) -> tuple[int, ...]:

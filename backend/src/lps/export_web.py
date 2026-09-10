@@ -315,6 +315,15 @@ def _trajectory(row: pd.Series, years: tuple[int, ...]) -> dict:
     return out
 
 
+def _load_yearly_breakdown() -> dict[str, dict[str, dict[str, float]]]:
+    """Load the per-(player, year) component breakdown written by career.py."""
+    path = PROJECT_ROOT / "player_yearly_breakdown.json"
+    if not path.exists():
+        return {}
+    with path.open(encoding="utf-8") as f:
+        return json.load(f)
+
+
 def _year_achievements(
     playernames: Iterable[str],
 ) -> dict[str, dict[str, dict]]:
@@ -526,7 +535,8 @@ def _resume_breakdown(row: pd.Series) -> dict:
 _DETAIL_HEADLINE = ["rank", "slug", "playername", "position", "positions",
                     "current_team", "current_league", "current_year",
                     "region_elo", "n_years", "first_year", "last_year", "games",
-                    "win_rate", "clr", "tier"]
+                    "win_rate", "clr", "tier",
+                    "hall_of_legends", "hol_year", "is_retired", "is_active"]
 _DETAIL_CLR = ["career_value", "pace_value", "peak_value", "resume_bonus",
                "intl_bonus", "title_bonus", "award_bonus"]
 _DETAIL_CAREER_LPS = ["total_score", "lps_per_year", "peak_year", "peak_lps",
@@ -544,7 +554,9 @@ def _detail_json(row: pd.Series, tourn_cols: list[str], years: tuple[int, ...],
                  radar_global: dict, radar_lane: dict, idx_in_global: int,
                  idx_in_lane: Optional[int],
                  hn_year_ranks: dict[str, dict[str, int]],
-                 year_achievements: dict[str, dict]) -> dict:
+                 year_achievements: dict[str, dict],
+                 year_teams: dict[str, list[dict[str, str]]],
+                 yearly_breakdown: dict[str, dict[str, float]] | None = None) -> dict:
     def _grp(cols):
         return {c: _round(_clean(row.get(c))) for c in cols if c in row}
 
@@ -559,9 +571,11 @@ def _detail_json(row: pd.Series, tourn_cols: list[str], years: tuple[int, ...],
         "high_noon": _grp(_DETAIL_HIGH_NOON),
         "hn_year_ranks": hn_year_ranks,
         "year_achievements": year_achievements,
+        "year_teams": year_teams,
         "resume_breakdown": _resume_breakdown(row),
         "tournaments": _tournament_dict(row, tourn_cols),
         "trajectory": _trajectory(row, years),
+        "trajectory_breakdown": yearly_breakdown or {},
         "splits": _splits(row),
         "radar": {
             "global": {axis: radar_global[axis][idx_in_global] for axis, *_ in _RADAR_AXES},
@@ -687,6 +701,51 @@ def _current_team_league(playernames: Iterable[str]) -> pd.DataFrame:
         .apply(_pick, include_groups=False)
         .reset_index()
     )
+
+
+def _year_teams(
+    playernames: Iterable[str],
+) -> dict[str, dict[str, list[dict[str, str]]]]:
+    """Per-(playername, year) team list from the Leaguepedia player-history cache.
+
+    Returns {playername: {year_str: [{name, logo?}, ...]}} using historically-
+    accurate team names (e.g. "DragonX" for Keria in 2020, not "Kiwoom DRX").
+    Falls back silently to {} if the cache files haven't been generated yet —
+    run `python -m lps.fetch_player_history` to populate them.
+    """
+    from .fetch_player_history import PLAYER_HISTORY_JSON, TEAM_LOGOS_JSON
+
+    names = set(playernames)
+
+    history: dict[str, dict[str, list[str]]] = {}
+    if PLAYER_HISTORY_JSON.exists():
+        import json as _json
+        history = _json.loads(PLAYER_HISTORY_JSON.read_text(encoding="utf-8"))
+
+    logos: dict[str, str | None] = {}
+    if TEAM_LOGOS_JSON.exists():
+        import json as _json
+        logos = _json.loads(TEAM_LOGOS_JSON.read_text(encoding="utf-8"))
+
+    if not history:
+        logger.warning(
+            "[web] player_history.json not found — run fetch_player_history to populate year_teams"
+        )
+        return {}
+
+    out: dict[str, dict[str, list[dict[str, str]]]] = {}
+    for player in names:
+        by_year = history.get(player)
+        if not by_year:
+            continue
+        out[player] = {
+            year: [
+                {"name": team, **( {"logo": logos[team]} if logos.get(team) else {} )}
+                for team in teams
+            ]
+            for year, teams in by_year.items()
+        }
+    return out
 
 
 # Matches "Name (12.3)" or "Name (78%)" — team/league/lane split entries.
@@ -984,6 +1043,16 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
         "[web] per-year achievements: %d players with ≥1 credited achievement",
         len(year_achievements_by_name),
     )
+    year_teams_by_name = _year_teams(ov["playername"].tolist())
+    logger.info(
+        "[web] per-year teams: %d players mapped",
+        len(year_teams_by_name),
+    )
+    yearly_breakdown_all = _load_yearly_breakdown()
+    logger.info(
+        "[web] per-year component breakdown: %d players loaded",
+        len(yearly_breakdown_all),
+    )
 
     # players/<slug>.json  (every player, rated or not -- shared links still work)
     # Attach slug + rank + tier from the rated pool where present; unrated get
@@ -1004,7 +1073,9 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
                               idx_global if slug in slug_to_global_idx else 0,
                               idx_lane if slug in rated_by_slug.index else None,
                               hn_year_ranks_by_name.get(row["playername"], {}),
-                              year_achievements_by_name.get(row["playername"], {}))
+                              year_achievements_by_name.get(row["playername"], {}),
+                              year_teams_by_name.get(row["playername"], {}),
+                              yearly_breakdown_all.get(row["playername"], {}))
         detail["rated"] = slug in rated_by_slug.index
         _write_json(out_dir / "players" / f"{slug}.json", detail)
 

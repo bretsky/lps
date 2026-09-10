@@ -14,16 +14,27 @@ year,playername,award,league_full,split,notes
 2026,Bin,domestic_finals_mvp,Tencent LoL Pro League,,Finals MVP
 2026,Blaber,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
 2026,BrokenBlade,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2026,BrokenBlade,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2026,Busio,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
 2026,Busio,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2026,Caliste,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
 2026,Caliste,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2026,Canna,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
 2026,Canna,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2026,Canyon,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
 2026,Canyon,domestic_finals_mvp,LoL Champions Korea,,Finals MVP
 2026,Caps,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2026,Caps,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2026,Career,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
 2026,Carzzy,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2026,Carzzy,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2026,Chovy,all_pro_1,LoL Champions Korea,,All Pro Team
+2026,Chovy,regional_mvp,LoL Champions Korea,,Most Valuable Player
 2026,CoreJJ,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
 2026,Creme,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
 2026,Curse,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
 2026,DICE,regional_mvp,LoL Japan League,Winter,Most Valuable Player
+2026,Delight,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
 2026,Dire,all_pro_1,League of Legends Championship Pacific,,All Pro Team
 2026,Dire,domestic_finals_mvp,League of Legends Championship Pacific,,Finals MVP
 2026,Draktharr,all_pro_3,League of Legends Championship Pacific,,3rd All Pro Team
@@ -37,7 +48,10 @@ year,playername,award,league_full,split,notes
 2026,Fleshy,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
 2026,GALA,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
 2026,Gakgos,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2026,Gumayusi,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
 2026,Hans Sama,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2026,Hans Sama,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
+2026,Heng,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
 2026,Hizto,all_pro_1,League of Legends Championship Pacific,,All Pro Team
 2026,Hizto,domestic_finals_mvp,League of Legends Championship Pacific,,Finals MVP
 2026,Hizto,regional_mvp,League of Legends Championship Pacific,,Most Valuable Player
@@ -50,39 +64,55 @@ year,playername,award,league_full,split,notes
 2026,Jiejie,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
 2026,JoJo,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
 2026,Jojopyun,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2026,Jojopyun,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
 2026,Josedeodo,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2026,Jun,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
 2026,JunJia,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
 2026,Kael,all_pro_1,Tencent LoL Pro League,,All Pro Team
+2026,Kael,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
 2026,Kael,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
+2026,Kanavi,all_pro_1,LoL Champions Korea,,All Pro Team
 2026,Kaze,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2026,Keria,all_pro_1,LoL Champions Korea,,All Pro Team
 2026,Kiaya,all_pro_2,League of Legends Championship Pacific,,2nd All Pro Team
+2026,Kiin,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
 2026,Knight,all_pro_1,Tencent LoL Pro League,,All Pro Team
 2026,Knight,domestic_finals_mvp,Tencent LoL Pro League,,Finals MVP
 2026,Knight,regional_mvp,Tencent LoL Pro League,,Most Valuable Player
+2026,Labrov,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
 2026,Labrov,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
+2026,Lucid,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
 2026,Lyncas,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
 2026,Marble,all_pro_2,League of Legends Championship Pacific,,2nd All Pro Team
 2026,Massu,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
 2026,Morgan,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
 2026,Naak Nako,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2026,Naak Nako,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
 2026,Naak Nako,regional_mvp,LoL EMEA Championship,Spring,Most Valuable Player
 2026,ON,all_pro_1,Tencent LoL Pro League,,All Pro Team
 2026,ON,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
+2026,Peyz,all_pro_1,LoL Champions Korea,,All Pro Team
 2026,Pun,all_pro_1,League of Legends Championship Pacific,,All Pro Team
 2026,Quad,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2026,Rhilech,all_pro_3,LoL EMEA Championship,Summer,3rd All Pro Team
+2026,Ruler,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
 2026,Saint,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
 2026,Shanks,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
 2026,ShiauC,all_pro_1,League of Legends Championship Pacific,,All Pro Team
+2026,ShowMaker,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
+2026,Siwoo,all_pro_3,LoL Champions Korea,,3rd All-Pro Team
 2026,SkewMond,all_pro_1,LoL EMEA Championship,Spring,All Pro Team
+2026,SkewMond,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
 2026,Smash,intl_mvp,Esports World Cup,,Most Valuable Player
-2026,TBD,domestic_finals_mvp,LoL Champions Korea,,Finals MVP
 2026,TBD,worlds_finals_mvp,World Championship,,Finals MVP
 2026,Taki,all_pro_3,League of Legends Championship Pacific,,3rd All Pro Team
+2026,Tangyuan,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
 2026,Tarzan,all_pro_1,Tencent LoL Pro League,,All Pro Team
 2026,Tarzan,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
 2026,Tarzan,regional_mvp,Tencent LoL Pro League,,Most Valuable Player
 2026,Tatu,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
 2026,Thanatos,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2026,TheShy,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
 2026,Vampire,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
 2026,Vampire,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
 2026,Van1,all_pro_2,League of Legends Championship Pacific,,2nd All Pro Team
@@ -90,14 +120,21 @@ year,playername,award,league_full,split,notes
 2026,Viper,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
 2026,Vsta,all_pro_2,League of Legends Championship Pacific,,2nd All Pro Team
 2026,Vulcan,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
+2026,Vulcan,regional_mvp,League of Legends Championship Series,Spring,Most Valuable Player
+2026,Xiaoxu,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
 2026,Xiaoxu,all_pro_3,Tencent LoL Pro League,,3rd All Pro Team
 2026,Xun,all_pro_1,Tencent LoL Pro League,,All Pro Team
 2026,Xun,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
 2026,Yeon,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2026,Yike,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
 2026,Yike,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
+2026,ZUIAN,all_pro_1,Tencent LoL Pro League,,All Pro Team
+2026,Zeka,all_pro_2,LoL Champions Korea,,2nd All-Pro Team
 2026,Zest,all_pro_1,Circuit Brazilian League of Legends,,All Pro Team
+2026,Zeus,all_pro_1,LoL Champions Korea,,All Pro Team
 2026,Zeus,msi_finals_mvp,Mid-Season Invitational,,Finals MVP
 2026,kkkkkkkkk,regional_mvp,LoL Japan League,Winter,Influencer MVP
+2026,kyeahoo,all_pro_1,LoL EMEA Championship,Summer,All Pro Team
 2026,kyeahoo,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
 2025,1xn,all_pro_2,Tencent LoL Pro League,,2nd All Pro Team
 2025,369,all_pro_1,Tencent LoL Pro League,,All Pro Team
@@ -324,8 +361,8 @@ year,playername,award,league_full,split,notes
 2024,Impact,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
 2024,Impact,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
 2024,Impact,regional_mvp,League of Legends Championship Series,Summer,Most Valuable Player
-2024,Inspired,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
 2024,Inspired,all_pro_2,League of Legends Championship Series,Spring,2nd All Pro Team
+2024,Inspired,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
 2024,JackeyLove,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
 2024,JackeyLove,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
 2024,Jensen,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
@@ -345,8 +382,8 @@ year,playername,award,league_full,split,notes
 2024,Lehends,all_pro_2,LoL Champions Korea,Spring,2nd All-Pro Team
 2024,Lehends,msi_finals_mvp,Mid-Season Invitational,,Finals MVP
 2024,MISSING,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
-2024,Massu,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
 2024,Massu,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
+2024,Massu,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
 2024,Meiko,all_pro_1,Tencent LoL Pro League,Summer,All Pro Team
 2024,Meiko,all_pro_2,Tencent LoL Pro League,Spring,2nd All Pro Team
 2024,Mikyx,all_pro_1,LoL EMEA Championship,Winter,All Pro Team
@@ -357,8 +394,8 @@ year,playername,award,league_full,split,notes
 2024,Oner,all_pro_3,LoL Champions Korea,Summer,3rd All-Pro Team
 2024,Peanut,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
 2024,Peanut,all_pro_3,LoL Champions Korea,Spring,3rd All-Pro Team
-2024,Peyz,all_pro_1,LoL Champions Korea,Spring,All Pro Team
 2024,Peyz,all_pro_1,LoL Champions Korea,Summer,All Pro Team
+2024,Peyz,all_pro_1,LoL Champions Korea,Spring,All Pro Team
 2024,Peyz,regional_mvp,LoL Champions Korea,Summer,Player of the Split
 2024,Quad,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
 2024,Quid,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
@@ -379,8 +416,8 @@ year,playername,award,league_full,split,notes
 2024,Tian,regional_mvp,Tencent LoL Pro League,Summer,Most Valuable Player
 2024,UmTi,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
 2024,VULCAN,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
-2024,Viper,all_pro_2,LoL Champions Korea,Spring,2nd All-Pro Team
 2024,Viper,all_pro_2,LoL Champions Korea,Summer,2nd All-Pro Team
+2024,Viper,all_pro_2,LoL Champions Korea,Spring,2nd All-Pro Team
 2024,Vulcan,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
 2024,Wayward,all_pro_3,Tencent LoL Pro League,Spring,3rd All Pro Team
 2024,Woody,domestic_finals_mvp,Pacific Championship Series,Summer,Finals MVP
@@ -803,8 +840,8 @@ year,playername,award,league_full,split,notes
 2021,Huhi,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
 2021,Humanoid,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
 2021,Humanoid,all_pro_3,LoL EMEA Championship,Spring,3rd All Pro Team
-2021,Huni,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
 2021,Huni,all_pro_3,League of Legends Championship Series,Summer,3rd All Pro Team
+2021,Huni,all_pro_3,League of Legends Championship Series,Spring,3rd All Pro Team
 2021,Hylissang,all_pro_2,LoL EMEA Championship,Spring,2nd All Pro Team
 2021,Hylissang,all_pro_2,LoL EMEA Championship,Summer,2nd All Pro Team
 2021,Impact,all_pro_2,League of Legends Championship Series,Summer,2nd All Pro Team
@@ -953,8 +990,8 @@ year,playername,award,league_full,split,notes
 2020,Cuzz,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
 2020,Cuzz,domestic_finals_mvp,LoL Champions Korea,Spring,Final MVP
 2020,DNK,all_pro_2,Vietnam Championship Series,Summer,2nd All Pro Team
-2020,Deft,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
 2020,Deft,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
+2020,Deft,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
 2020,Dia1,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
 2020,Dia1,regional_mvp,Vietnam Championship Series,Summer,Most Valuable Player
 2020,Dia1,regional_mvp,Vietnam Championship Series,Spring,Most Valuable Player
@@ -1001,8 +1038,8 @@ year,playername,award,league_full,split,notes
 2020,Levi,all_pro_1,Vietnam Championship Series,Summer,All Pro Team
 2020,Licorice,all_pro_1,League of Legends Championship Series,Summer,All Pro Team
 2020,Licorice,all_pro_1,League of Legends Championship Series,Spring,All Pro Team
-2020,Life,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
 2020,Life,all_pro_3,LoL Champions Korea,Summer,3rd All Pro Team
+2020,Life,all_pro_3,LoL Champions Korea,Spring,3rd All Pro Team
 2020,LokeN,all_pro_2,Tencent LoL Pro League,Summer,2nd All Pro Team
 2020,Luana,all_pro_1,Turkish Championship League,Summer,All Pro Team
 2020,Luger,regional_mvp,Turkish Championship League,Summer,Most Valuable Player

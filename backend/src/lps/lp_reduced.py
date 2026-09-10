@@ -349,9 +349,22 @@ def _lp_features(
     opp_elo = long["opp_league"].map(elos)
     long["baseline"] = 1.0 / (1.0 + 10 ** ((peak - opp_elo) / 400.0))
 
-    # Phase: rated domestic label -> regular (no playoff flag in source); else tournament.
+    # Phase: rated domestic label -> regular or playoff; else tournament.
+    # Game IDs embed the round name after the last "/": bracket stages contain "final",
+    # "semifinal", "quarterfinal", "playoff", or "bracket"; regular season has "week" / group names.
     rated = set(elos)
-    long["phase"] = np.where(long["game_label"].isin(rated), "regular", "tournament")
+    _BRACKET_KWS = frozenset(["quarterfinal", "semifinal", "final", "playoff", "bracket"])
+
+    def _is_bracket(gid: str) -> bool:
+        tail = str(gid).lower().rsplit("/", 1)[-1]
+        return any(kw in tail for kw in _BRACKET_KWS)
+
+    domestic = long["game_label"].isin(rated)
+    is_bracket = long["gameid"].map(_is_bracket)
+    long["phase"] = np.where(
+        ~domestic, "tournament",
+        np.where(is_bracket, "playoff", "regular"),
+    )
     # Bridge Leaguepedia handles to the canonical identity label (by handle+home league) so
     # gap-year rows share an identity with the same player's Oracle years and same-handle
     # collisions stay separate; unbridged (Leaguepedia-only) handles keep their raw name.

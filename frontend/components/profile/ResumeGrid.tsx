@@ -121,6 +121,13 @@ function SubRow({
   );
 }
 
+const GRID_COLS: Record<number, string> = {
+  1: "grid-cols-1",
+  2: "grid-cols-2",
+  3: "grid-cols-3",
+  4: "grid-cols-4",
+};
+
 function Group({
   title,
   cats,
@@ -132,12 +139,13 @@ function Group({
   rb: PlayerDetail["resume_breakdown"];
   tone: string;
 }) {
+  const colClass = GRID_COLS[cats.length] ?? "grid-cols-3";
   return (
     <div>
       <div className={`mb-1.5 text-[10px] uppercase tracking-widest ${tone}`}>
         {title}
       </div>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className={`grid gap-2 ${colClass}`}>
         {cats.map((c) => {
           const v = rb[c.key];
           const n = v?.n ?? 0;

@@ -189,33 +189,52 @@ _GLOSSARY: list[tuple[str, str]] = [
     ),
     (
         "Resume breakdown (# / Pt columns)",
-        "Where the Resume score comes from, split into 9 "
+        "Where the Resume score comes from, split into 14 "
         "categories -- each with a COUNT (#, how many the player earned across their career) "
         "and its WEIGHTED POINTS (Pt, already x w_bonus). The Pt columns sum exactly to "
-        "Resume: Intl = WldsChmp+WldsRun+MSIPlc+OthIntl, Titles = DomChmp+DomFin+DomCup, "
-        "Awards = MVP+AllPro. Only SCORED achievements are counted (an unrated-region title "
-        "scores 0, so it isn't counted). Points are region-Elo scaled where the parent bonus is, "
-        "so two titles can carry different Pt.",
+        "Resume: Intl = WldsChmp+WldsFin+WldsSemi+MSIChmp+MSIFin+MSISemi+IntlChmp+IntlFin+IntlSemi, "
+        "Titles = DomChmp+DomFin+DomCup, Awards = MVP+AllPro. Only SCORED achievements are counted "
+        "(an unrated-region title scores 0, so it isn't counted). Points are region-Elo scaled "
+        "where the parent bonus is, so two titles can carry different Pt.",
     ),
     (
         "WldsChmp# / WldsChmpPt",
         "Worlds championships won (count) and their points (flat, part of Intl).",
     ),
     (
-        "WldsRun# / WldsRunPt",
-        "Non-title Worlds finishes -- finalist/semifinalist/quarterfinalist/"
-        "group (count) and points (flat, part of Intl).",
+        "WldsFin# / WldsFinPt",
+        "Worlds finalist (runner-up) finishes (count) and points (flat, part of Intl).",
     ),
     (
-        "MSIPlc# / MSIPlcPt",
-        "MSI placements at any round (count) and points (flat, part of Intl).",
+        "WldsSemi# / WldsSemiPt",
+        "Worlds semifinalist or quarterfinalist finishes (count) and points (flat, part of Intl).",
     ),
     (
-        "OthIntl# / OthIntlPt",
-        "Every other cross-region event LPS scores -- EWC, First Stand, Mid-Season Cup, LTA "
-        "cross-conference, Rift Rivals, Asia Invitational, IWCI, IEM, IPL, MLG, DreamHack, OGN "
-        "2012 (count) and points. Champion points are derived from each event's LPS weight, so "
-        "an EWC title is worth less than a Worlds/MSI one. Part of Intl.",
+        "MSIChmp# / MSIChmpPt",
+        "MSI championships won (count) and their points (flat, part of Intl).",
+    ),
+    (
+        "MSIFin# / MSIFinPt",
+        "MSI finalist (runner-up) finishes (count) and points (flat, part of Intl).",
+    ),
+    (
+        "MSISemi# / MSISemiPt",
+        "MSI semifinalist finishes (count) and points (flat, part of Intl).",
+    ),
+    (
+        "IntlChmp# / IntlChmpPt",
+        "Other cross-region event titles (EWC, First Stand, Mid-Season Cup, LTA cross-conference, "
+        "Rift Rivals, Asia Invitational, IWCI, IEM, IPL, MLG, DreamHack, OGN 2012) -- count and "
+        "points. Champion points are derived from each event's LPS weight. Part of Intl.",
+    ),
+    (
+        "IntlFin# / IntlFinPt",
+        "Other cross-region event finalist finishes (count) and points (part of Intl).",
+    ),
+    (
+        "IntlSemi# / IntlSemiPt",
+        "Other cross-region event semifinalist or quarterfinalist finishes (count) and points "
+        "(part of Intl).",
     ),
     (
         "DomChmp# / DomChmpPt",

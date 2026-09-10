@@ -159,8 +159,12 @@ def _rosters_intl(lp: LPClient) -> dict[tuple[int, str, str], set[str]]:
 
 
 def _rosters_domestic(lp: LPClient) -> dict[tuple[str, str], set[str]]:
-    """{(overview_page, team) -> {players}} for rated-league split playoffs, from ScoreboardPlayers
-    (one bulk query per year to bound size). Placements join by exact (page, team)."""
+    """{(overview_page, team) -> {players}} for rated-league split finals pages, from ScoreboardPlayers
+    (one bulk query per year to bound size). Placements join by exact (page, team).
+
+    Pre-2015 OGN and some other early leagues have no separate Playoffs page — the full-bracket
+    results live on the regular season page (e.g. Champions/2014 Season/Winter Season). We fetch
+    all non-qualifier / non-promotion / non-preseason pages so those early seasons are covered."""
     inlist = ", ".join("'" + n.replace("'", "\\'") + "'" for n in DOMESTIC_LEAGUES)
     out: dict[tuple[str, str], set[str]] = {}
     for year in range(MIN_YEAR, MAX_YEAR + 1):
@@ -168,7 +172,12 @@ def _rosters_domestic(lp: LPClient) -> dict[tuple[str, str], set[str]]:
             tables="ScoreboardPlayers=SP, Tournaments=T",
             join_on="SP.OverviewPage=T.OverviewPage",
             fields="SP.OverviewPage=page, SP.Team=team, SP.Link=player",
-            where=f"T.Year={year} AND SP.OverviewPage LIKE '%Playoffs%' AND T.League IN ({inlist})",
+            where=(
+                f"T.Year={year} AND T.League IN ({inlist}) "
+                "AND T.OverviewPage NOT LIKE '%Qualifier%' "
+                "AND T.OverviewPage NOT LIKE '%Promotion%' "
+                "AND T.OverviewPage NOT LIKE '%Preseason%'"
+            ),
         )
         for r in rows:
             key = ((r.get("page") or "").strip(), (r.get("team") or "").strip())
@@ -398,7 +407,13 @@ def fetch(lp: Optional[LPClient] = None) -> list[dict]:
             f"[achievements] {evt}: {sum(1 for x in rows if x['event'] == evt)} placements"
         )
 
-    # --- Domestic: split PLAYOFFS podium (Place 1/2) across all leagues/years -----------------
+    # --- Domestic: split finals podium (Place 1/2) across all leagues/years ------------------
+    # Pre-2015 OGN (and some other early leagues) only have a single season page whose
+    # TournamentResults hold the full-bracket final standings — no separate Playoffs page.
+    # From 2015 onward most leagues add a dedicated "* Playoffs" page that gives the correct
+    # bracket champion (distinct from the round-robin group leader on the Season page).
+    # Strategy: fetch ALL non-qualifier/promotion/preseason pages, then for each
+    # (league, year, split, team) prefer the Playoffs-page row if both exist.
     dom_rosters = _rosters_domestic(lp)
     logger.info(
         f"[achievements] domestic rosters: {len(dom_rosters)} (page,team) groups"
@@ -408,8 +423,15 @@ def fetch(lp: Optional[LPClient] = None) -> list[dict]:
         join_on="TR.OverviewPage=T.OverviewPage",
         fields="T.Year=year, T.League=league, T.Name=name, TR.OverviewPage=page, "
         "TR.Team=team, TR.Place=place",
-        where="TR.Place IN ('1','2') AND T.OverviewPage LIKE '%Playoffs%'",
+        where=(
+            "TR.Place IN ('1','2') "
+            "AND T.OverviewPage NOT LIKE '%Qualifier%' "
+            "AND T.OverviewPage NOT LIKE '%Promotion%' "
+            "AND T.OverviewPage NOT LIKE '%Preseason%'"
+        ),
     )
+    # (league, year, split, team) -> (is_playoffs, row): prefer Playoffs over Season pages.
+    best_dom: dict[tuple, tuple] = {}
     for r in raw:
         try:
             year = int(r.get("year") or 0)
@@ -419,22 +441,27 @@ def fetch(lp: Optional[LPClient] = None) -> list[dict]:
             continue
         page, team = (r.get("page") or "").strip(), (r.get("team") or "").strip()
         roster = dom_rosters.get((page, team), set())
-        rows.append(
-            {
-                "year": year,
-                "category": "domestic",
-                "event": "",
-                "league_full": r.get("league", ""),
-                "split": _split_of(r.get("name", "")),
-                "team": team,
-                "place": (r.get("place") or "").strip(),
-                "bucket": _bucket(r.get("place", ""), intl=False),
-                "players": ";".join(sorted(roster)),
-                "page": page,
-            }
-        )
+        is_playoffs = "playoffs" in page.lower()
+        split = _split_of(r.get("name", ""))
+        key = (r.get("league", ""), year, split, team)
+        row = {
+            "year": year,
+            "category": "domestic",
+            "event": "",
+            "league_full": r.get("league", ""),
+            "split": split,
+            "team": team,
+            "place": (r.get("place") or "").strip(),
+            "bucket": _bucket(r.get("place", ""), intl=False),
+            "players": ";".join(sorted(roster)),
+            "page": page,
+        }
+        existing = best_dom.get(key)
+        if existing is None or (is_playoffs and not existing[0]):
+            best_dom[key] = (is_playoffs, row)
+    rows.extend(row for _, row in best_dom.values())
     logger.info(
-        f"[achievements] domestic playoff podiums: "
+        f"[achievements] domestic finals podiums: "
         f"{sum(1 for x in rows if x['category'] == 'domestic')}"
     )
 

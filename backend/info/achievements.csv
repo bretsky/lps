@@ -1,125 +1,227 @@
 year,category,event,league_full,split,team,place,bucket,players,page
 2026,domestic,,Circuit Brazilian League of Legends,,FURIA,1,champion,Ayu;Guigo;JoJo;Tatu;Tutsz,CBLOL/2026 Season/Split 1 Playoffs
+2026,domestic,,Circuit Brazilian League of Legends,,RED Canids,1,champion,Kaze;Morttheus;Rabelo;STEPZ;frosty;zynts,CBLOL/2026 Season/Split 1
+2026,domestic,,Circuit Brazilian League of Legends,,LOUD,1,champion,Kaze;Rabelo;Sinatra;Xyno;uZent,CBLOL/2026 Season/Split 2
 2026,domestic,,Circuit Brazilian League of Legends,,,1,champion,,CBLOL/2026 Season/Split 2 Playoffs
 2026,domestic,,Circuit Brazilian League of Legends,,LØS,2,finalist,Ackerman;Curse;Duduhh;Feisty;Zest,CBLOL/2026 Season/Split 1 Playoffs
-2026,domestic,,Circuit Brazilian League of Legends,,,2,finalist,,CBLOL/2026 Season/Split 2 Playoffs
 2026,domestic,,League of Legends Championship Pacific,,Team Secret Whales,1,champion,Bie;Dire;Eddie;Hizto;Pun,LCP/2026 Season/Split 1 Playoffs
-2026,domestic,,League of Legends Championship Pacific,,Team Secret Whales,1,champion,Bie;Dire;Eddie;Hizto;Pun,LCP/2026 Season/Split 2 Playoffs
 2026,domestic,,League of Legends Championship Pacific,,Deep Cross Gaming,2,finalist,Feng;Flauren;HongSuo;Pop9;ShiauC,LCP/2026 Season/Split 1 Playoffs
-2026,domestic,,League of Legends Championship Pacific,,Deep Cross Gaming,2,finalist,Feng;Flauren;HongSuo;Pop9;ShiauC,LCP/2026 Season/Split 2 Playoffs
+2026,domestic,,League of Legends Championship Pacific,,GAM Esports,2,finalist,Aress;Artemis;Draktharr;Kiaya;Taki,LCP/2026 Season/Split 2
+2026,domestic,,League of Legends Championship Pacific,,CTBC Flying Oyster,2,finalist,Doggo;Kino;POUT;Rest;Shad0w,LCP/2026 Season/Split 3
+2026,domestic,,League of Legends Championship Series,,LYON (2024 American Team),1,champion,Berserker;Dhokla;Inspired;Isles;Saint,LCS/2026 Season/Lock-In
+2026,domestic,,League of Legends Championship Series,,Cloud9,2,finalist,APA;Blaber;Thanatos;Vulcan;Zven,LCS/2026 Season/Lock-In
+2026,domestic,,League of Legends Championship Series,Spring,Cloud9,1,champion,APA;Blaber;Thanatos;Vulcan;Zven,LCS/2026 Season/Spring Season
 2026,domestic,,League of Legends Championship Series,Spring,LYON (2024 American Team),1,champion,Berserker;Dhokla;Inspired;Isles;Saint,LCS/2026 Season/Spring Playoffs
 2026,domestic,,League of Legends Championship Series,Spring,Team Liquid,2,finalist,CoreJJ;Josedeodo;Morgan;Quid;Yeon,LCS/2026 Season/Spring Playoffs
+2026,domestic,,League of Legends Championship Series,Summer,LYON (2024 American Team),1,champion,Armao;Berserker;Dhokla;Inspired;Isles;Saint,LCS/2026 Season/Summer Season
 2026,domestic,,League of Legends Championship Series,Summer,,1,champion,,LCS/2026 Season/Summer Playoffs
-2026,domestic,,League of Legends Championship Series,Summer,,2,finalist,,LCS/2026 Season/Summer Playoffs
+2026,domestic,,League of Legends Championship Series,Summer,Team Liquid,2,finalist,CoreJJ;Josedeodo;Morgan;Quid;Yeon,LCS/2026 Season/Summer Season
+2026,domestic,,LoL Champions Korea,,Hanwha Life Esports,1,champion,Delight;Gumayusi;Kanavi;Zeka;Zeus,LCK/2026 Season/Road to MSI
+2026,domestic,,LoL Champions Korea,,Gen.G,1,champion,Canyon;Chovy;Duro;Kiin;Ruler,LCK/2026 Season/Rounds 3-4
+2026,domestic,,LoL Champions Korea,,HANJIN BRION,1,champion,Casting;GIDEON;Namgung;Roamer;Teddy,LCK/2026 Season/Rounds 3-4
+2026,domestic,,LoL Champions Korea,,KT Rolster,1,champion,Bdd;Cuzz;Effort;Jiwoo;PerfecT,LCK/2026 Season/Season Play-In
 2026,domestic,,LoL Champions Korea,,,1,champion,,LCK/2026 Season/Season Playoffs
-2026,domestic,,LoL Champions Korea,,,2,finalist,,LCK/2026 Season/Season Playoffs
+2026,domestic,,LoL Champions Korea,,T1,2,finalist,Doran;Faker;Keria;Oner;Peyz,LCK/2026 Season/Road to MSI
+2026,domestic,,LoL Champions Korea,,Nongshim RedForce,2,finalist,Diable;Kingen;Lehends;Scout;Sponge,LCK/2026 Season/Rounds 3-4
+2026,domestic,,LoL Champions Korea,,BNK FEARX,2,finalist,Clear;Kellin;Raptor;Taeyoon;VicLa,LCK/2026 Season/Season Play-In
 2026,domestic,,LoL EMEA Championship,,G2 Esports,1,champion,BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,LEC/2026 Season/Versus Playoffs
 2026,domestic,,LoL EMEA Championship,,Karmine Corp,2,finalist,Busio;Caliste;Canna;Yike;kyeahoo,LEC/2026 Season/Versus Playoffs
+2026,domestic,,LoL EMEA Championship,,Natus Vincere,2,finalist,Maynter;Parus;Poby;Rhilech;SamD,LEC/2026 Season/Versus Season
+2026,domestic,,LoL EMEA Championship,Spring,Team Vitality,1,champion,Carzzy;Fleshy;Humanoid;Lyncas;Naak Nako,LEC/2026 Season/Spring Season
 2026,domestic,,LoL EMEA Championship,Spring,G2 Esports,1,champion,BrokenBIade;BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,LEC/2026 Season/Spring Playoffs
 2026,domestic,,LoL EMEA Championship,Spring,Karmine Corp,2,finalist,Busio;Caliste;Canna;Yike;kyeahoo,LEC/2026 Season/Spring Playoffs
+2026,domestic,,LoL EMEA Championship,Summer,Karmine Corp,1,champion,Busio;Caliste;Canna;Yike;kyeahoo,LEC/2026 Season/Summer Season
 2026,domestic,,LoL EMEA Championship,Summer,,1,champion,,LEC/2026 Season/Summer Playoffs
-2026,domestic,,LoL EMEA Championship,Summer,,2,finalist,,LEC/2026 Season/Summer Playoffs
+2026,domestic,,LoL EMEA Championship,Summer,Team Vitality,2,finalist,Carzzy;FIESTA;Fleshy;Lyncas;Naak Nako,LEC/2026 Season/Summer Season
+2026,domestic,,LoL Japan League,Spring,FENNEL,1,champion,Bruce;DICE;Ellim;MayR;kkkkkkkkk,LJL/2026 Season/Spring Series
+2026,domestic,,LoL Japan League,Spring,Rising Gaming,2,finalist,Ankochan;Archer;Patch;Ramune;YellowYoshi,LJL/2026 Season/Spring Series
+2026,domestic,,LoL Japan League,Summer,FENNEL,1,champion,Bruce;DICE;Ellim;MayR;kkkkkkkkk,LJL/2026 Season/Summer Championship
+2026,domestic,,LoL Japan League,Summer,New Meta,2,finalist,Enapon;HRK;L1mit;R0se;tol2,LJL/2026 Season/Summer Championship
+2026,domestic,,LoL Japan League,Winter,FENNEL,1,champion,Brucee;DICE;Ellim;kkkkkkkkk;raki,LJL/2026 Season/Winter Series
+2026,domestic,,LoL Japan League,Winter,Rising Gaming,2,finalist,Ankochan;Archer;EL;Patch;Ramune;YellowYoshi;hetel,LJL/2026 Season/Winter Series
+2026,domestic,,Pacific Championship Series,Spring,CTBC Flying Oyster Academy,1,champion,2274;Leaky;Tracy;Xin;Yuhe;Zkai,PCS/2026 Season/Spring Season
+2026,domestic,,Pacific Championship Series,Spring,Frank Esports,2,finalist,Holo;MnM;Pretender;YSKM;kingpo54,PCS/2026 Season/Spring Season
+2026,domestic,,Pacific Championship Series,Summer,CTBC Flying Oyster Academy,1,champion,2274;Leaky;Tracy;Yuhe;Zkai,PCS/2026 Season/Summer Season
+2026,domestic,,Pacific Championship Series,Summer,Frank Esports,2,finalist,Holo;MnM;Pretender;YSKM;kingpo54,PCS/2026 Season/Summer Season
+2026,domestic,,Tencent LoL Pro League,,,1,champion,,LPL/2026 Season/Grand Finals
+2026,domestic,,Tencent LoL Pro League,,Anyone's Legend,1,champion,Flandre;Hope;Kael;Shanks;Tarzan,LPL/2026 Season/Split 1
 2026,domestic,,Tencent LoL Pro League,,Bilibili Gaming,1,champion,Bin;Knight;ON;Viper;Xun,LPL/2026 Season/Split 1 Playoffs
-2026,domestic,,Tencent LoL Pro League,,Bilibili Gaming,1,champion,Bin;Knight;ON;Viper;Xun,LPL/2026 Season/Split 2 Playoffs
+2026,domestic,,Tencent LoL Pro League,,LNG Esports,1,champion,1xn;BuLLDoG;Croco;MISSING;sheer,LPL/2026 Season/Split 1
+2026,domestic,,Tencent LoL Pro League,,Ninjas in Pyjamas.CN,1,champion,Assum;Care;Guwon;HOYA;Zhuo,LPL/2026 Season/Split 1
+2026,domestic,,Tencent LoL Pro League,,Oh My God,2,finalist,Hery;Juhan;Moham;Starry;haichao;re0,LPL/2026 Season/Split 1
+2026,domestic,,Tencent LoL Pro League,,Team WE,2,finalist,About;Cube;Karis;Monki;yaoyao,LPL/2026 Season/Split 1
 2026,domestic,,Tencent LoL Pro League,,JD Gaming,2,finalist,GALA;HongQ;JunJia;Vampire;Xiaoxu,LPL/2026 Season/Split 1 Playoffs
+2026,domestic,,Tencent LoL Pro League,,ThunderTalk Gaming,2,finalist,Ahn;Feather;Heru;Junhao;Keshi,LPL/2026 Season/Split 2
 2026,domestic,,Tencent LoL Pro League,,Top Esports,2,finalist,Creme;JackeyLove;Tian;ZUIAN;fengyue,LPL/2026 Season/Split 2 Playoffs
+2026,domestic,,Tencent LoL Pro League,,Invictus Gaming,2,finalist,Assum;JiaQi;Meiko;Rookie;TheShy;Wei,LPL/2026 Season/Split 3
+2026,domestic,,Turkish Championship League,,Misa Esports,1,champion,113;Hype;Ragner;SlowQ;Way,TCL/2026 Season/Kickoff
+2026,domestic,,Turkish Championship League,,S2G Esports,2,finalist,Bonnie;DnDn;Kofte;Mersa;Scorth,TCL/2026 Season/Kickoff
 2026,domestic,,Turkish Championship League,Spring,Misa Esports,1,champion,113;Carry;Kofte;Ragner;Ruep,TCL/2026 Season/Spring Playoffs
+2026,domestic,,Turkish Championship League,Spring,Ozarox Esports,2,finalist,CAPE;Fade;Grave;StarScreen;monkaS,TCL/2026 Season/Spring Split
 2026,domestic,,Turkish Championship League,Spring,PCIFIC Esports,2,finalist,Aytekn;Beplush;FireAscept;Nawa;stalken,TCL/2026 Season/Spring Playoffs
+2026,domestic,,Turkish Championship League,Summer,,2,finalist,,TCL/2026 Season/Summer Split
+2026,domestic,,Vietnam Championship Series,,,2,finalist,,VCS/2026 Season/Finals Stage 1
 2026,domestic,,Vietnam Championship Series,Spring,MVK Esports Academy,1,champion,Callian;Chika;Harky;NPC;SanSan;Seany;SiuLoong;Steller,VCS/2026 Season/Spring Playoffs
+2026,domestic,,Vietnam Championship Series,Spring,9Gaming,2,finalist,666;Baymaxxx;Dara67;Nanaue;Nuna,VCS/2026 Season/Spring Season
 2026,domestic,,Vietnam Championship Series,Spring,Saigon Warriors,2,finalist,AisyL;Kairi;LDK;Nern;TT;monkey0;tiphat,VCS/2026 Season/Spring Playoffs
 2026,domestic,,Vietnam Championship Series,Summer,Saigon Warriors,1,champion,AisyL;Aomine;Kairi;Nern;j1n5,VCS/2026 Season/Summer Playoffs
 2026,domestic,,Vietnam Championship Series,Summer,Saigon Dino,2,finalist,Easylove;Elio;Emo;Virgo2;rayq,VCS/2026 Season/Summer Playoffs
 2025,domestic,,League of Legends Championship Pacific,,Team Optimus,1,champion,,LCP/2025 Season/Season Finals Playoffs/Showmatch
+2025,domestic,,League of Legends Championship Pacific,,CTBC Flying Oyster,1,champion,Doggo;Driver;HongQ;JunJia;Kaiwing;Rest,LCP/2025 Season/Mid Season
+2025,domestic,,League of Legends Championship Pacific,,TALON (Hong Kong Team),1,champion,Azhi;Betty;FoFo;Karsa;Woody,LCP/2025 Season/Season Kickoff
 2025,domestic,,League of Legends Championship Pacific,,Team Killerqueen,2,finalist,,LCP/2025 Season/Season Finals Playoffs/Showmatch
+2025,domestic,,League of Legends Championship Pacific,,Team Secret Whales,2,finalist,Dire;Eddie;Hiro02;Hizto;Steller;Taki,LCP/2025 Season/Mid Season
+2025,domestic,,League of Legends Championship Pacific,,GAM Esports,2,finalist,Aress;Artemis;Elio;Emo;Kiaya;Levi,LCP/2025 Season/Mid Season Qualifying Series
 2025,domestic,,League of Legends Championship Pacific,Season Finals,CTBC Flying Oyster,1,champion,Doggo;Driver;HongQ;JunJia;Kaiwing;Rest,LCP/2025 Season/Season Finals Playoffs
+2025,domestic,,League of Legends Championship Pacific,Season Finals,GAM Esports,2,finalist,Aress;Artemis;Elio;Emo;Kiaya;Levi,LCP/2025 Season/Season Finals
 2025,domestic,,League of Legends Championship Pacific,Season Finals,Team Secret Whales,2,finalist,Dire;Eddie;Hiro02;Hizto;Pun;Taki,LCP/2025 Season/Season Finals Playoffs
+2025,domestic,,League of Legends Championship of The Americas North,,100 Thieves,1,champion,Eyla;FBI;Quid;River;Sniper,LTA North/2025 Season/Split 1
 2025,domestic,,League of Legends Championship of The Americas North,,FlyQuest,1,champion,Busio;Bwipo;Inspired;Massu;Quad,LTA North/2025 Season/Split 2 Playoffs
+2025,domestic,,League of Legends Championship of The Americas North,,Team Darius,1,champion,,LTA North/2025 Season/Showmatch
 2025,domestic,,League of Legends Championship of The Americas North,,Cloud9,2,finalist,Blaber;Loki;Thanatos;Vulcan;Zven,LTA North/2025 Season/Split 2 Playoffs
+2025,domestic,,League of Legends Championship of The Americas North,,Team Draven,2,finalist,,LTA North/2025 Season/Showmatch
+2025,domestic,,League of Legends Championship of The Americas South,,LTA South Team (Showmatch Team),1,champion,,Balela Showmatch
+2025,domestic,,League of Legends Championship of The Americas South,,Isurus Estral,1,champion,Ackerman;Burdol;Josedeodo;Mireu;Snaker,LTA South/2025 Season/Split 1
 2025,domestic,,League of Legends Championship of The Americas South,,FURIA,1,champion,Ayu;Guigo;JoJo;Tatu;Tutsz,LTA South/2025 Season/Split 2 Playoffs
+2025,domestic,,League of Legends Championship of The Americas South,,Vivo Keyd Stars,1,champion,Boal;Disamis;Mireu;Morttheus;Trymbi;scamber,LTA South/2025 Season/Split 3
+2025,domestic,,League of Legends Championship of The Americas South,,Nerdzins do Mylin,1,champion,,LTA South/2025 Season/Showmatch
+2025,domestic,,League of Legends Championship of The Americas South,,Serpente Pescoçuda,2,finalist,,Balela Showmatch
+2025,domestic,,League of Legends Championship of The Americas South,,Leviatan,2,finalist,ProDelta;SCARY;Zothve;ceo;cody,LTA South/2025 Season/Split 1
 2025,domestic,,League of Legends Championship of The Americas South,,paiN Gaming,2,finalist,CarioK;Kuri;Roamer;TitaN;Wizer,LTA South/2025 Season/Split 2 Playoffs
+2025,domestic,,League of Legends Championship of The Americas South,,RED Canids,2,finalist,DOOM;Kaze;Rabelo;fNb;frosty,LTA South/2025 Season/Split 3
+2025,domestic,,League of Legends Championship of The Americas South,,Seleção do Vovô,2,finalist,,LTA South/2025 Season/Showmatch
 2025,domestic,,LoL Champions Korea,,Gen.G,1,champion,Canyon;Chovy;Duro;Kiin;Ruler,LCK/2025 Season/Season Playoffs
+2025,domestic,,LoL Champions Korea,,Dplus Kia,1,champion,Aiming;BeryL;Lucid;ShowMaker;Siwoo,LCK/2025 Season/Rounds 3-5
+2025,domestic,,LoL Champions Korea,,T1,2,finalist,Doran;Faker;Gumayusi;Keria;Oner,LCK/2025 Season/Road to MSI
 2025,domestic,,LoL Champions Korea,,Hanwha Life Esports,2,finalist,Delight;Peanut;Viper;Zeka;Zeus,LCK/2025 Season/Season Playoffs
+2025,domestic,,LoL Champions Korea,,BNK FEARX,2,finalist,Clear;Diable;Kellin;Raptor;VicLa,LCK/2025 Season/Rounds 3-5
+2025,domestic,,LoL EMEA Championship,Spring,Karmine Corp,1,champion,Caliste;Canna;Targamas;Vladi;Yike,LEC/2025 Season/Spring Season
 2025,domestic,,LoL EMEA Championship,Spring,Movistar KOI,1,champion,Alvaro;Elyoya;Jojopyun;Myrwn;Supa,LEC/2025 Season/Spring Playoffs
+2025,domestic,,LoL EMEA Championship,Spring,Fnatic,2,finalist,Humanoid;Mikyx;Oscarinin;Razork;Upset,LEC/2025 Season/Spring Season
 2025,domestic,,LoL EMEA Championship,Spring,G2 Esports,2,finalist,BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,LEC/2025 Season/Spring Playoffs
 2025,domestic,,LoL EMEA Championship,Summer,G2 Esports,1,champion,BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,LEC/2025 Season/Summer Playoffs
+2025,domestic,,LoL EMEA Championship,Summer,Fnatic,2,finalist,Mikyx;Oscarinin;Poby;Razork;Upset,LEC/2025 Season/Summer Season
+2025,domestic,,LoL EMEA Championship,Summer,Karmine Corp,2,finalist,Caliste;Canna;Targamas;Vladi;Yike,LEC/2025 Season/Summer Season
 2025,domestic,,LoL EMEA Championship,Summer,Movistar KOI,2,finalist,Alvaro;Elyoya;Jojopyun;Myrwn;Supa,LEC/2025 Season/Summer Playoffs
+2025,domestic,,LoL EMEA Championship,Winter,Fnatic,1,champion,Humanoid;Mikyx;Oscarinin;Razork;Upset,LEC/2025 Season/Winter Season
 2025,domestic,,LoL EMEA Championship,Winter,Karmine Corp,1,champion,Caliste;Canna;Targamas;Vladi;Yike,LEC/2025 Season/Winter Playoffs
 2025,domestic,,LoL EMEA Championship,Winter,G2 Esports,2,finalist,BrokenBlade;Caps;Hans Sama;Labrov;SkewMond,LEC/2025 Season/Winter Playoffs
+2025,domestic,,LoL Japan League,,QT DIG,1,champion,DICE;Van1;Washidai;Yuhi;hetel,LJL/2025 Season/Finals
+2025,domestic,,LoL Japan League,,REJECT,2,finalist,Forest;Kinatu;Raina;Recap;Samver,LJL/2025 Season/Finals
+2025,domestic,,LoL Japan League,,VARREL YOUTH,2,finalist,Competitive;HALdesu;OSaKi;kkkkkkkkk;rakii,LJL/2025 Season/Forge
+2025,domestic,,LoL Japan League,,Burning Core Toyama,2,finalist,Brucee;Enapon;L1mit;R0se;tol2,LJL/2025 Season/Ignite
 2025,domestic,,Pacific Championship Series,,Deep Cross Gaming,1,champion,665;Feng;Flauren;HongSuo;ShiauC;XiaoXiang,PCS/2025 Season/Split 1 Playoffs
-2025,domestic,,Pacific Championship Series,,Deep Cross Gaming,1,champion,665;Feng;Flauren;HongSuo;ShiauC,PCS/2025 Season/Split 2 Playoffs
-2025,domestic,,Pacific Championship Series,,Deep Cross Gaming,1,champion,665;Feng;Flauren;HongSuo;ShiauC,PCS/2025 Season/Split 3 Playoffs
 2025,domestic,,Pacific Championship Series,,West Point Esports Philippines,2,finalist,1116;Killer2;Kino;RYue;chillguys,PCS/2025 Season/Split 1 Playoffs
 2025,domestic,,Pacific Championship Series,,Frank Esports,2,finalist,Gemini;Koala;Pretender;Shunn;YSKM,PCS/2025 Season/Split 2 Playoffs
-2025,domestic,,Pacific Championship Series,,Frank Esports,2,finalist,Gemini;Husha;Koala;MnM;Pretender;Shunn;YSKM,PCS/2025 Season/Split 3 Playoffs
 2025,domestic,,Tencent LoL Pro League,,Top Esports,1,champion,369;Creme;Crisp;JackeyLove;Kanavi,LPL/2025 Season/Split 1 Playoffs
-2025,domestic,,Tencent LoL Pro League,,Anyone's Legend,1,champion,Flandre;Hope;Kael;Shanks;Tarzan,LPL/2025 Season/Split 2 Playoffs
-2025,domestic,,Tencent LoL Pro League,,Anyone's Legend,2,finalist,Flandre;Hope;Kael;Shanks;Tarzan,LPL/2025 Season/Split 1 Playoffs
+2025,domestic,,Tencent LoL Pro League,,JD Gaming,1,champion,Ale;MISSING;Peyz;Scout;Xun,LPL/2025 Season/Split 1
+2025,domestic,,Tencent LoL Pro League,,Ninjas in Pyjamas.CN,1,champion,Aki;Doinb;Leave;ppgod;shanji,LPL/2025 Season/Split 1
+2025,domestic,,Tencent LoL Pro League,,ThunderTalk Gaming,1,champion,1xn;Beichuan;Feather;HOYA;SeTab,LPL/2025 Season/Split 1
+2025,domestic,,Tencent LoL Pro League,,LGD Gaming,1,champion,Shaoye;Ycx;naiyou;sasi;xqw,LPL/2025 Season/Split 2
 2025,domestic,,Tencent LoL Pro League,,Bilibili Gaming,2,finalist,Beichuan;Bin;Elk;Knight;ON,LPL/2025 Season/Split 2 Playoffs
+2025,domestic,,Tencent LoL Pro League,,Anyone's Legend,2,finalist,Flandre;Hope;Kael;Shanks;Tarzan,LPL/2025 Season/Split 1 Playoffs
+2025,domestic,,Tencent LoL Pro League,,Invictus Gaming,2,finalist,GALA;Jiejie;Meiko;Rookie;TheShy,LPL/2025 Season/Split 1
+2025,domestic,,Tencent LoL Pro League,,Weibo Gaming,2,finalist,Breathe;Hang;Light;Tian;Xiaohu,LPL/2025 Season/Split 1
+2025,domestic,,Tencent LoL Pro League,,EDward Gaming,2,finalist,Ahn;Angel;Wink;Xiaohao;Zdz,LPL/2025 Season/Split 2
 2025,domestic,,Turkish Championship League,Spring,BoostGate Esports,1,champion,Jool;NuQ;Patch;ToongE;XnS,TCL/2025 Season/Spring Playoffs
 2025,domestic,,Turkish Championship League,Spring,Misa Esports,2,finalist,Batuuu;Callme;Mihile;Neon;Typhoon,TCL/2025 Season/Spring Playoffs
 2025,domestic,,Turkish Championship League,Summer,Misa Esports,1,champion,Batuuu;Callme;Closer;Mihile;ToongE,TCL/2025 Season/Summer Playoffs
 2025,domestic,,Turkish Championship League,Summer,Bushido Wildcats,2,finalist,Kofte;Peach;Scorth;Zest;monkaS,TCL/2025 Season/Summer Playoffs
 2025,domestic,,Turkish Championship League,Winter,Papara SuperMassive,1,champion,ARMUT;BAO;Carry;FIESTA;SKEANZ,TCL/2025 Season/Winter Playoffs
 2025,domestic,,Turkish Championship League,Winter,Eternal Fire,2,finalist,DnDn;Ivory;Ruep;farfetch;osman123,TCL/2025 Season/Winter Playoffs
+2025,domestic,,Vietnam Championship Series,,Saigon Dino,1,champion,AisyL;Aomine;Bie;POUT;Sparda;Tomrio;Yusah,VCS/2025 Season/Finals
+2025,domestic,,Vietnam Championship Series,,SN CyberCore Esports,2,finalist,Arrietty;Bojji1;Kazunn1;Vin;Yume,VCS/2025 Season/Finals
+2025,domestic,,Vietnam Championship Series,Spring,Hyper Vortex Esports,1,champion,Aomine;Bie;Sparda;TomRio;Vin,VCS/2025 Season/Spring Season
+2025,domestic,,Vietnam Championship Series,Spring,Team Flash.Vietnam,2,finalist,Draktharr;Puddin;Pun;Soraaa;playcool,VCS/2025 Season/Spring Season
+2025,domestic,,Vietnam Championship Series,Summer,Saigon Dino,1,champion,AisyL;Aomine;Bie;POUT;Sparda;Tomrio;Yusah,VCS/2025 Season/Summer Season
+2025,domestic,,Vietnam Championship Series,Summer,MGN Vikings Academy,2,finalist,Callian;Chika;Nanaue;SanSan;SkyK,VCS/2025 Season/Summer Season
 2024,domestic,,Circuit Brazilian League of Legends,,LOUD,1,champion,Croc;RedBert;Robo;Route;tinowns,CBLOL/2024 Season/Split 1 Playoffs
-2024,domestic,,Circuit Brazilian League of Legends,,paiN Gaming,1,champion,CarioK;Kuri;TitaN;Wizer;dyNquedo,CBLOL/2024 Season/Split 2 Playoffs
-2024,domestic,,Circuit Brazilian League of Legends,,paiN Gaming,2,finalist,CarioK;Kuri;TitaN;Wizer;dyNquedo,CBLOL/2024 Season/Split 1 Playoffs
 2024,domestic,,Circuit Brazilian League of Legends,,Vivo Keyd Stars,2,finalist,Disamis;Guigo;Leleko;ProDelta;Smiley,CBLOL/2024 Season/Split 2 Playoffs
+2024,domestic,,Circuit Brazilian League of Legends,,paiN Gaming,2,finalist,CarioK;Kuri;TitaN;Wizer;dyNquedo,CBLOL/2024 Season/Split 1 Playoffs
+2024,domestic,,League of Legends Championship Series,,FlyQuest,1,champion,Busio;Bwipo;Inspired;Massu;Quad,LCS/2024 Season/Championship
+2024,domestic,,League of Legends Championship Series,,Team Liquid,2,finalist,APA;CoreJJ;Impact;UmTi;Yeon,LCS/2024 Season/Championship
 2024,domestic,,League of Legends Championship Series,Spring,Team Liquid,1,champion,APA;CoreJJ;Impact;UmTi;Yeon,LCS/2024 Season/Spring Playoffs
+2024,domestic,,League of Legends Championship Series,Spring,100 Thieves,2,finalist,Eyla;Meech;Quid;River;Sniper,LCS/2024 Season/Spring Season
 2024,domestic,,League of Legends Championship Series,Spring,FlyQuest,2,finalist,Busio;Bwipo;Inspired;Jensen;Massu,LCS/2024 Season/Spring Playoffs
+2024,domestic,,League of Legends Championship Series,Summer,Team Liquid,1,champion,APA;CoreJJ;Impact;UmTi;Yeon,LCS/2024 Season/Summer Season
+2024,domestic,,League of Legends Championship Series,Summer,Cloud9,2,finalist,Berserker;Blaber;Jojopyun;Thanatos;VULCAN,LCS/2024 Season/Summer Season
 2024,domestic,,Liga Latinoamerica,,Movistar R7,1,champion,Ceo;Keine;Lyonz;Oddie;Summit,LLA/2024 Season/Closing Playoffs
 2024,domestic,,Liga Latinoamerica,,Estral Esports,1,champion,Ackerman;Josedeodo;Snaker;Zothve;cody,LLA/2024 Season/Opening Playoffs
+2024,domestic,,Liga Latinoamerica,,Isurus,2,finalist,Gavotto;Kaze;Loopy;OnFleek;pan,LLA/2024 Season/Closing Season
 2024,domestic,,Liga Latinoamerica,,INFINITY,2,finalist,Grell;Leza;Nia;Toplop;Trigger;Zoen,LLA/2024 Season/Closing Playoffs
-2024,domestic,,Liga Latinoamerica,,Movistar R7,2,finalist,Ceo;Lava;Lyonz;Oddie;Summit,LLA/2024 Season/Opening Playoffs
 2024,domestic,,LoL Champions Korea,Spring,Gen.G,1,champion,Canyon;Chovy;Kiin;Lehends;Peyz,LCK/2024 Season/Spring Playoffs
 2024,domestic,,LoL Champions Korea,Spring,T1,2,finalist,Faker;Gumayusi;Keria;Oner;Zeus,LCK/2024 Season/Spring Playoffs
 2024,domestic,,LoL Champions Korea,Summer,Hanwha Life Esports,1,champion,Delight;Doran;Peanut;Viper;Zeka,LCK/2024 Season/Summer Playoffs
 2024,domestic,,LoL Champions Korea,Summer,Gen.G,2,finalist,Canyon;Chovy;Kiin;Lehends;Peyz,LCK/2024 Season/Summer Playoffs
+2024,domestic,,LoL EMEA Championship,Season Finals,G2 Esports,1,champion,BrokenBlade;Caps;Hans Sama;Mikyx;Yike,LEC/2024 Season/Season Finals
+2024,domestic,,LoL EMEA Championship,Season Finals,Fnatic,2,finalist,Humanoid;Jun;Noah;Oscarinin;Razork,LEC/2024 Season/Season Finals
 2024,domestic,,LoL EMEA Championship,Spring,G2 Esports,1,champion,BrokenBlade;Caps;Hans Sama;Mikyx;Yike,LEC/2024 Season/Spring Playoffs
 2024,domestic,,LoL EMEA Championship,Spring,Fnatic,2,finalist,Humanoid;Jun;Noah;Oscarinin;Razork,LEC/2024 Season/Spring Playoffs
+2024,domestic,,LoL EMEA Championship,Spring,Team Vitality,2,finalist,Carzzy;Daglas;Hylissang;Photon;Vetheo,LEC/2024 Season/Spring Season
+2024,domestic,,LoL EMEA Championship,Summer,SK Gaming,1,champion,ISMA;Irrelevant;Luon;Nisqy;Rahel,LEC/2024 Season/Summer Season
 2024,domestic,,LoL EMEA Championship,Summer,G2 Esports,1,champion,BrokenBlade;Caps;Hans Sama;Mikyx;Yike,LEC/2024 Season/Summer Playoffs
+2024,domestic,,LoL EMEA Championship,Summer,Team BDS,2,finalist,Adam;Ice;Labrov;Sheo;nuc,LEC/2024 Season/Summer Season
 2024,domestic,,LoL EMEA Championship,Summer,Fnatic,2,finalist,Humanoid;Jun;Noah;Oscarinin;Razork,LEC/2024 Season/Summer Playoffs
 2024,domestic,,LoL EMEA Championship,Winter,G2 Esports,1,champion,BrokenBlade;Caps;Hans Sama;Mikyx;Yike,LEC/2024 Season/Winter Playoffs
+2024,domestic,,LoL EMEA Championship,Winter,Team BDS,2,finalist,Adam;Ice;Labrov;Sheo;nuc,LEC/2024 Season/Winter Season
 2024,domestic,,LoL EMEA Championship,Winter,MAD Lions KOI,2,finalist,Alvaro;Elyoya;Fresskowy;Myrwn;Supa,LEC/2024 Season/Winter Playoffs
 2024,domestic,,LoL Japan League,Spring,Fukuoka SoftBank HAWKS gaming,1,champion,DasheR;Evi;Forest;Marble;Vsta,LJL/2024 Season/Spring Playoffs
 2024,domestic,,LoL Japan League,Spring,DetonatioN FocusMe,2,finalist,Aria;Harp;RayFarky;Steal;Yutapon,LJL/2024 Season/Spring Playoffs
 2024,domestic,,LoL Japan League,Summer,Fukuoka SoftBank HAWKS gaming,1,champion,DasheR;Evi;Forest;Marble;Vsta,LJL/2024 Season/Summer Playoffs
 2024,domestic,,LoL Japan League,Summer,DetonatioN FocusMe,2,finalist,Aria;Harp;RayFarky;Steal;Yutapon,LJL/2024 Season/Summer Playoffs
+2024,domestic,,Pacific Championship Series,Spring,CTBC Flying Oyster,1,champion,Gori;Karsa;Rest;Shunn;SwordArt,PCS/2024 Season/Spring Season
 2024,domestic,,Pacific Championship Series,Spring,PSG Talon,1,champion,Azhi;Betty;JunJia;Maple;Woody,PCS/2024 Season/Spring Playoffs
 2024,domestic,,Pacific Championship Series,Spring,Fukuoka SoftBank HAWKS gaming,2,finalist,DasheR;Evi;Forest;Marble;Vsta,PCS/2024 Season/Spring Playoffs
 2024,domestic,,Pacific Championship Series,Summer,PSG Talon,1,champion,Azhi;Betty;JunJia;Maple;Woody,PCS/2024 Season/Summer Playoffs
+2024,domestic,,Pacific Championship Series,Summer,Deep Cross Gaming,2,finalist,665;Cryscata;Feng;Orca;Taco,PCS/2024 Season/Summer Season
 2024,domestic,,Pacific Championship Series,Summer,Fukuoka SoftBank HAWKS gaming,2,finalist,DasheR;Evi;Forest;Marble;Vsta,PCS/2024 Season/Summer Playoffs
 2024,domestic,,Tencent LoL Pro League,Spring,Bilibili Gaming,1,champion,Bin;Elk;ON;Xun;knight,LPL/2024 Season/Spring Playoffs
 2024,domestic,,Tencent LoL Pro League,Spring,Top Esports,2,finalist,369;Creme;JackeyLove;Meiko;Tian,LPL/2024 Season/Spring Playoffs
 2024,domestic,,Tencent LoL Pro League,Summer,Bilibili Gaming,1,champion,Bin;Elk;ON;Wei;knight,LPL/2024 Season/Summer Playoffs
+2024,domestic,,Tencent LoL Pro League,Summer,Oh My God,1,champion,Angel;Hery;Starry;Tianzhen;ppgod,LPL/2024 Season/Summer Season
+2024,domestic,,Tencent LoL Pro League,Summer,LNG Esports,2,finalist,GALA;Hang;Scout;Weiwei;Zika,LPL/2024 Season/Summer Season
+2024,domestic,,Tencent LoL Pro League,Summer,ThunderTalk Gaming,2,finalist,1xn;Beichuan;Feather;HOYA;ucal,LPL/2024 Season/Summer Season
 2024,domestic,,Tencent LoL Pro League,Summer,Weibo Gaming,2,finalist,Breathe;Crisp;Light;Tarzan;Xiaohu,LPL/2024 Season/Summer Playoffs
 2024,domestic,,Turkish Championship League,Summer,Papara SuperMassive,1,champion,ARMUT;Carry;FIESTA;SKEANZ;UNF0RGIVEN,TCL/2024 Season/Summer Playoffs
+2024,domestic,,Turkish Championship League,Summer,BoostGate Esports,2,finalist,Aytekn;Batuuu;Fade;GRAVE;XnS,TCL/2024 Season/Summer Season
 2024,domestic,,Turkish Championship League,Summer,Dark Passage,2,finalist,Backlund;Chef;Patch;Ruep;Zest,TCL/2024 Season/Summer Playoffs
 2024,domestic,,Turkish Championship League,Winter,Papara SuperMassive,1,champion,ARMUT;BLUE;JACTROLL;LUGER;SKEANZ,TCL/2024 Season/Winter Playoffs
 2024,domestic,,Turkish Championship League,Winter,Beşiktaş Esports,2,finalist,Hoon;Kaori;Mireu;Paixdia;osman123,TCL/2024 Season/Winter Playoffs
 2024,domestic,,Vietnam Championship Series,Spring,GAM Esports,1,champion,EasyLove;Elio;Emo;Kiaya;Levi,VCS/2024 Season/Spring Playoffs
+2024,domestic,,Vietnam Championship Series,Spring,Team Secret (Vietnamese Team),1,champion,Aress;Eddie;Hasmed;Hiro02;Qiang;Taki,VCS/2024 Season/Spring Season
 2024,domestic,,Vietnam Championship Series,Spring,Vikings Esports (2023 Vietnamese Team),2,finalist,Fireblade;Kati;Shogun;SofM;TomRio,VCS/2024 Season/Spring Playoffs
 2024,domestic,,Vietnam Championship Series,Summer,GAM Esports,1,champion,Easylove;Elio;Emo;Kiaya;Levi,VCS/2024 Season/Summer Playoffs
 2024,domestic,,Vietnam Championship Series,Summer,Vikings Esports (2023 Vietnamese Team),2,finalist,Bie;Gury;Kati;Nanaue;Shogun,VCS/2024 Season/Summer Playoffs
 2023,domestic,,Circuit Brazilian League of Legends,,LOUD,1,champion,Ceos;Croc;Robo;Route;tinowns,CBLOL/2023 Season/Split 1 Playoffs
-2023,domestic,,Circuit Brazilian League of Legends,,LOUD,1,champion,Ceos;Croc;Robo;Route;tinowns,CBLOL/2023 Season/Split 2 Playoffs
 2023,domestic,,Circuit Brazilian League of Legends,,paiN Gaming,2,finalist,Bvoy;CarioK;Damage;Wizer;dyNquedo,CBLOL/2023 Season/Split 1 Playoffs
-2023,domestic,,Circuit Brazilian League of Legends,,paiN Gaming,2,finalist,Bvoy;CarioK;ProDelta;Wizer;dyNquedo,CBLOL/2023 Season/Split 2 Playoffs
+2023,domestic,,Circuit Brazilian League of Legends,,RED Canids,2,finalist,Aegis;Envy;TitaN;fNb;frostyy,CBLOL/2023 Season/Split 2
+2023,domestic,,League of Legends Championship Series,,NRG,1,champion,Contractz;Dhokla;FBI;IgNar;Palafox,LCS/2023 Season/Championship
+2023,domestic,,League of Legends Championship Series,,Cloud9,2,finalist,Berserker;Blaber;EMENES;Fudge;Zven,LCS/2023 Season/Championship
 2023,domestic,,League of Legends Championship Series,Spring,Cloud9,1,champion,Berserker;Blaber;EMENES;Fudge;Zven,LCS/2023 Season/Spring Playoffs
+2023,domestic,,League of Legends Championship Series,Spring,FlyQuest,2,finalist,Eyla;Impact;Prince;Spica;VicLa;Winsome,LCS/2023 Season/Spring Season
 2023,domestic,,League of Legends Championship Series,Spring,Golden Guardians,2,finalist,Gori;Licorice;River;Stixxay;huhi,LCS/2023 Season/Spring Playoffs
+2023,domestic,,League of Legends Championship Series,Summer,Cloud9,1,champion,Berserker;Blaber;EMENES;Fudge;Zven,LCS/2023 Season/Summer Season
+2023,domestic,,League of Legends Championship Series,Summer,Golden Guardians,2,finalist,Gori;Licorice;River;Stixxay;huhi,LCS/2023 Season/Summer Season
 2023,domestic,,Liga Latinoamerica,,Movistar R7,1,champion,Bong;Ceo;Lyonz;Mireu;Oddie,LLA/2023 Season/Closing Playoffs
-2023,domestic,,Liga Latinoamerica,,Movistar R7,1,champion,Bong;Ceo;Lyonz;Mireu;Oddie,LLA/2023 Season/Opening Playoffs
 2023,domestic,,Liga Latinoamerica,,Estral Esports,2,finalist,Gaeng;Hans SamD;Josedeodo;Leza;Mia;Zothve,LLA/2023 Season/Closing Playoffs
+2023,domestic,,Liga Latinoamerica,,Isurus,2,finalist,Gavotto;Grell;Jelly;Kaze;Seize;pan,LLA/2023 Season/Opening Season
 2023,domestic,,Liga Latinoamerica,,Six Karma,2,finalist,Meaning;OnFleek;Shu Hari;Snaker;cody,LLA/2023 Season/Opening Playoffs
 2023,domestic,,LoL Champions Korea,Spring,Gen.G,1,champion,Chovy;Delight;Doran;Peanut;Peyz,LCK/2023 Season/Spring Playoffs
+2023,domestic,,LoL Champions Korea,Spring,Dplus Kia,2,finalist,Canna;Canyon;Deft;Kellin;ShowMaker,LCK/2023 Season/Spring Season
 2023,domestic,,LoL Champions Korea,Spring,T1,2,finalist,Faker;Gumayusi;Keria;Oner;Zeus,LCK/2023 Season/Spring Playoffs
 2023,domestic,,LoL Champions Korea,Summer,Gen.G,1,champion,Chovy;Delight;Doran;Peanut;Peyz,LCK/2023 Season/Summer Playoffs
+2023,domestic,,LoL Champions Korea,Summer,KT Rolster,1,champion,Aiming;Bdd;Cuzz;Feisty;HamBak;Hype;Kiin;Lehends;PerfecT;Way,LCK/2023 Season/Summer Season
 2023,domestic,,LoL Champions Korea,Summer,T1,2,finalist,Faker;Gumayusi;Keria;Oner;Zeus,LCK/2023 Season/Summer Playoffs
+2023,domestic,,LoL EMEA Championship,Season Finals,G2 Esports,1,champion,BrokenBlade;Caps;Hans Sama;Mikyx;Yike,LEC/2023 Season/Season Finals
+2023,domestic,,LoL EMEA Championship,Season Finals,Fnatic,2,finalist,Humanoid;Noah;Oscarinin;Razork;Trymbi;Wunder,LEC/2023 Season/Season Finals
 2023,domestic,,LoL EMEA Championship,Spring,MAD Lions,1,champion,Carzzy;Chasy;Elyoya;Hylissang;Nisqy,LEC/2023 Season/Spring Playoffs
 2023,domestic,,LoL EMEA Championship,Spring,Team BDS,2,finalist,Adam;Crownie;Labrov;Sheo;nuc,LEC/2023 Season/Spring Playoffs
+2023,domestic,,LoL EMEA Championship,Spring,Astralis,2,finalist,113;Finn;JeongHoon;Kobbe;LIDER,LEC/2023 Season/Spring Season
 2023,domestic,,LoL EMEA Championship,Summer,G2 Esports,1,champion,BrokenBlade;Caps;Hans Sama;Mikyx;Yike,LEC/2023 Season/Summer Playoffs
 2023,domestic,,LoL EMEA Championship,Summer,Excel Esports,2,finalist,Abbedagge;LIMIT;Odoamne;Patrik;Peach,LEC/2023 Season/Summer Playoffs
+2023,domestic,,LoL EMEA Championship,Summer,Fnatic,2,finalist,Humanoid;Noah;Oscarinin;Razork;Trymbi,LEC/2023 Season/Summer Season
 2023,domestic,,LoL EMEA Championship,Winter,G2 Esports,1,champion,BrokenBlade;Caps;Hans Sama;Mikyx;Yike,LEC/2023 Season/Winter Playoffs
+2023,domestic,,LoL EMEA Championship,Winter,Team Vitality,1,champion,Bo;Kaiser;Neon;Perkz;Photon,LEC/2023 Season/Winter Season
 2023,domestic,,LoL EMEA Championship,Winter,MAD Lions,2,finalist,Carzzy;Chasy;Elyoya;Hylissang;Nisqy,LEC/2023 Season/Winter Playoffs
 2023,domestic,,LoL Japan League,Spring,DetonatioN FocusMe,1,champion,Aria;Harp;Steal;Yutapon;tol2,LJL/2023 Season/Spring Playoffs
 2023,domestic,,LoL Japan League,Spring,Sengoku Gaming,2,finalist,Enty;Jett;LokeN;Once;Paz,LJL/2023 Season/Spring Playoffs
@@ -128,9 +230,12 @@ year,category,event,league_full,split,team,place,bucket,players,page
 2023,domestic,,Pacific Championship Series,Spring,PSG Talon,1,champion,Azhi;JunJia;Wako;Woody;ubao,PCS/2023 Season/Spring Playoffs
 2023,domestic,,Pacific Championship Series,Spring,Frank Esports,2,finalist,Holo;Kaiwing;MnM;Pretender;Solokill,PCS/2023 Season/Spring Playoffs
 2023,domestic,,Pacific Championship Series,Summer,PSG Talon,1,champion,Azhi;JunJia;Maple;Wako;Woody,PCS/2023 Season/Summer Playoffs
+2023,domestic,,Pacific Championship Series,Summer,J Team,2,finalist,Bruce;Driver;Enso;Lauva;Minji,PCS/2023 Season/Summer Season
 2023,domestic,,Pacific Championship Series,Summer,CTBC Flying Oyster,2,finalist,Gemini;JimieN;Rest;ShiauC;Shunn,PCS/2023 Season/Summer Playoffs
 2023,domestic,,Tencent LoL Pro League,Spring,JD Gaming,1,champion,369;Kanavi;MISSING;Ruler;knight,LPL/2023 Season/Spring Playoffs
+2023,domestic,,Tencent LoL Pro League,Spring,EDward Gaming,2,finalist,Ale;FoFo;JieJie;Leave;Meiko,LPL/2023 Season/Spring Season
 2023,domestic,,Tencent LoL Pro League,Spring,Bilibili Gaming,2,finalist,Bin;Elk;ON;Xun;Yagao,LPL/2023 Season/Spring Playoffs
+2023,domestic,,Tencent LoL Pro League,Summer,Bilibili Gaming,1,champion,Bin;Elk;ON;Xun;Yagao,LPL/2023 Season/Summer Season
 2023,domestic,,Tencent LoL Pro League,Summer,JD Gaming,1,champion,369;Kanavi;MISSING;Ruler;knight,LPL/2023 Season/Summer Playoffs
 2023,domestic,,Tencent LoL Pro League,Summer,LNG Esports,2,finalist,GALA;Hang;Scout;Tarzan;Zika,LPL/2023 Season/Summer Playoffs
 2023,domestic,,Turkish Championship League,Summer,Istanbul Wildcats,1,champion,BAO;Destroy;Ferret;Kofte;Parus,TCL/2023 Season/Summer Playoffs
@@ -139,65 +244,96 @@ year,category,event,league_full,split,team,place,bucket,players,page
 2023,domestic,,Turkish Championship League,Winter,FUT Esports,2,finalist,Asper;Fatihcan;Mojito;StarScreen;Tempt,TCL/2023 Season/Winter Playoffs
 2023,domestic,,Vietnam Championship Series,Spring,GAM Esports,1,champion,Kati;Kiaya;Levi;Sty1e;Zin,VCS/2023 Season/Spring Playoffs
 2023,domestic,,Vietnam Championship Series,Spring,Team 7NÚI,1,champion,,VCS/2023 Season/Spring Playoffs/Showmatch
+2023,domestic,,Vietnam Championship Series,Spring,Team Whales,2,finalist,Bie;CBL;Glory2;Harky;Killerqueen;Nagiya;Vit,VCS/2023 Season/Spring Season
 2023,domestic,,Vietnam Championship Series,Spring,SBTC Esports,2,finalist,DNK;Dia1;Nper;Palette;Slayder,VCS/2023 Season/Spring Playoffs
 2023,domestic,,Vietnam Championship Series,Spring,Team 3GÀ,2,finalist,,VCS/2023 Season/Spring Playoffs/Showmatch
 2023,domestic,,Vietnam Championship Series,Summer,GAM Esports,1,champion,Kati;Kiaya;Levi;Palette;Slayder,VCS/2023 Season/Summer Playoffs
 2023,domestic,,Vietnam Championship Series,Summer,Team Whales,2,finalist,Artemis;BeanJ;Bie;CBL;Gloryy;Sparda,VCS/2023 Season/Summer Playoffs
+2022,domestic,,Circuit Brazilian League of Legends,,KaBuM! Esports,1,champion,Disave;Hauz;Parang;Scuro;Wiz,CBLOL/2022 Season/Split 1
 2022,domestic,,Circuit Brazilian League of Legends,,RED Canids,1,champion,Aegis;Avenger;Betao;Grevthar;Guigo;Jojo;TitaN,CBLOL/2022 Season/Split 1 Playoffs
 2022,domestic,,Circuit Brazilian League of Legends,,LOUD,1,champion,Brance;Ceos;Croc;Robo;tinowns,CBLOL/2022 Season/Split 2 Playoffs
+2022,domestic,,Circuit Brazilian League of Legends,,FURIA,2,finalist,Envy;Netuno;Ranger;RedBert;fNb,CBLOL/2022 Season/Split 1
 2022,domestic,,Circuit Brazilian League of Legends,,paiN Gaming,2,finalist,CarioK;Damage;Trigo;Wizer;dyNquedo,CBLOL/2022 Season/Split 1 Playoffs
-2022,domestic,,Circuit Brazilian League of Legends,,paiN Gaming,2,finalist,CarioK;Damage;Trigo;Wizer;dyNquedo,CBLOL/2022 Season/Split 2 Playoffs
+2022,domestic,,League of Legends Championship Series,,Cloud9,1,champion,Berserker;Blaber;Fudge;Jensen;Zven,LCS/2022 Season/Championship
+2022,domestic,,League of Legends Championship Series,,Team Liquid,1,champion,Bjergsen;Bradley;Bwipo;CoreJJ;Eyla;Hans sama;Santorin;Yeon,LCS/2022 Season/Lock In
+2022,domestic,,League of Legends Championship Series,,100 Thieves,2,finalist,Abbedagge;Closer;FBI;Ssumday;huhi,LCS/2022 Season/Championship
+2022,domestic,,League of Legends Championship Series,,Evil Geniuses.NA,2,finalist,Danny;Impact;Inspired;Vulcan;jojopyun,LCS/2022 Season/Lock In
+2022,domestic,,League of Legends Championship Series,Spring,Team Liquid,1,champion,Bjergsen;Bwipo;CoreJJ;Eyla;Hans sama;Santorin,LCS/2022 Season/Spring Season
 2022,domestic,,League of Legends Championship Series,Spring,Evil Geniuses.NA,1,champion,Danny;Impact;Inspired;Vulcan;jojopyun,LCS/2022 Season/Spring Playoffs
+2022,domestic,,League of Legends Championship Series,Spring,Cloud9,2,finalist,Berserker;Blaber;Fudge;Summit;Winsome,LCS/2022 Season/Spring Season
 2022,domestic,,League of Legends Championship Series,Spring,100 Thieves,2,finalist,Abbedagge;Closer;FBI;Ssumday;huhi,LCS/2022 Season/Spring Playoffs
+2022,domestic,,League of Legends Championship Series,Summer,Evil Geniuses.NA,1,champion,Danny;Impact;Inspired;Vulcan;jojopyun,LCS/2022 Season/Summer Season
+2022,domestic,,League of Legends Championship Series,Summer,100 Thieves,2,finalist,Abbedagge;Closer;FBI;Ssumday;huhi,LCS/2022 Season/Summer Season
 2022,domestic,,Liga Latinoamerica,,Isurus,1,champion,ADD;Gavotto;Grell;Jelly;seiya,LLA/2022 Season/Closing Playoffs
+2022,domestic,,Liga Latinoamerica,,Rainbow7,1,champion,Ceo;Cepted;Daiky;Oddie;Slow;SoHwan;Warangelus,LLA/2022 Season/Opening Season
 2022,domestic,,Liga Latinoamerica,,Team Aze,1,champion,5kid;Aloned;Dimitry;Lonely;Straight,LLA/2022 Season/Opening Playoffs
 2022,domestic,,Liga Latinoamerica,,Estral Esports,2,finalist,Acce;Bugi;Kindless;Mireu;Shadow,LLA/2022 Season/Closing Playoffs
-2022,domestic,,Liga Latinoamerica,,Estral Esports,2,finalist,Acce;Bvoy;Grell;Leza;Mia,LLA/2022 Season/Opening Playoffs
 2022,domestic,,LoL Champions Korea,Spring,T1,1,champion,Faker;Gumayusi;Keria;Oner;Zeus,LCK/2022 Season/Spring Playoffs
 2022,domestic,,LoL Champions Korea,Spring,Gen.G,2,finalist,Chovy;Doran;Lehends;Peanut;Ruler,LCK/2022 Season/Spring Playoffs
 2022,domestic,,LoL Champions Korea,Summer,Gen.G,1,champion,Chovy;Doran;Lehends;Peanut;Ruler,LCK/2022 Season/Summer Playoffs
 2022,domestic,,LoL Champions Korea,Summer,T1,2,finalist,Faker;Gumayusi;Keria;Oner;Zeus,LCK/2022 Season/Summer Playoffs
 2022,domestic,,LoL EMEA Championship,Spring,G2 Esports,1,champion,BrokenBlade;Flakked;Jankos;Targamas;caPs,LEC/2022 Season/Spring Playoffs
+2022,domestic,,LoL EMEA Championship,Spring,Fnatic,2,finalist,Humanoid;Hylissang;Razork;Upset;Wunder,LEC/2022 Season/Spring Season
 2022,domestic,,LoL EMEA Championship,Spring,Rogue (European Team),2,finalist,Comp;Larssen;Malrang;Odoamne;Trymbi,LEC/2022 Season/Spring Playoffs
 2022,domestic,,LoL EMEA Championship,Summer,Rogue (European Team),1,champion,Comp;Larssen;Malrang;Odoamne;Trymbi,LEC/2022 Season/Summer Playoffs
 2022,domestic,,LoL EMEA Championship,Summer,G2 Esports,2,finalist,BrokenBlade;Flakked;Jankos;Targamas;caPs,LEC/2022 Season/Summer Playoffs
+2022,domestic,,LoL EMEA Championship,Summer,MAD Lions,2,finalist,Armut;Elyoya;Kaiser;Nisqy;UNF0RGIVEN,LEC/2022 Season/Summer Season
 2022,domestic,,LoL Japan League,Spring,DetonatioN FocusMe,1,champion,Evi;Harp;Steal;Yaharong;Yutapon,LJL/2022 Season/Spring Playoffs
 2022,domestic,,LoL Japan League,Spring,Sengoku Gaming,2,finalist,Enty;Honey;Jett;Once;Paz,LJL/2022 Season/Spring Playoffs
 2022,domestic,,LoL Japan League,Summer,DetonatioN FocusMe,1,champion,Evi;Harp;Steal;Yaharong;Yutapon,LJL/2022 Season/Summer Playoffs
 2022,domestic,,LoL Japan League,Summer,Sengoku Gaming,2,finalist,Enty;Jett;Once;Paz;vital,LJL/2022 Season/Summer Playoffs
 2022,domestic,,Pacific Championship Series,Spring,PSG Talon,1,champion,Bay;Hanabi;Juhan;Kaiwing;Unified,PCS/2022 Season/Spring Playoffs
+2022,domestic,,Pacific Championship Series,Spring,J Team,2,finalist,Driver;Enso;Kongyue;Lilv;Uniboy,PCS/2022 Season/Spring Season
 2022,domestic,,Pacific Championship Series,Spring,CTBC Flying Oyster,2,finalist,Gemini;Koala;Mission;Rest;Shunn,PCS/2022 Season/Spring Playoffs
+2022,domestic,,Pacific Championship Series,Summer,PSG Talon,1,champion,Burry;Gori;Hanabi;Kaiwing;Unified,PCS/2022 Season/Summer Season
 2022,domestic,,Pacific Championship Series,Summer,CTBC Flying Oyster,1,champion,Gemini;Koala;Mission;Rest;Shunn,PCS/2022 Season/Summer Playoffs
+2022,domestic,,Pacific Championship Series,Summer,Deep Cross Gaming,2,finalist,Cryscata;Hana;Leaky;Nestea;Woody,PCS/2022 Season/Summer Season
 2022,domestic,,Pacific Championship Series,Summer,Beyond Gaming,2,finalist,Husha;Kino;Liang;Likai;Minji;Wako,PCS/2022 Season/Summer Playoffs
 2022,domestic,,Tencent LoL Pro League,Spring,Royal Never Give Up,1,champion,Bin;GALA;Ming;Wei;Xiaohu,LPL/2022 Season/Spring Playoffs
+2022,domestic,,Tencent LoL Pro League,Spring,Victory Five,1,champion,Invincible;Karsa;Photic;Rich;Rookie;XLB;ppgod,LPL/2022 Season/Spring Season
 2022,domestic,,Tencent LoL Pro League,Spring,Top Esports,2,finalist,JackeyLove;Mark;Tian;Wayward;knight,LPL/2022 Season/Spring Playoffs
 2022,domestic,,Tencent LoL Pro League,Summer,JD Gaming,1,champion,369;Hope;Kanavi;Missing;Yagao,LPL/2022 Season/Summer Playoffs
 2022,domestic,,Tencent LoL Pro League,Summer,Top Esports,2,finalist,JackeyLove;Mark;Qingtian;Tian;Wayward;knight,LPL/2022 Season/Summer Playoffs
 2022,domestic,,Turkish Championship League,Summer,Istanbul Wildcats,1,champion,Farfetch;Ferret;HolyPhoenix;Serin;StarScreen,TCL/2022 Season/Summer Playoffs
+2022,domestic,,Turkish Championship League,Summer,NASR eSports Turkey,1,champion,Bolulu;Bong;Chieftain;Ellam;Fleshy,TCL/2022 Season/Summer Season
 2022,domestic,,Turkish Championship League,Summer,Fenerbahçe Esports,2,finalist,BAO;Carry;Naak Nako;SeongHwan;stillnumb,TCL/2022 Season/Summer Playoffs
 2022,domestic,,Turkish Championship League,Winter,Istanbul Wildcats,1,champion,Farfetch;Ferret;HolyPhoenix;Serin;StarScreen,TCL/2022 Season/Winter Playoffs
 2022,domestic,,Turkish Championship League,Winter,Galatasaray Esports,2,finalist,Crazy;Focus;Kofte;Mojito;Zergsting,TCL/2022 Season/Winter Playoffs
 2022,domestic,,Vietnam Championship Series,Spring,GAM Esports,1,champion,Bie;Kati;Kiaya;Levi;Sty1e,VCS/2022 Season/Spring Playoffs
 2022,domestic,,Vietnam Championship Series,Spring,Saigon Buffalo,2,finalist,BeanJ;Froggy;Hasmed;Shogun;Taki,VCS/2022 Season/Spring Playoffs
 2022,domestic,,Vietnam Championship Series,Summer,GAM Esports,1,champion,Bie;Kati;Kiaya;Levi;Sty1e,VCS/2022 Season/Summer Playoffs
+2022,domestic,,Vietnam Championship Series,Summer,Team Secret (Vietnamese Team),2,finalist,Artifact;Eddie;Hiro02;Penguin;Skewed;XuHao,VCS/2022 Season/Summer Season
 2022,domestic,,Vietnam Championship Series,Summer,Saigon Buffalo,2,finalist,BeanJ;Froggy;Hasmed;Shogun;Taki,VCS/2022 Season/Summer Playoffs
+2021,domestic,,Circuit Brazilian League of Legends,,Flamengo Esports,1,champion,Absolut;Parang;Ranger;RedBert;Tutsz,CBLOL/2021 Season/Split 1
 2021,domestic,,Circuit Brazilian League of Legends,,paiN Gaming,1,champion,CarioK;Luci;Robo;brTT;tinowns,CBLOL/2021 Season/Split 1 Playoffs
 2021,domestic,,Circuit Brazilian League of Legends,,RED Canids,1,champion,Aegis;GUIGO;Grevthar;JoJo;TitaN,CBLOL/2021 Season/Split 2 Playoffs
 2021,domestic,,Circuit Brazilian League of Legends,,Vorax,2,finalist,Krastyel;Matsukaze;Wos;Yampi;fNb,CBLOL/2021 Season/Split 1 Playoffs
+2021,domestic,,Circuit Brazilian League of Legends,,Vorax Liberty,2,finalist,Krastyel;Matsukaze;Wos;Yampi;fNb,CBLOL/2021 Season/Split 2
 2021,domestic,,Circuit Brazilian League of Legends,,Rensga Esports,2,finalist,Croc;Damage;KiaRi;Trigo;Yuri,CBLOL/2021 Season/Split 2 Playoffs
+2021,domestic,,League of Legends Championship Series,,100 Thieves,1,champion,Abbedagge;Closer;FBI;Ssumday;huhi,LCS/2021 Season/Championship
+2021,domestic,,League of Legends Championship Series,,Team Liquid,2,finalist,Alphari;CoreJJ;Jensen;Santorin;Tactical,LCS/2021 Season/Championship
+2021,domestic,,League of Legends Championship Series,,Cloud9,2,finalist,Blaber;Fudge;Perkz;Vulcan;Zven,LCS/2021 Season/Lock In
+2021,domestic,,League of Legends Championship Series,Spring,Cloud9,1,champion,Blaber;Fudge;Perkz;Vulcan;Zven,LCS/2021 Season/Spring Season
+2021,domestic,,League of Legends Championship Series,Spring,TSM,2,finalist,Huni;Lost;PowerOfEvil;Spica;SwordArt,LCS/2021 Season/Spring Season
+2021,domestic,,League of Legends Championship Series,Summer,TSM,1,champion,Huni;Lost;PowerOfEvil;Spica;SwordArt,LCS/2021 Season/Summer Season
+2021,domestic,,League of Legends Championship Series,Summer,100 Thieves,2,finalist,Abbedagge;Closer;FBI;Kenvi;Luger;Poome;Ssumday;Tenacity;huhi;ry0ma,LCS/2021 Season/Summer Season
 2021,domestic,,Liga Latinoamerica,,INFINITY,1,champion,Ackerman;Buggax;SolidSnake;Whitelotus;cody,LLA/2021 Season/Closing Playoffs
-2021,domestic,,Liga Latinoamerica,,INFINITY,1,champion,Ackerman;Buggax;SolidSnake;Whitelotus;cody,LLA/2021 Season/Opening Playoffs
 2021,domestic,,Liga Latinoamerica,,Estral Esports,2,finalist,Acce;Bvoy;Grell;Leza;Mia,LLA/2021 Season/Closing Playoffs
 2021,domestic,,Liga Latinoamerica,,Furious Gaming,2,finalist,Baula;Bugi;Erry;Jauny;TopLop,LLA/2021 Season/Opening Playoffs
 2021,domestic,,LoL Champions Korea,Spring,DWG KIA,1,champion,BeryL;Canyon;Ghost;Khan;ShowMaker,LCK/2021 Season/Spring Playoffs
 2021,domestic,,LoL Champions Korea,Spring,Gen.G,2,finalist,Bdd;Clid;Life;Rascal;Ruler,LCK/2021 Season/Spring Playoffs
 2021,domestic,,LoL Champions Korea,Summer,DWG KIA,1,champion,BeryL;Canyon;Ghost;Khan;ShowMaker,LCK/2021 Season/Summer Playoffs
+2021,domestic,,LoL Champions Korea,Summer,Gen.G,2,finalist,Bdd;Burdol;Clid;Life;Rascal;Ruler;YoungJae,LCK/2021 Season/Summer Season
 2021,domestic,,LoL Champions Korea,Summer,T1,2,finalist,Canna;Faker;Gumayusi;Keria;Oner;Teddy,LCK/2021 Season/Summer Playoffs
+2021,domestic,,LoL EMEA Championship,Spring,G2 Esports,1,champion,Caps;Jankos;Mikyx;Rekkles;Wunder,LEC/2021 Season/Spring Season
 2021,domestic,,LoL EMEA Championship,Spring,MAD Lions,1,champion,Armut;Carzzy;Elyoya;Humanoid;Kaiser,LEC/2021 Season/Spring Playoffs
 2021,domestic,,LoL EMEA Championship,Spring,Rogue (European Team),2,finalist,Hans sama;Inspired;Larssen;Odoamne;Trymbi,LEC/2021 Season/Spring Playoffs
+2021,domestic,,LoL EMEA Championship,Summer,Rogue (European Team),1,champion,Hans sama;Inspired;Larssen;Odoamne;Trymbi,LEC/2021 Season/Summer Season
 2021,domestic,,LoL EMEA Championship,Summer,MAD Lions,1,champion,Armut;Carzzy;Elyoya;Humanoid;Kaiser,LEC/2021 Season/Summer Playoffs
+2021,domestic,,LoL EMEA Championship,Summer,G2 Esports,2,finalist,Caps;Jankos;Mikyx;Rekkles;Wunder,LEC/2021 Season/Summer Season
 2021,domestic,,LoL EMEA Championship,Summer,Fnatic,2,finalist,Adam;Bwipo;Hylissang;Nisqy;Upset,LEC/2021 Season/Summer Playoffs
 2021,domestic,,LoL Japan League,Spring,DetonatioN FocusMe,1,champion,Aria;Evi;Kazu;Steal;Yutapon,LJL/2021 Season/Spring Playoffs
+2021,domestic,,LoL Japan League,Spring,Rascal Jester,2,finalist,Kinatu;Recap;Secret;Ssol;hachamecha,LJL/2021 Season/Spring Season
 2021,domestic,,LoL Japan League,Spring,V3 Esports,2,finalist,Ace;Cogcog;Hollow;MooJin;Raina,LJL/2021 Season/Spring Playoffs
 2021,domestic,,LoL Japan League,Summer,DetonatioN FocusMe,1,champion,Aria;Evi;Gaeng;Steal;Yutapon,LJL/2021 Season/Summer Playoffs
 2021,domestic,,LoL Japan League,Summer,Rascal Jester,2,finalist,Kinatu;Recap;Secret;Ssol;hachamecha,LJL/2021 Season/Summer Playoffs
@@ -206,27 +342,32 @@ year,category,event,league_full,split,team,place,bucket,players,page
 2021,domestic,,Pacific Championship Series,Summer,PSG Talon,1,champion,Hanabi;Kaiwing;Maple;River;Unified,PCS/2021 Season/Summer Playoffs
 2021,domestic,,Pacific Championship Series,Summer,Beyond Gaming,2,finalist,Doggo;Husha;Kino;Liang;Maoan,PCS/2021 Season/Summer Playoffs
 2021,domestic,,Tencent LoL Pro League,Spring,Royal Never Give Up,1,champion,Cryin;GALA;Ming;Wei;Xiaohu,LPL/2021 Season/Spring Playoffs
+2021,domestic,,Tencent LoL Pro League,Spring,EDward Gaming,2,finalist,Flandre;Jiejie;Meiko;Scout;Viper,LPL/2021 Season/Spring Season
 2021,domestic,,Tencent LoL Pro League,Spring,FunPlus Phoenix,2,finalist,Crisp;Doinb;Lwx;Nuguri;Tian,LPL/2021 Season/Spring Playoffs
 2021,domestic,,Tencent LoL Pro League,Summer,EDward Gaming,1,champion,Flandre;Jiejie;JunJia;Meiko;Scout;Viper,LPL/2021 Season/Summer Playoffs
 2021,domestic,,Tencent LoL Pro League,Summer,FunPlus Phoenix,2,finalist,Crisp;Doinb;Lwx;Nuguri;Tian,LPL/2021 Season/Summer Playoffs
 2021,domestic,,Turkish Championship League,Summer,Galatasaray Esports,1,champion,Alive;Bolulu;Crazy;Mojito;Zergsting,TCL/2021 Season/Summer Playoffs
 2021,domestic,,Turkish Championship League,Summer,NASR eSports Turkey,2,finalist,Black;Giyuu;Japone;SoHwan;bonO,TCL/2021 Season/Summer Playoffs
 2021,domestic,,Turkish Championship League,Winter,Istanbul Wildcats,1,champion,Farfetch;Ferret;HolyPhoenix;Serin;StarScreen,TCL/2021 Season/Winter Playoffs
+2021,domestic,,Turkish Championship League,Winter,Papara SuperMassive,1,champion,Absolute;Kaori;Kireas;Ksaez;Ragner,TCL/2021 Season/Winter Season
 2021,domestic,,Turkish Championship League,Winter,Fenerbahçe Esports,2,finalist,Elramir;Neramin;Oncan;Sparz;stillnumb,TCL/2021 Season/Winter Playoffs
 2021,domestic,,Vietnam Championship Series,Spring,GAM Esports,1,champion,Bie;Kati;Kiaya;Levi;Sty1e,VCS/2021 Season/Spring Playoffs
 2021,domestic,,Vietnam Championship Series,Spring,Saigon Buffalo,2,finalist,Arrietty;BeanJ;Froggy;Hasmed;Rby;Taki,VCS/2021 Season/Spring Playoffs
 2021,domestic,,Vietnam Championship Series,Winter,CERBERUS Esports (Vietnamese Team),1,champion,Artemis;EGO;Pun;RonOP;Yado,VCS/2021 Season/Winter Playoffs
 2021,domestic,,Vietnam Championship Series,Winter,GAM Esports,2,finalist,Bie;Divkid;Kati;Kiaya;Levi;Sty1e,VCS/2021 Season/Winter Playoffs
+2020,domestic,,Circuit Brazilian League of Legends,,Vivo Keyd,1,champion,Caos;Grell;Klaus;NOsFerus;Professor;Robo,CBLOL/2020 Season/Split 1
 2020,domestic,,Circuit Brazilian League of Legends,,KaBuM! Esports,1,champion,Ceos;DudsTheBoy;Parang;Tutsz;Wiz,CBLOL/2020 Season/Split 1 Playoffs
 2020,domestic,,Circuit Brazilian League of Legends,,INTZ,1,champion,Envy;RedBert;Shini;Tay;micaO,CBLOL/2020 Season/Split 2 Playoffs
 2020,domestic,,Circuit Brazilian League of Legends,,Flamengo Esports,2,finalist,Absolut;Goku;Jojo;Ranger;WooFe,CBLOL/2020 Season/Split 1 Playoffs
 2020,domestic,,Circuit Brazilian League of Legends,,paiN Gaming,2,finalist,CarioK;Robo;brTT;esA;tinowns,CBLOL/2020 Season/Split 2 Playoffs
 2020,domestic,,League of Legends Championship Series,Spring,Cloud9,1,champion,Blaber;Licorice;Nisqy;Vulcan;Zven,LCS/2020 Season/Spring Playoffs
+2020,domestic,,League of Legends Championship Series,Spring,Evil Geniuses.NA,2,finalist,Bang;Jiizuke;Kumo;Svenskeren;Zeyzal,LCS/2020 Season/Spring Season
 2020,domestic,,League of Legends Championship Series,Spring,FlyQuest,2,finalist,IgNar;PowerOfEvil;Santorin;Solo;V1per;WildTurtle,LCS/2020 Season/Spring Playoffs
+2020,domestic,,League of Legends Championship Series,Summer,Team Liquid,1,champion,Broxah;CoreJJ;Impact;Jensen;Tactical,LCS/2020 Season/Summer Season
 2020,domestic,,League of Legends Championship Series,Summer,TSM,1,champion,Biofrost;Bjergsen;Broken Blade;Doublelift;Spica;Treatz,LCS/2020 Season/Summer Playoffs
+2020,domestic,,League of Legends Championship Series,Summer,Cloud9,2,finalist,Blaber;Licorice;Nisqy;Vulcan;Zven,LCS/2020 Season/Summer Season
 2020,domestic,,League of Legends Championship Series,Summer,FlyQuest,2,finalist,IgNar;PowerOfEvil;Santorin;Solo;WildTurtle,LCS/2020 Season/Summer Playoffs
 2020,domestic,,Liga Latinoamerica,,Rainbow7,1,champion,Acce;Aloned;Josedeodo;Leza;Shadow,LLA/2020 Season/Closing Playoffs
-2020,domestic,,Liga Latinoamerica,,All Knights,1,champion,Alive;Jisu;Newbie;Pancake;Plugo,LLA/2020 Season/Opening Playoffs
 2020,domestic,,Liga Latinoamerica,,All Knights,2,finalist,Alive;Grell;Jisu;Kiefer;Newbie,LLA/2020 Season/Closing Playoffs
 2020,domestic,,Liga Latinoamerica,,Isurus,2,finalist,Jirall;Oddie;Seiya;Slow;Warangelus,LLA/2020 Season/Opening Playoffs
 2020,domestic,,LoL Champions Korea,Spring,T1,1,champion,Canna;Cuzz;Effort;Faker;Teddy,LCK/2020 Season/Spring Playoffs
@@ -235,75 +376,93 @@ year,category,event,league_full,split,team,place,bucket,players,page
 2020,domestic,,LoL Champions Korea,Summer,DRX,2,finalist,Chovy;Deft;Doran;Keria;Pyosik,LCK/2020 Season/Summer Playoffs
 2020,domestic,,LoL EMEA Championship,Spring,G2 Esports,1,champion,Caps;Jankos;Mikyx;PERKZ;Wunder,LEC/2020 Season/Spring Playoffs
 2020,domestic,,LoL EMEA Championship,Spring,Fnatic,2,finalist,Bwipo;Hylissang;Nemesis;Rekkles;Selfmade,LEC/2020 Season/Spring Playoffs
+2020,domestic,,LoL EMEA Championship,Summer,Rogue (European Team),1,champion,Finn;Hans sama;Inspired;Larssen;Vander,LEC/2020 Season/Summer Season
 2020,domestic,,LoL EMEA Championship,Summer,G2 Esports,1,champion,Caps;Jankos;Mikyx;Perkz;Wunder,LEC/2020 Season/Summer Playoffs
+2020,domestic,,LoL EMEA Championship,Summer,MAD Lions,2,finalist,Carzzy;Humanoid;Kaiser;Orome;Shad0w,LEC/2020 Season/Summer Season
 2020,domestic,,LoL EMEA Championship,Summer,Fnatic,2,finalist,Bwipo;Hylissang;Nemesis;Rekkles;Selfmade,LEC/2020 Season/Summer Playoffs
 2020,domestic,,LoL Japan League,Spring,DetonatioN FocusMe,1,champion,Ceros;Evi;Gaeng;Steal;Yutapon,LJL/2020 Season/Spring Playoffs
 2020,domestic,,LoL Japan League,Spring,Sengoku Gaming,2,finalist,Blank;Enty;Pirean;Yutorimoyashi;apaMEN,LJL/2020 Season/Spring Playoffs
 2020,domestic,,LoL Japan League,Summer,V3 Esports,1,champion,Ace;Archer;Bugi;Paz;Raina,LJL/2020 Season/Summer Playoffs
+2020,domestic,,LoL Japan League,Summer,Sengoku Gaming,2,finalist,Blank;Enty;Pirean;Yutorimoyashi;apaMEN,LJL/2020 Season/Summer Season
 2020,domestic,,LoL Japan League,Summer,DetonatioN FocusMe,2,finalist,Ceros;Evi;Gaeng;Steal;Yutapon,LJL/2020 Season/Summer Playoffs
 2020,domestic,,Pacific Championship Series,Spring,TALON (Hong Kong Team),1,champion,Candy;Hanabi;Kaiwing;River;Unified,PCS/2020 Season/Spring Playoffs
+2020,domestic,,Pacific Championship Series,Spring,ahq eSports Club,2,finalist,Kongyue;Uniboy;Wako;Ysera;Ziv,PCS/2020 Season/Spring Season
 2020,domestic,,Pacific Championship Series,Spring,Machi Esports,2,finalist,Bruce;Gemini;Koala;Mission;PK,PCS/2020 Season/Spring Playoffs
+2020,domestic,,Pacific Championship Series,Summer,J Team,1,champion,Hana;Lilv;Nestea;Rest;Woody,PCS/2020 Season/Summer Season
 2020,domestic,,Pacific Championship Series,Summer,Machi Esports,1,champion,Atlen;Bruce;Gemini;Koala;Mission;PK,PCS/2020 Season/Summer Playoffs
+2020,domestic,,Pacific Championship Series,Summer,ahq eSports Club,2,finalist,Kongyue;Leaky;Uniboy;Wako;Ysera;Ziv,PCS/2020 Season/Summer Season
 2020,domestic,,Pacific Championship Series,Summer,PSG Talon,2,finalist,Hanabi;Kaiwing;River;Tank;Unified,PCS/2020 Season/Summer Playoffs
+2020,domestic,,Tencent LoL Pro League,Spring,Invictus Gaming,1,champion,Leyan;Ning;Puff;Rookie;Southwind;TheShy,LPL/2020 Season/Spring Season
 2020,domestic,,Tencent LoL Pro League,Spring,JD Gaming,1,champion,Kanavi;LokeN;LvMao;Yagao;Zoom,LPL/2020 Season/Spring Playoffs
 2020,domestic,,Tencent LoL Pro League,Spring,Top Esports,2,finalist,369;JackeyLove;Karsa;QiuQiu;knight;yuyanjia,LPL/2020 Season/Spring Playoffs
 2020,domestic,,Tencent LoL Pro League,Summer,Top Esports,1,champion,369;JackeyLove;Karsa;Knight;Yuyanjia,LPL/2020 Season/Summer Playoffs
 2020,domestic,,Tencent LoL Pro League,Summer,JD Gaming,2,finalist,Kanavi;LokeN;LvMao;Yagao;Zoom,LPL/2020 Season/Summer Playoffs
+2020,domestic,,Turkish Championship League,Summer,Istanbul Wildcats,1,champion,Ferret;Kaori;Nyxyvel;Pbd;Serin;StarScreen,TCL/2020 Season/Summer Season
 2020,domestic,,Turkish Championship League,Summer,Papara SuperMassive,1,champion,Armut;Bolulu;KaKAO;SnowFlower;Zeitnot,TCL/2020 Season/Summer Playoffs
+2020,domestic,,Turkish Championship League,Summer,Galakticos,2,finalist,Luana;Luger;Nikola;Stefan;xKenzuke,TCL/2020 Season/Summer Season
 2020,domestic,,Turkish Championship League,Summer,5 Ronin,2,finalist,Brolia;Husky Rider;Oncan;Robin;Umut,TCL/2020 Season/Summer Playoffs
 2020,domestic,,Turkish Championship League,Winter,Fenerbahçe Esports,1,champion,Blue;Farfetch;HiRit;HolyPhoenix;Mojito,TCL/2020 Season/Winter Playoffs
+2020,domestic,,Turkish Championship League,Winter,Dark Passage,2,finalist,Absolute;Achuu;Black;Juuzou;Kituruken;Maxi;WaenA;Wasteee,TCL/2020 Season/Winter Season
 2020,domestic,,Turkish Championship League,Winter,Istanbul Wildcats,2,finalist,Ferret;Kaori;Pbd;Serin;StarScreen,TCL/2020 Season/Winter Playoffs
 2020,domestic,,Vietnam Championship Series,Spring,Team Flash.Vietnam,1,champion,CBL;Kati;Slayder;Stark;Yijin,VCS/2020 Season/Spring Playoffs
 2020,domestic,,Vietnam Championship Series,Spring,GAM Esports,2,finalist,Blazes;Dia1;Kiaya;Levi;Palette;Zeros,VCS/2020 Season/Spring Playoffs
 2020,domestic,,Vietnam Championship Series,Summer,Team Flash.Vietnam,1,champion,EGO;Kati;Palette;Slayder;Yoshino,VCS/2020 Season/Summer Playoffs
 2020,domestic,,Vietnam Championship Series,Summer,GAM Esports,2,finalist,Dia1;Easylove;Kiaya;Levi;Slay,VCS/2020 Season/Summer Playoffs
 2019,domestic,,Circuit Brazilian League of Legends,,INTZ,1,champion,Envy;Mills;RedBert;Shini;Tay,CBLOL/2019 Season/Split 1 Playoffs
-2019,domestic,,Circuit Brazilian League of Legends,,Flamengo Esports,1,champion,Goku;Luci;Robo;Shrimp;brTT,CBLOL/2019 Season/Split 2 Playoffs
 2019,domestic,,Circuit Brazilian League of Legends,,Flamengo Esports,2,finalist,Goku;Luci;Robo;Shrimp;brTT,CBLOL/2019 Season/Split 1 Playoffs
-2019,domestic,,Circuit Brazilian League of Legends,,INTZ,2,finalist,Envy;RedBert;Shini;Tay;micaO,CBLOL/2019 Season/Split 2 Playoffs
+2019,domestic,,Circuit Brazilian League of Legends,,KaBuM! Esports,2,finalist,Ceos;Disave;DudsTheBoy;Ranger;Wizer;dyNquedo,CBLOL/2019 Season/Split 2
 2019,domestic,,League of Legends Championship Series,Spring,Team Liquid,1,champion,CoreJJ;Doublelift;Impact;Jensen;Xmithie,LCS/2019 Season/Spring Playoffs
+2019,domestic,,League of Legends Championship Series,Spring,Cloud9,2,finalist,Blaber;Diamond;Goldenglue;Keith;Kumo;Licorice;Nisqy;Sneaky;Svenskeren;Zeyzal,LCS/2019 Season/Spring Season
 2019,domestic,,League of Legends Championship Series,Spring,TSM,2,finalist,Akaadian;Bjergsen;Broken Blade;Smoothie;Zven,LCS/2019 Season/Spring Playoffs
 2019,domestic,,League of Legends Championship Series,Summer,Team Liquid,1,champion,CoreJJ;Doublelift;Impact;Jensen;Xmithie,LCS/2019 Season/Summer Playoffs
 2019,domestic,,League of Legends Championship Series,Summer,Cloud9,2,finalist,Licorice;Nisqy;Sneaky;Svenskeren;Zeyzal,LCS/2019 Season/Summer Playoffs
 2019,domestic,,Liga Latinoamerica,,Isurus,1,champion,Buggax;Oddie;Seiya;Slow;Warangelus,LLA/2019 Season/Closing Playoffs
-2019,domestic,,Liga Latinoamerica,,Isurus,1,champion,Buggax;Oddie;Seiya;Slow;Warangelus,LLA/2019 Season/Opening Playoffs
 2019,domestic,,Liga Latinoamerica,,All Knights,2,finalist,Newbie;Nova;Parang;Plugo;Zeicro,LLA/2019 Season/Closing Playoffs
+2019,domestic,,Liga Latinoamerica,,INFINITY,2,finalist,Arce;Choisix;Cotopaco;Relic;Renyu;SolidSnake,LLA/2019 Season/Opening Season
 2019,domestic,,Liga Latinoamerica,,Rainbow7,2,finalist,Acce;Baula;Grell;Leza;Nobody,LLA/2019 Season/Opening Playoffs
 2019,domestic,,LoL Champions Korea,Spring,SK Telecom T1,1,champion,Clid;Faker;Khan;Mata;Teddy,LCK/2019 Season/Spring Playoffs
 2019,domestic,,LoL Champions Korea,Spring,Griffin (Korean Team),2,finalist,Chovy;Lehends;Sword;Tarzan;Viper,LCK/2019 Season/Spring Playoffs
 2019,domestic,,LoL Champions Korea,Summer,SK Telecom T1,1,champion,Clid;Effort;Faker;Khan;Teddy,LCK/2019 Season/Summer Playoffs
+2019,domestic,,LoL Champions Korea,Summer,DAMWON Gaming,2,finalist,BeryL;Canyon;Flame;Hoit;Nuclear;Nuguri;Punch;ShowMaker,LCK/2019 Season/Summer Season
 2019,domestic,,LoL Champions Korea,Summer,Griffin (Korean Team),2,finalist,Chovy;Doran;Lehends;Tarzan;Viper,LCK/2019 Season/Summer Playoffs
 2019,domestic,,LoL EMEA Championship,Spring,G2 Esports,1,champion,Caps;Jankos;Mikyx;Perkz;Wunder,LEC/2019 Season/Spring Playoffs
 2019,domestic,,LoL EMEA Championship,Spring,Origen,2,finalist,Alphari;Kold;Mithy;Nukeduck;Patrik,LEC/2019 Season/Spring Playoffs
 2019,domestic,,LoL EMEA Championship,Summer,G2 Esports,1,champion,Caps;Jankos;Mikyx;Perkz;Wunder,LEC/2019 Season/Summer Playoffs
 2019,domestic,,LoL EMEA Championship,Summer,Fnatic,2,finalist,Broxah;Bwipo;Hylissang;Nemesis;Rekkles,LEC/2019 Season/Summer Playoffs
 2019,domestic,,LoL Japan League,Spring,DetonatioN FocusMe,1,champion,Ceros;Evi;Gaeng;Steal;Yutapon,LJL/2019 Season/Spring Playoffs
+2019,domestic,,LoL Japan League,Spring,Crest Gaming Act,2,finalist,Art;Grendel;Luna;Nap;atyamomo;hachamecha,LJL/2019 Season/Spring Season
 2019,domestic,,LoL Japan League,Spring,Unsold Stuff Gaming,2,finalist,Dasher;Enty;Keymaker;Tussle;apaMen,LJL/2019 Season/Spring Playoffs
 2019,domestic,,LoL Japan League,Summer,DetonatioN FocusMe,1,champion,Ceros;Evi;Gaeng;Steal;Yutapon,LJL/2019 Season/Summer Playoffs
+2019,domestic,,LoL Japan League,Summer,Crest Gaming Act,2,finalist,Art;Grendel;Luna;Nap;Yoshi;atyamomo;hachamecha,LJL/2019 Season/Summer Season
 2019,domestic,,LoL Japan League,Summer,V3 Esports,2,finalist,Ace;Baby;Paz;Yutorimoyashi;viviD,LJL/2019 Season/Summer Playoffs
 2019,domestic,,LoL Master Series,Spring,Flash Wolves,1,champion,Betty;Bugi;Enso;Hanabi;Rather;ShiauC,LMS/2019 Season/Spring Playoffs
 2019,domestic,,LoL Master Series,Spring,MAD Team,2,finalist,Breeze;K;Kongyue;Liang;Uniboy,LMS/2019 Season/Spring Playoffs
 2019,domestic,,LoL Master Series,Summer,J Team,1,champion,FoFo;Hana;Koala;Lilv;Rest,LMS/2019 Season/Summer Playoffs
 2019,domestic,,LoL Master Series,Summer,ahq eSports Club,2,finalist,Alex;Apex;Wako;Ysera;Ziv,LMS/2019 Season/Summer Playoffs
+2019,domestic,,Tencent LoL Pro League,Spring,FunPlus Phoenix,1,champion,Crisp;Doinb;GimGoon;Lwx;Tian,LPL/2019 Season/Spring Season
 2019,domestic,,Tencent LoL Pro League,Spring,Invictus Gaming,1,champion,Baolan;JackeyLove;Ning;Rookie;TheShy,LPL/2019 Season/Spring Playoffs
 2019,domestic,,Tencent LoL Pro League,Spring,JD Gaming,2,finalist,Flawless;Imp;LvMao;Yagao;Zoom,LPL/2019 Season/Spring Playoffs
 2019,domestic,,Tencent LoL Pro League,Summer,FunPlus Phoenix,1,champion,Crisp;Doinb;GimGoon;Lwx;Tian,LPL/2019 Season/Summer Playoffs
+2019,domestic,,Tencent LoL Pro League,Summer,Top Esports,2,finalist,369;AKi;Ben;Knight9;LokeN;Moyu;QiuQiu;Xx,LPL/2019 Season/Summer Season
 2019,domestic,,Tencent LoL Pro League,Summer,Royal Never Give Up,2,finalist,Karsa;Langx;Ming;Uzi;Xiaohu,LPL/2019 Season/Summer Playoffs
 2019,domestic,,Turkish Championship League,Summer,Royal Youth,1,champion,Armut;Closer;Cyeol;Pilot;Tolerant,TCL/2019 Season/Summer Playoffs
 2019,domestic,,Turkish Championship League,Summer,SuperMassive Esports,2,finalist,Frozen;Stomaged;Wolf;Zeitnot;fabFabulous,TCL/2019 Season/Summer Playoffs
 2019,domestic,,Turkish Championship League,Winter,Fenerbahçe Esports,1,champion,Bolulu;Hades;Japone;Kirei;Ruin,TCL/2019 Season/Winter Playoffs
 2019,domestic,,Turkish Championship League,Winter,SuperMassive Esports,2,finalist,Frozen;Stomaged;Wolf;Zeitnot;fabFabulous,TCL/2019 Season/Winter Playoffs
 2019,domestic,,Vietnam Championship Series,Spring,Phong Vũ Buffalo,1,champion,BigKoro;Meliodas;Naul;Palette;Zeros,VCS/2019 Season/Spring Playoffs
+2019,domestic,,Vietnam Championship Series,Spring,Sky Gaming,2,finalist,Artemis;Darrys;Hai;Hinn;Kaiz;Optimus;PuppyK;Slayder;Sunsieu;Vormund,VCS/2019 Season/Spring Season
 2019,domestic,,Vietnam Championship Series,Spring,EVOS Esports,2,finalist,Dia1;Noway;RonOP;Stark;YiJin,VCS/2019 Season/Spring Playoffs
 2019,domestic,,Vietnam Championship Series,Summer,GAM Esports,1,champion,Hieu3;Kiaya;Levi;Slay;Zeros;Zin,VCS/2019 Season/Summer Playoffs
+2019,domestic,,Vietnam Championship Series,Summer,Team Flash.Vietnam,2,finalist,Artemis;CBL;Optimus;Slayder;Stark;Taurus;YiJin;Yijin,VCS/2019 Season/Summer Season
 2019,domestic,,Vietnam Championship Series,Summer,Lowkey Esports.Vietnam,2,finalist,Artifact;Celebrity;DNK;Hani;Venus,VCS/2019 Season/Summer Playoffs
 2018,domestic,,Circuit Brazilian League of Legends,,KaBuM! Esports,1,champion,Ranger;Riyev;Titan;Zantins;dyNquedo,CBLOL/2018 Season/Split 1 Playoffs
-2018,domestic,,Circuit Brazilian League of Legends,,KaBuM! Esports,1,champion,Ranger;Riyev;TitaN;Zantins;dyNquedo,CBLOL/2018 Season/Split 2 Playoffs
+2018,domestic,,Circuit Brazilian League of Legends,,RED Canids,2,finalist,Cabu;LEP;Nappon;Sacy;Sky;Winged,CBLOL/2018 Season/Split 1
 2018,domestic,,Circuit Brazilian League of Legends,,Vivo Keyd,2,finalist,Jockster;Revolta;Yang;micaO;tockers,CBLOL/2018 Season/Split 1 Playoffs
 2018,domestic,,Circuit Brazilian League of Legends,,Flamengo Esports,2,finalist,Goku;Jisu;ShrimP;brTT;esA,CBLOL/2018 Season/Split 2 Playoffs
 2018,domestic,,Europe League Championship Series,Spring,Fnatic,1,champion,Broxah;Bwipo;Caps;Hylissang;Rekkles,EU LCS/2018 Season/Spring Playoffs
 2018,domestic,,Europe League Championship Series,Spring,G2 Esports,2,finalist,Hjarnan;Jankos;Perkz;Wadid;Wunder,EU LCS/2018 Season/Spring Playoffs
 2018,domestic,,Europe League Championship Series,Summer,Fnatic,1,champion,Broxah;Bwipo;Caps;Hylissang;Rekkles;sOAZ,EU LCS/2018 Season/Summer Playoffs
+2018,domestic,,Europe League Championship Series,Summer,Team Vitality,2,finalist,Attila;Cabochard;Gilius;Jactroll;Jiizuke;Kikis,EU LCS/2018 Season/Summer Season
 2018,domestic,,Europe League Championship Series,Summer,FC Schalke 04 Esports,2,finalist,Amazing;Nukeduck;Upset;Vander;Vizicsacsi,EU LCS/2018 Season/Summer Playoffs
 2018,domestic,,LoL Champions Korea,Spring,Kingzone DragonX,1,champion,Bdd;GorillA;Khan;Peanut;PraY,LCK/2018 Season/Spring Playoffs
 2018,domestic,,LoL Champions Korea,Spring,Afreeca Freecs,2,finalist,Kiin;Kramer;Kuro;Mowgli;Spirit;TusiN,LCK/2018 Season/Spring Playoffs
@@ -319,31 +478,47 @@ year,category,event,league_full,split,team,place,bucket,players,page
 2018,domestic,,LoL Master Series,Summer,MAD Team,2,finalist,Breeze;K;Kongyue;Liang;Uniboy,LMS/2018 Season/Summer Playoffs
 2018,domestic,,North America League Championship Series,Spring,Team Liquid,1,champion,Doublelift;Impact;Olleh;Pobelter;Xmithie,NA LCS/2018 Season/Spring Playoffs
 2018,domestic,,North America League Championship Series,Spring,100 Thieves,2,finalist,Cody Sun;Meteos;Ryu;Ssumday;aphromoo,NA LCS/2018 Season/Spring Playoffs
+2018,domestic,,North America League Championship Series,Spring,Echo Fox,2,finalist,Adrian;Altec;Damonte;Dardoch;Fenix;Huni;Papa Chau,NA LCS/2018 Season/Spring Season
 2018,domestic,,North America League Championship Series,Summer,Team Liquid,1,champion,Doublelift;Impact;Olleh;Pobelter;Xmithie,NA LCS/2018 Season/Summer Playoffs
 2018,domestic,,North America League Championship Series,Summer,Cloud9,2,finalist,Blaber;Goldenglue;Jensen;Licorice;Sneaky;Svenskeren;Zeyzal,NA LCS/2018 Season/Summer Playoffs
+2018,domestic,,Tencent LoL Pro League,Spring,Invictus Gaming,1,champion,Baolan;Duke;JackeyLove;KidKid;Ning;RooKiE;Rookie;TheShy,LPL/2018 Season/Spring Season
 2018,domestic,,Tencent LoL Pro League,Spring,Royal Never Give Up,1,champion,Karsa;Letme;Ming;Mlxg;Uzi;Xiaohu;Zz1tai,LPL/2018 Season/Spring Playoffs
 2018,domestic,,Tencent LoL Pro League,Spring,EDward Gaming,2,finalist,Clearlove;Haro;Meiko;Ray;Scout;iBoy,LPL/2018 Season/Spring Playoffs
+2018,domestic,,Tencent LoL Pro League,Spring,Rogue Warriors,2,finalist,Doinb;Flawless;Killua;Mouse;Smlz,LPL/2018 Season/Spring Season
+2018,domestic,,Tencent LoL Pro League,Spring,Snake Esports,2,finalist,Flandre;Guoguo;Hudie;Light;SofM;kRYST4L,LPL/2018 Season/Spring Season
+2018,domestic,,Tencent LoL Pro League,Summer,Rogue Warriors,1,champion,Doinb;Flawless;Holder;Killua;Kiwi;Mouse;Smlz,LPL/2018 Season/Summer Season
 2018,domestic,,Tencent LoL Pro League,Summer,Royal Never Give Up,1,champion,Able;Karsa;Letme;Ming;Mlxg;Uzi;Xiaohu;Zz1tai,LPL/2018 Season/Summer Playoffs
+2018,domestic,,Tencent LoL Pro League,Summer,EDward Gaming,2,finalist,Clearlove;Haro;Hope;Meiko;Ray;Scout;iBoy,LPL/2018 Season/Summer Season
 2018,domestic,,Tencent LoL Pro League,Summer,Invictus Gaming,2,finalist,Baolan;Duke;JackeyLove;Ning;Rookie;TheShy,LPL/2018 Season/Summer Playoffs
 2018,domestic,,Turkish Championship League,Summer,SuperMassive Esports,1,champion,GBM;SnowFlower;Stomaged;Zeitnot;fabFabulous,TCL/2018 Season/Summer Playoffs
 2018,domestic,,Turkish Championship League,Summer,Royal Bandits,2,finalist,Abbedagge;Broken Blade;Closer;Dumbledoge;Freeze,TCL/2018 Season/Summer Playoffs
 2018,domestic,,Turkish Championship League,Winter,SuperMassive Esports,1,champion,GBM;SnowFlower;Stomaged;Zeitnot;fabFabulous,TCL/2018 Season/Winter Playoffs
 2018,domestic,,Turkish Championship League,Winter,Royal Bandits,2,finalist,Broken Blade;Cepted;Dumbledoge;HolyPhoenix;Malrang,TCL/2018 Season/Winter Playoffs
 2018,domestic,,Vietnam Championship Series,Spring,EVOS Esports,1,champion,RonOP;Slay;Stark;Warzone;YiJin,VCS/2018 Season/Spring Playoffs
+2018,domestic,,Vietnam Championship Series,Spring,Ultimate,2,finalist,Blazes;CBL;Calm;Spot;Tear;Zin,VCS/2018 Season/Spring Season
 2018,domestic,,Vietnam Championship Series,Spring,GIGABYTE Marines,2,finalist,Archie;KrissKyle;Noway;Zeroday;Zeros,VCS/2018 Season/Spring Playoffs
 2018,domestic,,Vietnam Championship Series,Summer,Phong Vũ Buffalo,1,champion,BigKoro;Meliodas;Naul;Palette;Zeros,VCS/2018 Season/Summer Playoffs
+2018,domestic,,Vietnam Championship Series,Summer,Friends Forever Gaming,2,finalist,Artifact;Celebrity;DNK;KingJ;Kriss;Sya;Venus,VCS/2018 Season/Summer Season
 2018,domestic,,Vietnam Championship Series,Summer,Cube Adonis,2,finalist,EasyLove;Kit;LL;Pake;Sorn;yT,VCS/2018 Season/Summer Playoffs
+2017,domestic,,Circuit Brazilian League of Legends,,INTZ,1,champion,Ayel;Envy;Jockster;Turtle;micaO,CBLOL/2017 Season/Split 1
 2017,domestic,,Circuit Brazilian League of Legends,,RED Canids,1,champion,Dioud;Nappon;Robo;Sacy;YoDa;brTT;tockers,CBLOL/2017 Season/Split 1 Playoffs
 2017,domestic,,Circuit Brazilian League of Legends,,Team oNe eSports,1,champion,4LaN;Absolut;Brucer;Marf;RedBert;VVvert,CBLOL/2017 Season/Split 2 Playoffs
 2017,domestic,,Circuit Brazilian League of Legends,,Keyd Stars,2,finalist,Revolta;Yang;Ziriguidun;esA;takeshi,CBLOL/2017 Season/Split 1 Playoffs
 2017,domestic,,Circuit Brazilian League of Legends,,paiN Gaming,2,finalist,Kami;Loop;Matsukaze;Mylon;Tay,CBLOL/2017 Season/Split 2 Playoffs
 2017,domestic,,Europe League Championship Series,Spring,G2 Esports,1,champion,Expect;Perkz;Trick;Zven;mithy,EU LCS/2017 Season/Spring Playoffs
+2017,domestic,,Europe League Championship Series,Spring,H2k-Gaming,2,finalist,Chei;Febiven;Jankos;Nuclear;Odoamne,EU LCS/2017 Season/Spring Season
+2017,domestic,,Europe League Championship Series,Spring,Misfits Gaming,2,finalist,Alphari;Hans Sama;IgNar;KaKAO;PowerOfEvil,EU LCS/2017 Season/Spring Season
 2017,domestic,,Europe League Championship Series,Spring,Unicorns of Love,2,finalist,Exileh;Hylissang;Samux;Vizicsacsi;Xerxe,EU LCS/2017 Season/Spring Playoffs
+2017,domestic,,Europe League Championship Series,Summer,Fnatic,1,champion,Broxah;Caps;Jesiz;Rekkles;sOAZ,EU LCS/2017 Season/Summer Season
 2017,domestic,,Europe League Championship Series,Summer,G2 Esports,1,champion,Expect;Perkz;Trick;Zven;mithy,EU LCS/2017 Season/Summer Playoffs
+2017,domestic,,Europe League Championship Series,Summer,H2k-Gaming,1,champion,Chei;Febiven;Jankos;Nuclear;Odoamne,EU LCS/2017 Season/Summer Season
+2017,domestic,,Europe League Championship Series,Summer,Unicorns of Love,2,finalist,Exileh;Hylissang;Samux;Vizicsacsi;Xerxe,EU LCS/2017 Season/Summer Season
 2017,domestic,,Europe League Championship Series,Summer,Misfits Gaming,2,finalist,Alphari;Hans Sama;IgNar;Maxlore;PowerOfEvil,EU LCS/2017 Season/Summer Playoffs
 2017,domestic,,LoL Champions Korea,Spring,SK Telecom T1,1,champion,Bang;Faker;Huni;Peanut;Wolf,LCK/2017 Season/Spring Playoffs
+2017,domestic,,LoL Champions Korea,Spring,Samsung Galaxy,2,finalist,Ambition;CoreJJ;Crown;CuVee;Haru;Ruler;Stitch;Wraith,LCK/2017 Season/Spring Season
 2017,domestic,,LoL Champions Korea,Spring,KT Rolster,2,finalist,Deft;Mata;PawN;Score;Smeb,LCK/2017 Season/Spring Playoffs
 2017,domestic,,LoL Champions Korea,Summer,Longzhu Gaming,1,champion,Bdd;Cuzz;GorillA;Khan;PraY,LCK/2017 Season/Summer Playoffs
+2017,domestic,,LoL Champions Korea,Summer,KT Rolster,2,finalist,Deft;Mata;PawN;Score;Smeb,LCK/2017 Season/Summer Season
 2017,domestic,,LoL Champions Korea,Summer,SK Telecom T1,2,finalist,Bang;Blank;Faker;Huni;Peanut;Untara;Wolf,LCK/2017 Season/Summer Playoffs
 2017,domestic,,LoL Japan League,Spring,Rampage,1,champion,Dara;Evi;Ramune;Tussle;YutoriMoyasi,LJL/2017 Season/Spring Playoffs
 2017,domestic,,LoL Japan League,Spring,DetonatioN FocusMe,2,finalist,Ceros;Paz;Yutapon;Zerost;viviD,LJL/2017 Season/Spring Playoffs
@@ -352,32 +527,41 @@ year,category,event,league_full,split,team,place,bucket,players,page
 2017,domestic,,LoL Master Series,Spring,Flash Wolves,1,champion,Betty;Karsa;MMD;Maple;SwordArt,LMS/2017 Season/Spring Playoffs
 2017,domestic,,LoL Master Series,Spring,ahq eSports Club,2,finalist,Albis;An;Chawy;Mountain;Ziv,LMS/2017 Season/Spring Playoffs
 2017,domestic,,LoL Master Series,Summer,Flash Wolves,1,champion,Betty;Karsa;MMD;Maple;SwordArt,LMS/2017 Season/Summer Playoffs
+2017,domestic,,LoL Master Series,Summer,Raise Gaming,2,finalist,Koala;Laba;LilV;Pk;Ran;wuji,LMS/2017 Season/Summer Season
 2017,domestic,,LoL Master Series,Summer,ahq eSports Club,2,finalist,Albis;An;Chawy;Mountain;Westdoor;Ziv,LMS/2017 Season/Summer Playoffs
 2017,domestic,,North America League Championship Series,Spring,TSM,1,champion,Biofrost;Bjergsen;Hauntzer;Svenskeren;WildTurtle,NA LCS/2017 Season/Spring Playoffs
 2017,domestic,,North America League Championship Series,Spring,Cloud9,2,finalist,Contractz;Impact;Jensen;Ray;Smoothie;Sneaky,NA LCS/2017 Season/Spring Playoffs
 2017,domestic,,North America League Championship Series,Summer,TSM,1,champion,Biofrost;Bjergsen;Doublelift;Hauntzer;Svenskeren,NA LCS/2017 Season/Summer Playoffs
 2017,domestic,,North America League Championship Series,Summer,Immortals,2,finalist,Cody Sun;Flame;Olleh;Pobelter;Xmithie,NA LCS/2017 Season/Summer Playoffs
 2017,domestic,,Tencent LoL Pro League,Spring,Team WE,1,champion,957;Ben;Condi;Mystic;xiye,LPL/2017 Season/Spring Playoffs
+2017,domestic,,Tencent LoL Pro League,Spring,EDward Gaming,2,finalist,Clearlove;Fireloli;Koro1;Meiko;Minn;Mouse;Scout;Zet,LPL/2017 Season/Spring Season
+2017,domestic,,Tencent LoL Pro League,Spring,Oh My God,2,finalist,Five;Icon;JueJue;Smlz;World6;Xiyang,LPL/2017 Season/Spring Season
 2017,domestic,,Tencent LoL Pro League,Spring,Royal Never Give Up,2,finalist,Letme;Mlxg;Uzi;Xiaohu;ming,LPL/2017 Season/Spring Playoffs
 2017,domestic,,Tencent LoL Pro League,Summer,EDward Gaming,1,champion,Clearlove7;Meiko;Mouse;Scout;iBoy,LPL/2017 Season/Summer Playoffs
+2017,domestic,,Tencent LoL Pro League,Summer,Oh My God,2,finalist,Five;Icon;Jiekou;Smlz;World6;Xiyang,LPL/2017 Season/Summer Season
 2017,domestic,,Tencent LoL Pro League,Summer,Royal Never Give Up,2,finalist,Letme;Mlxg;Uzi;Xiaohu;ming,LPL/2017 Season/Summer Playoffs
+2017,domestic,,Tencent LoL Pro League,Summer,Team WE,2,finalist,957;Ben;Condi;Mystic;Zero;xiye,LPL/2017 Season/Summer Season
 2017,domestic,,Turkish Championship League,Summer,Fenerbahçe Esports,1,champion,Frozen;Japone;Move;Thaldrin;padden,TCL/2017 Season/Summer Playoffs
 2017,domestic,,Turkish Championship League,Summer,SuperMassive Esports,2,finalist,Naru;Rogu Sama;Stomaged;Zeitnot;fabFabulous,TCL/2017 Season/Summer Playoffs
 2017,domestic,,Turkish Championship League,Winter,SuperMassive Esports,1,champion,Dumbledoge;Fabfabulous;Naru;Stomaged;Zeitnot;fabFabulous,TCL/2017 Season/Winter Playoffs
+2017,domestic,,Turkish Championship League,Winter,Team AURORA,2,finalist,Atom;Kirito;LEYL U NEHAR;React;Ruvelius;Taikki;Zergsting;avenuee;xani,TCL/2017 Season/Winter Season
 2017,domestic,,Turkish Championship League,Winter,Crew e-Sports Club,2,finalist,Elwind;Godbro;Madness;Mojito;Wendelbo,TCL/2017 Season/Winter Playoffs
 2016,domestic,,Circuit Brazilian League of Legends,,INTZ,1,champion,Jockster;Revolta;Yang;micaO;tockers,CBLOL/2016 Season/Split 1 Playoffs
-2016,domestic,,Circuit Brazilian League of Legends,,INTZ,1,champion,Jockster;Revolta;Yang;micaO;tockers,CBLOL/2016 Season/Split 2 Playoffs
 2016,domestic,,Circuit Brazilian League of Legends,,Keyd Stars,2,finalist,Baiano;Robo;Turtle;esA;takeshi,CBLOL/2016 Season/Split 1 Playoffs
 2016,domestic,,Circuit Brazilian League of Legends,,CNB e-Sports Club,2,finalist,LEP;Minerva;Wos;pbO;tinowns,CBLOL/2016 Season/Split 2 Playoffs
 2016,domestic,,Europe League Championship Series,Spring,G2 Esports,1,champion,Emperor;Hybrid;Kikis;Perkz;Trick,EU LCS/2016 Season/Spring Playoffs
+2016,domestic,,Europe League Championship Series,Spring,H2k-Gaming,2,finalist,FORG1VENGRE;Jankos;Odoamne;Ryu;Selfie;Vander,EU LCS/2016 Season/Spring Season
 2016,domestic,,Europe League Championship Series,Spring,Origen,2,finalist,Amazing;Mithy;PowerOfEvil;Zven;sOAZ;xPeke,EU LCS/2016 Season/Spring Playoffs
 2016,domestic,,Europe League Championship Series,Summer,G2 Esports,1,champion,Expect;Perkz;Trick;Zven;mithy,EU LCS/2016 Season/Summer Playoffs
 2016,domestic,,Europe League Championship Series,Summer,Splyce,2,finalist,Kobbe;Mikyx;Sencux;Trashy;Wunder,EU LCS/2016 Season/Summer Playoffs
 2016,domestic,,LoL Champions Korea,Spring,SK Telecom T1,1,champion,Bang;Blank;Duke;Faker;Wolf,LCK/2016 Season/Spring Playoffs
+2016,domestic,,LoL Champions Korea,Spring,KT Rolster,2,finalist,Arrow;Fly;Hachani;IgNar;Score;Ssumday,LCK/2016 Season/Spring Season
 2016,domestic,,LoL Champions Korea,Spring,ROX Tigers,2,finalist,GorillA;Kuro;Peanut;PraY;Smeb,LCK/2016 Season/Spring Playoffs
 2016,domestic,,LoL Champions Korea,Summer,ROX Tigers,1,champion,GorillA;Kuro;Peanut;PraY;Smeb,LCK/2016 Season/Summer Playoffs
+2016,domestic,,LoL Champions Korea,Summer,SK Telecom T1,2,finalist,Bang;Bengi;Blank;Duke;Faker;Wolf,LCK/2016 Season/Summer Season
 2016,domestic,,LoL Champions Korea,Summer,KT Rolster,2,finalist,Arrow;Fly;Hachani;Score;Ssumday,LCK/2016 Season/Summer Playoffs
 2016,domestic,,LoL Japan League,Spring,DetonatioN FocusMe,1,champion,Catch;Ceros;Eternal;Yutapon;Zerost,LJL/2016 Season/Spring Playoffs
+2016,domestic,,LoL Japan League,Spring,Unsold Stuff Gaming,2,finalist,Clockday;Enty;Haretti;apaMEN;isurugi,LJL/2016 Season/Spring Season
 2016,domestic,,LoL Japan League,Spring,Rampage,2,finalist,Aotaka;Meron;Paz;Roki;tei,LJL/2016 Season/Spring Playoffs
 2016,domestic,,LoL Japan League,Summer,Rampage,1,champion,Dara;Meron;Paz;Roki;Tussle,LJL/2016 Season/Summer Playoffs
 2016,domestic,,LoL Japan League,Summer,DetonatioN FocusMe,2,finalist,Ceros;DayDream;Hikari;Yutapon;viviD,LJL/2016 Season/Summer Playoffs
@@ -386,28 +570,43 @@ year,category,event,league_full,split,team,place,bucket,players,page
 2016,domestic,,LoL Master Series,Summer,Flash Wolves,1,champion,Karsa;MMD;Maple;NL;SwordArT,LMS/2016 Season/Summer Playoffs
 2016,domestic,,LoL Master Series,Summer,J Team,2,finalist,BeBe;FoFo;Jay;Morning;REFRA1N,LMS/2016 Season/Summer Playoffs
 2016,domestic,,North America League Championship Series,Spring,Counter Logic Gaming,1,champion,Darshan;Huhi;Stixxay;Xmithie;aphromoo,NA LCS/2016 Season/Spring Playoffs
+2016,domestic,,North America League Championship Series,Spring,Immortals,1,champion,Adrian;Huni;Pobelter;Reignover;WildTurtle,NA LCS/2016 Season/Spring Season
 2016,domestic,,North America League Championship Series,Spring,TSM,2,finalist,Bjergsen;Doublelift;Hauntzer;Svenskeren;Yellowstar,NA LCS/2016 Season/Spring Playoffs
 2016,domestic,,North America League Championship Series,Summer,TSM,1,champion,Biofrost;Bjergsen;Doublelift;Hauntzer;Svenskeren,NA LCS/2016 Season/Summer Playoffs
+2016,domestic,,North America League Championship Series,Summer,Immortals,2,finalist,Adrian;Huni;Pobelter;Reignover;WildTurtle,NA LCS/2016 Season/Summer Season
 2016,domestic,,North America League Championship Series,Summer,Cloud9,2,finalist,Impact;Jensen;Meteos;Smoothie;Sneaky,NA LCS/2016 Season/Summer Playoffs
+2016,domestic,,Tencent LoL Pro League,Spring,Qiao Gu Reapers,1,champion,BoriSal;Doinb;Mor;Mortred;Peco;Swift;Uzi;V,LPL/2016 Season/Spring Season
 2016,domestic,,Tencent LoL Pro League,Spring,Royal Never Give Up,1,champion,Looper;Mata;Mlxg;NaMei;wuxx;xiaohu,LPL/2016 Season/Spring Playoffs
 2016,domestic,,Tencent LoL Pro League,Spring,EDward Gaming,2,finalist,Clearlove;Deft;Koro1;Meiko;PawN,LPL/2016 Season/Spring Playoffs
+2016,domestic,,Tencent LoL Pro League,Spring,Team WE,2,finalist,957;Condi;Mystic;Zero;xiye,LPL/2016 Season/Spring Season
 2016,domestic,,Tencent LoL Pro League,Summer,EDward Gaming,1,champion,Clearlove;Deft;Meiko;Mouse;Scout,LPL/2016 Season/Summer Playoffs
 2016,domestic,,Tencent LoL Pro League,Summer,Royal Never Give Up,2,finalist,Looper;Mata;Mlxg;Uzi;xiaohu,LPL/2016 Season/Summer Playoffs
+2016,domestic,,Tencent LoL Pro League,Summer,Snake Esports,2,finalist,Ella;Flandre;Jiezou;Martin;SofM;TANK;Zzr;kRYST4L,LPL/2016 Season/Summer Season
+2016,domestic,,Tencent LoL Pro League,Summer,Team WE,2,finalist,957;Condi;Mystic;Zero;xiye,LPL/2016 Season/Summer Season
 2016,domestic,,Turkish Championship League,Summer,Dark Passage,1,champion,Caps;Elwind;Rogu;Xerxe;Zeitnot;rogu,TCL/2016 Season/Summer Playoffs
 2016,domestic,,Turkish Championship League,Summer,SuperMassive Esports,2,finalist,Achuu;Dumbledoge;Fabfabulous;Nardeus;Naru;Stomaged,TCL/2016 Season/Summer Playoffs
+2016,domestic,,Turkish Championship League,Winter,Dark Passage,1,champion,Abaria;Arphan;Crystal;Denden;Elwind;Lukezy;Zeitnot,TCL/2016 Season/Winter Season
 2016,domestic,,Turkish Championship League,Winter,SuperMassive Esports,1,champion,Achuu;Dumbledoge;Naru;Stomaged;Thaldrin;fabFabulous,TCL/2016 Season/Winter Playoffs
+2016,domestic,,Turkish Championship League,Winter,Team AURORA,2,finalist,Avenuee;DarkSide;Hioss;Kanani;Zergsting,TCL/2016 Season/Winter Season
 2016,domestic,,Turkish Championship League,Winter,Beşiktaş.Oyun Hizmetleri,2,finalist,Immortoru;Rawbin IV;Ruvelius;Xyraz;hibiki,TCL/2016 Season/Winter Playoffs
 2015,domestic,,Circuit Brazilian League of Legends,,INTZ,1,champion,Jockster;Revolta;Yang;micaO;tockers,CBLOL/2015 Season/Split 1 Playoffs
 2015,domestic,,Circuit Brazilian League of Legends,,paiN Gaming,1,champion,Dioud;Kami;Mylon;SirT;brTT,CBLOL/2015 Season/Split 2 Playoffs
+2015,domestic,,Circuit Brazilian League of Legends,,KaBuM! Orange,2,finalist,LEP;Minerva;TinOwns;Ziriguidun;dans,CBLOL/2015 Season/Post-Season
 2015,domestic,,Circuit Brazilian League of Legends,,Keyd Stars,2,finalist,DayDream;Emperor;Loop;Mylon;takeshi,CBLOL/2015 Season/Split 1 Playoffs
-2015,domestic,,Circuit Brazilian League of Legends,,INTZ,2,finalist,Alocs;Jockster;Yang;micaO;tockers,CBLOL/2015 Season/Split 2 Playoffs
 2015,domestic,,Europe League Championship Series,Spring,Fnatic,1,champion,Febiven;Huni;Reignover;Steeelback;YellOwStaR,EU LCS/2015 Season/Spring Playoffs
+2015,domestic,,Europe League Championship Series,Spring,SK Gaming,1,champion,FORG1VENGRE;Fox;Svenskeren;fredy122;nRated,EU LCS/2015 Season/Spring Season
 2015,domestic,,Europe League Championship Series,Spring,Unicorns of Love,2,finalist,Hylissang;Kikis;PowerOfEvil;Vardags;Vizicsacsi,EU LCS/2015 Season/Spring Playoffs
 2015,domestic,,Europe League Championship Series,Summer,Fnatic,1,champion,Febiven;Huni;Reignover;Rekkles;YellOwStaR,EU LCS/2015 Season/Summer Playoffs
 2015,domestic,,Europe League Championship Series,Summer,Origen,2,finalist,Amazing;Mithy;Niels;Soaz;xPeke,EU LCS/2015 Season/Summer Playoffs
+2015,domestic,,LoL Japan League,,DetonatioN FocusMe,1,champion,Astarore;Ceros;KazuXD;Rokenia;Yutapon,LJL/2015 Season/Grand Finals
+2015,domestic,,LoL Japan League,,Ozone Rampage,2,finalist,A M U S E 4;D4ra;Doad;Meron;Shaft;tei,LJL/2015 Season/Grand Finals
+2015,domestic,,LoL Japan League,,DetonatioN RabbitFive,2,finalist,7kane;Awaker;Estel;Evi;Moyashi;Zerost,LJL/2015 Season/Season 1
+2015,domestic,,LoL Master Series,Spring,yoe Flash Wolves,1,champion,Karsa;MMD;Maple;NL;REFRA1N;Steak;SwordArT,LMS/2015 Season/Spring Season
 2015,domestic,,LoL Master Series,Spring,ahq eSports Club,1,champion,AN;Albis;Mountain;Ziv;westdoor,LMS/2015 Season/Spring Playoffs
+2015,domestic,,LoL Master Series,Spring,Taipei Assassins,2,finalist,Chawy;Jay;Lupin;Morning;Winds,LMS/2015 Season/Spring Season
 2015,domestic,,LoL Master Series,Spring,Flash Wolves,2,finalist,Karsa;Maple;NL;Steak;SwordArT,LMS/2015 Season/Spring Playoffs
 2015,domestic,,LoL Master Series,Summer,ahq eSports Club,1,champion,AN;Albis;Mountain;Ziv;westdoor,LMS/2015 Season/Summer Playoffs
+2015,domestic,,LoL Master Series,Summer,Flash Wolves,2,finalist,KKramer;Karsa;MMD;Maple;NL;REFRA1N;Steak;SwordArT,LMS/2015 Season/Summer Season
 2015,domestic,,LoL Master Series,Summer,Hong Kong Esports,2,finalist,Dinter;GodJJ;GodKwai;May;Olleh;Toyz,LMS/2015 Season/Summer Playoffs
 2015,domestic,,LoL The Champions,Spring,SK Telecom T1,1,champion,Bang;Bengi;Easyhoon;Faker;MaRin;T0M;Wolf,Champions/2015 Season/Spring Playoffs
 2015,domestic,,LoL The Champions,Spring,GE Tigers,2,finalist,GorillA;Kuro;LEE;PraY;Smeb,Champions/2015 Season/Spring Playoffs
@@ -416,41 +615,86 @@ year,category,event,league_full,split,team,place,bucket,players,page
 2015,domestic,,North America League Championship Series,Spring,TSM,1,champion,Bjergsen;Dyrus;Lustboy;Santorin;WildTurtle,NA LCS/2015 Season/Spring Playoffs
 2015,domestic,,North America League Championship Series,Spring,Cloud9,2,finalist,Balls;Hai;LemonNation;Meteos;Sneaky,NA LCS/2015 Season/Spring Playoffs
 2015,domestic,,North America League Championship Series,Summer,Counter Logic Gaming,1,champion,Doublelift;Pobelter;Xmithie;ZionSpartan;aphromoo,NA LCS/2015 Season/Summer Playoffs
+2015,domestic,,North America League Championship Series,Summer,Team Liquid,1,champion,FeniX;IWDominate;Piglet;Quas;Xpecial,NA LCS/2015 Season/Summer Season
 2015,domestic,,North America League Championship Series,Summer,TSM,2,finalist,Bjergsen;Dyrus;Lustboy;Santorin;WildTurtle,NA LCS/2015 Season/Summer Playoffs
 2015,domestic,,Tencent LoL Pro League,Spring,EDward Gaming,1,champion,Clearlove;Deft;Koro1;PawN;U;meiko,LPL/2015 Season/Spring Playoffs
+2015,domestic,,Tencent LoL Pro League,Spring,Snake Esports,2,finalist,BAKA;Beast;Ella;Flandre;kRYST4L,LPL/2015 Season/Spring Season
 2015,domestic,,Tencent LoL Pro League,Spring,LGD Gaming,2,finalist,Acorn;Flame;Pyl;TBQ;We1less;imp,LPL/2015 Season/Spring Playoffs
+2015,domestic,,Tencent LoL Pro League,Summer,EDward Gaming,1,champion,AmazingJ;BaeMe;Clearlove;Deft;Jinjao;Koro1;Meiko;PawN;Ray,LPL/2015 Season/Summer Season
 2015,domestic,,Tencent LoL Pro League,Summer,LGD Gaming,1,champion,Acorn;Flame;GODV;Pyl;TBQ;imp,LPL/2015 Season/Summer Playoffs
 2015,domestic,,Tencent LoL Pro League,Summer,Qiao Gu Reapers,2,finalist,Doinb;Swift;TcT;TnT;V,LPL/2015 Season/Summer Playoffs
 2015,domestic,,Turkish Championship League,Summer,Dark Passage,1,champion,Crystal;Elwind;Naru;Rydle;Zeitnot,TCL/2015 Season/Summer Playoffs
+2015,domestic,,Turkish Championship League,Summer,Team Turquality,2,finalist,,TCL/2014 Season/Summer/Finals
 2015,domestic,,Turkish Championship League,Summer,Beşiktaş Esports,2,finalist,Dumbledoge;Honos;Nardeus;Taikki;Thaldrin;avenuee,TCL/2015 Season/Summer Playoffs
 2015,domestic,,Turkish Championship League,Winter,Beşiktaş Esports,1,champion,Dumbledoge;Energy;Nardeus;Thaldrin;Theokoles,TCL/2015 Season/Winter Playoffs
 2015,domestic,,Turkish Championship League,Winter,Dark Passage,2,finalist,Crystal;Elwind;HolyPhoenix;Naru;Touch,TCL/2015 Season/Winter Playoffs
 2014,domestic,,Circuit Brazilian League of Legends,,Keyd Stars,1,champion,,CBLOL/2014 Season/Champions Series/Playoffs
+2014,domestic,,Circuit Brazilian League of Legends,,CNB e-Sports Club,2,finalist,Alocs;Leko;Revolta;manajj;takeshi,CBLOL/2014 Season/Champions Series
 2014,domestic,,Circuit Brazilian League of Legends,,paiN Gaming,2,finalist,,CBLOL/2014 Season/Champions Series/Playoffs
 2014,domestic,,Europe League Championship Series,Spring,Fnatic,1,champion,Cyanide;Rekkles;YellOwStaR;sOAZ;xPeke,EU LCS/2014 Season/Spring Playoffs
 2014,domestic,,Europe League Championship Series,Spring,SK Gaming,2,finalist,CandyPanda;Jesiz;Svenskeren;fredy122;nRated,EU LCS/2014 Season/Spring Playoffs
 2014,domestic,,Europe League Championship Series,Summer,Alliance,1,champion,Froggen;Nyph;Shook;Tabzz;Wickd,EU LCS/2014 Season/Summer Playoffs
 2014,domestic,,Europe League Championship Series,Summer,Fnatic,2,finalist,Cyanide;Rekkles;YellOwStaR;sOAZ;xPeke,EU LCS/2014 Season/Summer Playoffs
+2014,domestic,,LoL Japan League,,DetonatioN FocusMe,1,champion,,LJL/2014 Season/Grand Finals
+2014,domestic,,LoL Japan League,,Rascal Jester,2,finalist,,LJL/2014 Season/Grand Finals
+2014,domestic,,LoL Japan League,Spring,DetonatioN FocusMe,1,champion,,LJL/2014 Season/Spring Season
+2014,domestic,,LoL Japan League,Spring,Rascal Jester,2,finalist,,LJL/2014 Season/Spring Season
+2014,domestic,,LoL Japan League,Summer,DetonatioN FocusMe,1,champion,,LJL/2014 Season/Summer Season
+2014,domestic,,LoL Japan League,Summer,Ozone Rampage,2,finalist,,LJL/2014 Season/Summer Season
+2014,domestic,,LoL Japan League,Winter,Rascal Jester,1,champion,,LJL/2014 Season/Winter Season
+2014,domestic,,LoL Japan League,Winter,Ozone Rampage,2,finalist,,LJL/2014 Season/Winter Season
+2014,domestic,,LoL Pro League,,Cloud9 Eclipse,1,champion,,LoL Pro League/Season I
+2014,domestic,,LoL Pro League,,ThunderBot SPARTA,1,champion,,LoL Pro League/Season II
+2014,domestic,,LoL Pro League,,RoX (2014 CIS Team),2,finalist,,LoL Pro League/Season I
+2014,domestic,,LoL Pro League,,Aces High Esports Club,2,finalist,,LoL Pro League/Season II
+2014,domestic,,LoL The Champions,Spring,Samsung Blue,1,champion,Acorn;Deft;Heart;Spirit;dade,Champions/2014 Season/Spring Season
+2014,domestic,,LoL The Champions,Spring,NaJin White Shield,2,finalist,Ggoong;GorillA;Save;Zefa;watch,Champions/2014 Season/Spring Season
+2014,domestic,,LoL The Champions,Summer,KT Rolster Arrows,1,champion,Arrow;Hachani;KaKAO;RooKie;ssumday,Champions/2014 Season/Summer Season
+2014,domestic,,LoL The Champions,Summer,Samsung Blue,2,finalist,Acorn;Deft;Heart;Spirit;dade,Champions/2014 Season/Summer Season
+2014,domestic,,LoL The Champions,Winter,SK Telecom T1 K,1,champion,Faker;Impact;Piglet;PoohManDu;bengi,Champions/2014 Season/Winter Season
+2014,domestic,,LoL The Champions,Winter,Samsung Ozone,2,finalist,DanDy;Homme;Looper;Mata;dade;imp,Champions/2014 Season/Winter Season
 2014,domestic,,North America League Championship Series,Spring,Cloud9,1,champion,Balls;Hai;LemonNation;Meteos;Sneaky,NA LCS/2014 Season/Spring Playoffs
 2014,domestic,,North America League Championship Series,Spring,TSM,2,finalist,Bjergsen;Dyrus;TheOddOne;WildTurtle;Xpecial,NA LCS/2014 Season/Spring Playoffs
 2014,domestic,,North America League Championship Series,Summer,TSM,1,champion,Amazing;Bjergsen;Dyrus;Lustboy;WildTurtle,NA LCS/2014 Season/Summer Playoffs
 2014,domestic,,North America League Championship Series,Summer,Cloud9,2,finalist,Balls;Hai;LemonNation;Meteos;Sneaky,NA LCS/2014 Season/Summer Playoffs
+2014,domestic,,North America League Championship Series,Summer,LMQ,2,finalist,Mor;NoName;Vasilii;XiaoWeiXiao;ackerman,NA LCS/2014 Season/Summer Season
 2014,domestic,,Tencent LoL Pro League,Spring,EDward Gaming,1,champion,Clearlove;Fzzf;Koro1;NaMei;U,LPL/2014 Season/Spring Playoffs
+2014,domestic,,Tencent LoL Pro League,Spring,Oh My God,1,champion,Allen;Cool;Gogoing;San;pomelo;xiyang,LPL/2014 Season/Spring Season
 2014,domestic,,Tencent LoL Pro League,Spring,Invictus Gaming,2,finalist,Kid;Kitties;PDD;Zz1tai;illuSioN,LPL/2014 Season/Spring Playoffs
 2014,domestic,,Tencent LoL Pro League,Summer,EDward Gaming,1,champion,ClearLove;Fzzf;Koro1;NaMei;U,LPL/2014 Season/Summer Playoffs
 2014,domestic,,Tencent LoL Pro League,Summer,Oh My God,2,finalist,Cool;Dada7;Drug;Gogoing;San,LPL/2014 Season/Summer Playoffs
+2014,domestic,,Turkish Championship League,Spring,Wild Fire e-Sports Club,1,champion,,TCL/2014 Season/Spring/Regular Season
+2014,domestic,,Turkish Championship League,Spring,Dark Passage,2,finalist,,TCL/2014 Season/Spring/Regular Season
+2014,domestic,,Turkish Championship League,Summer,Dark Passage,1,champion,,TCL/2014 Season/Summer/Regular Season
+2014,domestic,,Turkish Championship League,Summer,Team Turquality,2,finalist,,TCL/2014 Season/Summer/Regular Season
+2014,domestic,,Turkish Championship League,Winter,Dark Passage,1,champion,,TCL/2014 Season/Winter/Regular Season
+2014,domestic,,Turkish Championship League,Winter,HWA Gaming,2,finalist,,TCL/2014 Season/Winter/Regular Season
 2013,domestic,,Europe League Championship Series,Spring,Fnatic,1,champion,Cyanide;YellOwStaR;nRated;sOAZ;xPeke,EU LCS/Season 3/Spring Playoffs
 2013,domestic,,Europe League Championship Series,Spring,Gambit Gaming,2,finalist,Alex Ich;Darien;Diamondprox;Edward;Genja,EU LCS/Season 3/Spring Playoffs
 2013,domestic,,Europe League Championship Series,Summer,Fnatic,1,champion,Cyanide;Puszu;YellOwStaR;sOAZ;xPeke,EU LCS/Season 3/Summer Playoffs
 2013,domestic,,Europe League Championship Series,Summer,Lemondogs,2,finalist,Dexter;Mithy;Nukeduck;Tabzz;Zorozero,EU LCS/Season 3/Summer Playoffs
+2013,domestic,,LoL The Champions,Spring,MVP Ozone,1,champion,Dade;DanDy;Homme;Mata;imp,Champions/2013 Season/Spring
+2013,domestic,,LoL The Champions,Spring,CJ Entus Blaze,2,finalist,Ambition;Cpt Jack;Flame;Helios;Lustboy,Champions/2013 Season/Spring
+2013,domestic,,LoL The Champions,Summer,SK Telecom T1 2,1,champion,Faker;Impact;Piglet;PoohManDu;bengi,Champions/2013 Season/Summer
+2013,domestic,,LoL The Champions,Summer,KT Rolster Bullets,2,finalist,KaKAO;Mafa;Ryu;Score;Ssumday;inSec,Champions/2013 Season/Summer
+2013,domestic,,LoL The Champions,Winter,NaJin Sword,1,champion,Cain;MakNooN;PraY;SSONG;Watch,Champions/2013 Season/Winter
+2013,domestic,,LoL The Champions,Winter,Azubu Frost,2,finalist,CloudTemplar;MadLife;RapidStar;Shy;Woong,Champions/2013 Season/Winter
 2013,domestic,,North America League Championship Series,Spring,TSM,1,champion,Dyrus;Reginald;TheOddOne;WildTurtle;Xpecial,NA LCS/Season 3/Spring Playoffs
+2013,domestic,,North America League Championship Series,Spring,Team Curse,2,finalist,Cop;Elementz;NyJacky;Saintvicious;Voyboy,NA LCS/Season 3/Spring Season
 2013,domestic,,North America League Championship Series,Spring,Good Game University,2,finalist,Daydreamin;DontMashMe;Jintae;NintendudeX;ZionSpartan,NA LCS/Season 3/Spring Playoffs
 2013,domestic,,North America League Championship Series,Summer,Cloud9,1,champion,Balls;Hai;LemonNation;Meteos;Sneaky,NA LCS/Season 3/Summer Playoffs
+2013,domestic,,North America League Championship Series,Summer,Team Vulcun,2,finalist,BloodWater;Mancloud;Sycho Sid;Xmithie;Zuna;mancloud,NA LCS/Season 3/Summer Season
 2013,domestic,,North America League Championship Series,Summer,TSM,2,finalist,Dyrus;Reginald;TheOddOne;WildTurtle;Xpecial,NA LCS/Season 3/Summer Playoffs
+2013,domestic,,Tencent LoL Pro League,Spring,Invictus Gaming,1,champion,Kid;PDD;XiaoXiao;Zz1tai;illuSioN,LPL/2013 Season/Spring Season
 2013,domestic,,Tencent LoL Pro League,Spring,Oh My God,1,champion,Cool;Gogoing;LoveLin;bigpomelo;san,LPL/2013 Season/Spring Playoffs
 2013,domestic,,Tencent LoL Pro League,Spring,Positive Energy,2,finalist,Aluka;Jing;JoJo;NaMei;Sicca,LPL/2013 Season/Spring Playoffs
 2013,domestic,,Tencent LoL Pro League,Summer,Positive Energy,1,champion,Aluka;Jing;JoJo;NaMei;Sicca;qingzhi,LPL/2013 Season/Summer Playoffs
 2013,domestic,,Tencent LoL Pro League,Summer,Oh My God,2,finalist,Cool;Gogoing;LoveLing;comA;san,LPL/2013 Season/Summer Playoffs
+2013,domestic,,Tencent LoL Pro League,Summer,Royal Club,2,finalist,GoDlike;Lucky;Tabe;Uzi;Wh1t3zZ,LPL/2013 Season/Summer Season
+2012,domestic,,LoL The Champions,Spring,MiG Blaze,1,champion,Ambition;CaptainJack;FantasyStar;Helios;Lustboy,Champions/2012 Season/Spring
+2012,domestic,,LoL The Champions,Spring,MiG Frost,2,finalist,CloudTemplar;Locodoco;MadLife;RapidStar;Woong,Champions/2012 Season/Spring
+2012,domestic,,LoL The Champions,Summer,Azubu Frost,1,champion,CloudTemplar;MadLife;RapidStar;Shy;Woong,Champions/2012 Season/Summer
+2012,domestic,,LoL The Champions,Summer,Counter Logic Gaming Europe,2,finalist,Froggen;Krepo;Snoopeh;Wickd;Yellowpete,Champions/2012 Season/Summer
 2026,domestic_cup,KeSPA,,,T1,1,champion,Doran;Faker;Keria;Oner;Peyz,2025 LoL KeSPA Cup
 2026,domestic_cup,KeSPA,,,DN SOOPers,1,champion,Clozer;DuDu;Peter;Sharvel;deokdam,2026 LoL KeSPA Cup
 2026,domestic_cup,KeSPA,,,Japan (National Team),10-12,group,Enty;RayFarky;Recap;Yuhi;hachamecha,2025 LoL KeSPA Cup

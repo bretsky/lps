@@ -156,9 +156,15 @@ export interface PlayerDetail {
   }>;
   hn_year_ranks: Record<string, { global: number; lane: number }>;
   year_achievements: Record<string, YearAchievements>;
+  year_teams: Record<string, { name: string; logo?: string }[]>;
   resume_breakdown: Partial<Record<string, { n: number; pts: number }>>;
   tournaments: Record<string, number>;
   trajectory: Record<string, number>;
+  trajectory_breakdown: Record<string, {
+    kills_pts?: number; deaths_pts?: number; assists_pts?: number;
+    damage_pts?: number; fb_pts?: number;
+    reg_pts?: number; playoff_pts?: number; tourn_pts?: number;
+  }>;
   splits: Partial<{
     teams_lps: string;
     leagues_lps: string;
