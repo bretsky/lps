@@ -41,12 +41,13 @@ from .career import (
 )
 from .config import INFO_DIR
 from .export_excel import apply_schedule_norm
+from .io_oracle import latest_oracle_year
 from .scoring import ScoreWeights
 from .season import build_lane_remap
 
 logger = logging.getLogger(__name__)
 
-YEARS = tuple(range(2011, 2026))
+YEARS = tuple(range(2011, latest_oracle_year() + 1))
 MIN_GAMES = 3
 LANES = ("top", "jng", "mid", "bot", "sup")
 
@@ -241,28 +242,47 @@ def main() -> None:
     logger.info("[tune] building cross-year lane-normalization tables (once) ...")
     build_lane_remap(force_recompute=False)
 
-    # Starting point = current shipped defaults.
-    sw0, iw0 = ScoreWeights(alpha=0.75, lam=2.0, beta=0.0), 2.0
-    outer = {
-        **{
-            k: getattr(sw0, k)
-            for k in ("alpha", "lam", "beta", "region_exp", "w_playoff")
-        },
-        "intl_weight": iw0,
-    }
-    inner_init = {
-        ("clr", "w_career"): 1.0,
-        ("clr", "w_pace"): 0.5,
-        ("clr", "pace_prior_games"): 50.0,
-        ("clr", "peak_band"): 0.15,
-        ("clr", "peak_len_bonus"): 0.10,
-        ("clr", "era1"): 1.25,
-        ("clr", "era2"): 1.15,
-        ("bonus", "w_bonus"): 1.0,
-        ("bonus", "repeat_decay"): 0.8,
-        ("bonus", "champ_per_weight"): 4.6,
-        ("bonus", "award_weight"): 1.0,
-    }
+    # Starting point = last tuned values (or shipped defaults if file absent).
+    _tp_path = INFO_DIR / "tuned_params.json"
+    if _tp_path.exists():
+        _tp = json.loads(_tp_path.read_text(encoding="utf-8"))
+        _sw = _tp.get("ScoreWeights", {})
+        _clr = _tp.get("CLRConfig", {})
+        _bon = _tp.get("BonusConfig", {})
+        outer = {
+            "alpha":       _sw.get("alpha", 0.75),
+            "lam":         _sw.get("lam", 2.0),
+            "beta":        _sw.get("beta", 0.0),
+            "region_exp":  _sw.get("region_exp", 2.0),
+            "w_playoff":   _sw.get("w_playoff", 1.0),
+            "intl_weight": _tp.get("intl_weight", 2.0),
+        }
+        _era = _clr.get("era_mults", [1.25, 1.15, 1.0])
+        inner_init = {
+            ("clr", "w_career"):        _clr.get("w_career", 1.0),
+            ("clr", "w_pace"):          _clr.get("w_pace", 0.5),
+            ("clr", "pace_prior_games"): _clr.get("pace_prior_games", 50.0),
+            ("clr", "peak_band"):       _clr.get("peak_band", 0.15),
+            ("clr", "peak_len_bonus"):  _clr.get("peak_len_bonus", 0.10),
+            ("clr", "era1"):            _era[0],
+            ("clr", "era2"):            _era[1],
+            ("bonus", "w_bonus"):       _bon.get("w_bonus", 1.0),
+            ("bonus", "repeat_decay"):  _bon.get("repeat_decay", 0.6),
+            ("bonus", "champ_per_weight"): _bon.get("champ_per_weight", 4.6),
+            ("bonus", "award_weight"):  _bon.get("award_weight", 1.0),
+        }
+        logger.info(f"[tune] starting from tuned_params.json (prior rho={_tp.get('mean_rho','?')})")
+    else:
+        outer = {"alpha": 0.75, "lam": 2.0, "beta": 0.0, "region_exp": 2.0,
+                 "w_playoff": 1.0, "intl_weight": 2.0}
+        inner_init = {
+            ("clr", "w_career"): 1.0, ("clr", "w_pace"): 0.5,
+            ("clr", "pace_prior_games"): 50.0, ("clr", "peak_band"): 0.15,
+            ("clr", "peak_len_bonus"): 0.10, ("clr", "era1"): 1.25,
+            ("clr", "era2"): 1.15, ("bonus", "w_bonus"): 1.0,
+            ("bonus", "repeat_decay"): 0.6, ("bonus", "champ_per_weight"): 4.6,
+            ("bonus", "award_weight"): 1.0,
+        }
     inner_passes = 1 if args.quick else 2
     outer_space = dict(OUTER_SPACE)
     if args.quick:

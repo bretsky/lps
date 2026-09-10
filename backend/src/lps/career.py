@@ -89,17 +89,17 @@ class CLRConfig:
     # averaging in a slightly-lower peak year would otherwise drag the mean down -- so a longer
     # peak is NEVER penalized as long as peak_len_bonus >= peak_band/2 (the worst-case average
     # drop from adding a year at the band edge). Both default safely above that floor.
-    peak_band: float = 0.15  # within 15% of the best season counts as a peak year
+    peak_band: float = 0.10  # within 10% of the best season counts as a peak year
     peak_len_bonus: float = (
-        0.10  # per extra peak year, as a fraction of the best season (tuned)
+        0.15  # per extra peak year, as a fraction of the best season (tuned)
     )
     pace_prior_games: float = (
-        50.0  # empirical-Bayes shrinkage strength (weighted games)
+        100.0  # empirical-Bayes shrinkage strength (weighted games)
     )
     # Tuned against the consensus surveys: career bulk is up-weighted (1.6) and rate/pace stays
     # comparatively low (0.8), with peak the 1.0 reference.
     w_career: float = 1.6
-    w_pace: float = 0.8
+    w_pace: float = 0.2
     w_peak: float = 1.0
     # ERA ADJUSTMENT (discrete 3-era, per docs/holistic-lps-plan.md). Modern seasons offer more to
     # accumulate (more events, stronger-Elo leagues, richer box-score data) than early ones, so a
@@ -109,7 +109,7 @@ class CLRConfig:
     # graphics overhaul, Era3 = 2018+ Runes Reforged / modern). Ranking is scale-invariant, so Era3
     # is the 1.0 reference and >1 on the older eras lifts them. Tuned to the (combined) consensus
     # surveys: (1.6, 1.35, 1.0) -- the reduced-model early era gets the biggest lift.
-    era_mults: tuple[float, float, float] = (1.6, 1.35, 1.0)
+    era_mults: tuple[float, float, float] = (1.15, 1.35, 1.0)
 
 
 # Columns that ACCUMULATE across years (summed).

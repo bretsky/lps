@@ -81,7 +81,7 @@ class BonusConfig:
     intl_champion_anchors: dict[str, float] = field(
         default_factory=lambda: {"WLDs": 6.0, "MSI": 3.0}
     )
-    champ_per_weight: float = 5.0  # tuned to the consensus surveys (set to 5.0)
+    champ_per_weight: float = 3.5  # tuned to the consensus surveys
     intl_bucket: dict[str, float] = field(
         default_factory=lambda: {
             "champion": 1.0,
@@ -121,21 +121,21 @@ class BonusConfig:
     # Family weight on ALL individual awards: multiplies award_bonus (the MVP/All-Pro family) before
     # w_bonus, so awards can be scaled up/down RELATIVE to team titles/placements without editing
     # each token. The award analogue of champ_per_weight (tournaments). 1.0 = award_points as-is.
-    award_weight: float = 1.0
+    award_weight: float = 0.5
     # Overall resume-bonus weight into CLR. Kept < 1 so the resume BOOSTS individual performance
     # rather than swamping it (raw bonus points for the most-decorated players rival the entire
     # base CLR); also, team achievements credit every player on a winning roster equally, so a
     # heavy weight would over-reward dynasty role-players. Prime calibration target. Tuned to the
     # per-lane consensus GOAT lists: the résumé tracks consensus strongly, so 1.0 (balanced) --
     # titles/placements matter, but on-rift value (CareerVal+PaceVal+PeakVal) still leads CLR.
-    w_bonus: float = 1.0
+    w_bonus: float = 0.75
     # DIMINISHING RETURNS on winning the SAME kind of thing repeatedly. Within each player, like
     # achievements are grouped (intl by event+bucket, domestic by bucket, awards by token), ordered
     # by value (best kept whole), and the k-th (1-indexed) is scaled by repeat_decay**(k-1). So a
     # 6-time Worlds winner's titles are worth 1 + d + d^2 + ... rather than 6x. 1.0 = OFF (every
     # win full). Rewards breadth of résumé over farming one dynasty. Tuned to the consensus
     # surveys: 0.6 (a moderate taper -- repeats still count, just noticeably less each time).
-    repeat_decay: float = 0.6
+    repeat_decay: float = 0.7
 
 
 _BONUS_COLS = ["intl_bonus", "title_bonus", "award_bonus"]

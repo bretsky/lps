@@ -63,8 +63,8 @@ class ScoreWeights:
     via base_frac), NOT a multiplier on baseline. exp=0 removes region scaling entirely; exp=1 =
     plain winrate; exp>1 = steeper."""
 
-    alpha: float = 1.0  # flat base credit per (winning) game, before the region factor
-    lam: float = 1.0  # weight on individual net contribution
+    alpha: float = 0.6  # flat base credit per (winning) game, before the region factor
+    lam: float = 2.0  # weight on individual net contribution
     beta: float = 0.25  # weight on the win bonus (result - p_model)
     # Region factor: baseline (winrate vs the year's peak region) ^ region_exp scales the whole
     # per-game value. A SINGLE constant exponent for all phases; higher => weaker regions punished
@@ -75,7 +75,7 @@ class ScoreWeights:
     # scaled by its multiplier. Regular season is the reference (w_regular, usually 1.0); playoffs by
     # w_playoff. The TOURNAMENT phase is scaled by build_player_ratings' existing `intl_weight`.
     w_regular: float = 1.0
-    w_playoff: float = 1.0
+    w_playoff: float = 0.75
 
 
 def expected_score(elo_a: float, elo_b: float) -> float:

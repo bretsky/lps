@@ -1,44 +1,44 @@
 {
-  "mean_rho": 0.7369,
+  "mean_rho": 0.7299,
   "per_group_rho": {
-    "consensus_ratings:top": 0.77,
-    "consensus_ratings:jng": 0.584,
-    "consensus_ratings:mid": 0.804,
-    "consensus_ratings:bot": 0.837,
-    "consensus_ratings:sup": 0.857,
-    "consensus_ratings_2:top": 0.696,
-    "consensus_ratings_2:jng": 0.55,
-    "consensus_ratings_2:mid": 0.798,
-    "consensus_ratings_2:bot": 0.86,
-    "consensus_ratings_2:sup": 0.792,
-    "consensus_ratings_2:overall": 0.557
+    "consensus_ratings:top": 0.754,
+    "consensus_ratings:jng": 0.548,
+    "consensus_ratings:mid": 0.761,
+    "consensus_ratings:bot": 0.808,
+    "consensus_ratings:sup": 0.833,
+    "consensus_ratings_2:top": 0.628,
+    "consensus_ratings_2:jng": 0.582,
+    "consensus_ratings_2:mid": 0.802,
+    "consensus_ratings_2:bot": 0.914,
+    "consensus_ratings_2:sup": 0.819,
+    "consensus_ratings_2:overall": 0.581
   },
   "ScoreWeights": {
-    "alpha": 0.75,
+    "alpha": 0.6,
     "lam": 2.0,
-    "beta": 0.0,
-    "region_exp": 2.0,
-    "w_playoff": 1.0
+    "beta": 0.25,
+    "region_exp": 1.5,
+    "w_playoff": 0.75
   },
   "w_regular": 1.0,
   "intl_weight": 2.0,
   "CLRConfig": {
     "w_career": 1.6,
-    "w_pace": 0.8,
+    "w_pace": 0.2,
     "w_peak": 1.0,
-    "pace_prior_games": 50.0,
-    "peak_band": 0.15,
-    "peak_len_bonus": 0.1,
+    "pace_prior_games": 100.0,
+    "peak_band": 0.1,
+    "peak_len_bonus": 0.15,
     "era_mults": [
-      1.6,
+      1.15,
       1.35,
       1.0
     ]
   },
   "BonusConfig": {
-    "w_bonus": 1.0,
-    "repeat_decay": 0.6,
-    "champ_per_weight": 5.5,
-    "award_weight": 1.0
+    "w_bonus": 0.75,
+    "repeat_decay": 0.7,
+    "champ_per_weight": 3.5,
+    "award_weight": 0.5
   }
 }
