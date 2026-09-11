@@ -163,8 +163,8 @@ INNER_SPACE = {
     ("clr", "pace_prior_games"): [25.0, 50.0, 100.0],
     ("clr", "peak_band"): [0.10, 0.15, 0.20, 0.25],
     ("clr", "peak_len_bonus"): [0.05, 0.10, 0.15],
-    ("clr", "era1"): [1.0, 1.15, 1.25, 1.4, 1.6],
-    ("clr", "era2"): [1.0, 1.1, 1.2, 1.35],
+    ("clr", "era1"): [1.0, 1.15, 1.25, 1.4, 1.5],
+    ("clr", "era2"): [1.0, 1.1, 1.2, 1.35],  # ignored when --constrain-era2
     ("bonus", "w_bonus"): [0.5, 0.75, 1.0, 1.25, 1.5],
     ("bonus", "repeat_decay"): [0.6, 0.7, 0.8, 0.9, 1.0],
     ("bonus", "champ_per_weight"): [3.5, 4.6, 5.5],
@@ -177,13 +177,24 @@ OUTER_SPACE = {
     "alpha": [0.4, 0.6, 0.75, 1.0],
     "lam": [1.0, 1.5, 2.0, 2.5],
     "beta": [0.0, 0.25],
-    "region_exp": [0.5, 1.0, 1.5, 2.0, 2.5, 3.0],
+    "region_exp": [0.5, 0.75, 1.0, 1.25, 1.5, 1.75],
     "w_playoff": [0.5, 0.75, 1.0, 1.5, 2.0],
     "intl_weight": [1.0, 1.5, 2.0, 3.0],
 }
 
 
+_CONSTRAIN_ERA2: bool = False  # set by main() from --constrain-era2 flag
+_FIX_ERA2: bool = False        # set by main() from --fix-era2 flag
+
+
 def _mk_cfgs(inner: dict) -> tuple[CLRConfig, BonusConfig]:
+    era1 = inner[("clr", "era1")]
+    if _FIX_ERA2:
+        era2 = 1.0
+    elif _CONSTRAIN_ERA2:
+        era2 = (era1 + 1.0) / 2
+    else:
+        era2 = inner.get(("clr", "era2"), 1.0)
     clr = CLRConfig(
         w_career=inner[("clr", "w_career")],
         w_pace=inner[("clr", "w_pace")],
@@ -191,7 +202,7 @@ def _mk_cfgs(inner: dict) -> tuple[CLRConfig, BonusConfig]:
         pace_prior_games=inner[("clr", "pace_prior_games")],
         peak_band=inner[("clr", "peak_band")],
         peak_len_bonus=inner[("clr", "peak_len_bonus")],
-        era_mults=(inner[("clr", "era1")], inner[("clr", "era2")], 1.0),
+        era_mults=(era1, era2, 1.0),
     )
     bcfg = BonusConfig(
         w_bonus=inner[("bonus", "w_bonus")],
@@ -237,7 +248,18 @@ def main() -> None:
     ap.add_argument(
         "--passes", type=int, default=2, help="coordinate-descent passes (outer)"
     )
+    ap.add_argument(
+        "--constrain-era2", action="store_true",
+        help="force era2 = midpoint of era1 and era3 (removes era2 as a free parameter)",
+    )
+    ap.add_argument(
+        "--fix-era2", action="store_true",
+        help="fix era2=1.0 (same as era3); only era1 is a free era parameter",
+    )
     args = ap.parse_args()
+    global _CONSTRAIN_ERA2, _FIX_ERA2
+    _CONSTRAIN_ERA2 = args.constrain_era2
+    _FIX_ERA2 = args.fix_era2
 
     logger.info("[tune] building cross-year lane-normalization tables (once) ...")
     build_lane_remap(force_recompute=False)
@@ -285,6 +307,8 @@ def main() -> None:
         }
     inner_passes = 1 if args.quick else 2
     outer_space = dict(OUTER_SPACE)
+    if _CONSTRAIN_ERA2 or _FIX_ERA2:
+        INNER_SPACE.pop(("clr", "era2"), None)
     if args.quick:
         for k in ("alpha", "lam", "beta"):
             outer_space[k] = [

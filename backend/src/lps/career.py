@@ -89,17 +89,17 @@ class CLRConfig:
     # averaging in a slightly-lower peak year would otherwise drag the mean down -- so a longer
     # peak is NEVER penalized as long as peak_len_bonus >= peak_band/2 (the worst-case average
     # drop from adding a year at the band edge). Both default safely above that floor.
-    peak_band: float = 0.10  # within 10% of the best season counts as a peak year
+    peak_band: float = 0.15  # within 15% of the best season counts as a peak year
     peak_len_bonus: float = (
         0.15  # per extra peak year, as a fraction of the best season (tuned)
     )
     pace_prior_games: float = (
-        100.0  # empirical-Bayes shrinkage strength (weighted games)
+        25.0  # empirical-Bayes shrinkage strength (weighted games)
     )
-    # Tuned against the consensus surveys: career bulk is up-weighted (1.6) and rate/pace stays
-    # comparatively low (0.8), with peak the 1.0 reference.
-    w_career: float = 1.6
-    w_pace: float = 0.2
+    # Tuned against the consensus surveys: career bulk is up-weighted (1.3) and rate/pace stays
+    # comparatively moderate (0.8), with peak the 1.0 reference.
+    w_career: float = 1.3
+    w_pace: float = 0.8
     w_peak: float = 1.0
     # ERA ADJUSTMENT (discrete 3-era, per docs/holistic-lps-plan.md). Modern seasons offer more to
     # accumulate (more events, stronger-Elo leagues, richer box-score data) than early ones, so a
@@ -107,9 +107,8 @@ class CLRConfig:
     # under-credits the old-era greats the consensus rates highly. Each season's point totals are
     # multiplied by its era's entry here: (Era1 = <=2014 reduced-model era, Era2 = 2015-2017
     # graphics overhaul, Era3 = 2018+ Runes Reforged / modern). Ranking is scale-invariant, so Era3
-    # is the 1.0 reference and >1 on the older eras lifts them. Tuned to the (combined) consensus
-    # surveys: (1.6, 1.35, 1.0) -- the reduced-model early era gets the biggest lift.
-    era_mults: tuple[float, float, float] = (1.15, 1.35, 1.0)
+    # is the 1.0 reference and >1 on the older eras lifts them. Era2 = midpoint of era1 and era3.
+    era_mults: tuple[float, float, float] = (1.15, 1.075, 1.0)
 
 
 # Columns that ACCUMULATE across years (summed).

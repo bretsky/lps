@@ -683,7 +683,7 @@ def build_player_ratings(
     min_games: int = 15,
     use_model1: bool = True,
     regular_season_ref_games: Optional[float] = None,
-    intl_weight: float = 2.0,
+    intl_weight: float = 1.0,
     tournament_weights: Optional[dict] = None,
     matches: Optional[pd.DataFrame] = None,
     force_recompute: bool = False,
@@ -1071,7 +1071,7 @@ def _print_outliers(matches: pd.DataFrame, n: int = 5) -> None:
 #   - alpha=0.75, lam=2: baseline vs contribution ratio in the broad optimum (fit is flat over
 #     ratios ~0.5-2 once beta=0); alpha lowered to 0.75 to weight contribution a bit more.
 #     intl_weight=2 (the build_player_ratings default) was optimal.
-_DEMO_WEIGHTS = ScoreWeights(alpha=0.6, lam=2.0, beta=0.25)
+_DEMO_WEIGHTS = ScoreWeights(alpha=0.75, lam=1.0, beta=0.25)
 _MAJOR = {"LCK", "LPL", "LEC", "LCS"}
 
 
