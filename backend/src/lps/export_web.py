@@ -76,15 +76,15 @@ logger = logging.getLogger(__name__)
 RATED_MIN_GAMES = 100  # inclusion floor for the public board (see plan §11.1)
 
 # Tier ladder (top -> bottom).  Cutoffs are absolute CLR floors -- round
-# numbers so the meaning of "Legend" (CLR >= 40) is stable across reruns
+# numbers so the meaning of "Legend" (CLR >= 30) is stable across reruns
 # rather than "top 20 today".  Membership counts drift as the data grows;
 # the numbers don't.  Tune here.
 _TIERS: list[dict] = [
-    {"key": "goats", "label": "GOATs", "clr_min": 75.0, "color": "#f5c15b"},
-    {"key": "legends", "label": "Legends", "clr_min": 50.0, "color": "#d97757"},
-    {"key": "greats", "label": "Greats", "clr_min": 30.0, "color": "#a685e2"},
-    {"key": "elite", "label": "Elite", "clr_min": 15.0, "color": "#6aa7e6"},
-    {"key": "stars", "label": "Stars", "clr_min": 6.0, "color": "#5fbf94"},
+    {"key": "goats", "label": "GOATs", "clr_min": 50.0, "color": "#f5c15b"},
+    {"key": "legends", "label": "Legends", "clr_min": 30.0, "color": "#d97757"},
+    {"key": "greats", "label": "Greats", "clr_min": 18.0, "color": "#a685e2"},
+    {"key": "elite", "label": "Elite", "clr_min": 9.0, "color": "#6aa7e6"},
+    {"key": "stars", "label": "Stars", "clr_min": 4.0, "color": "#5fbf94"},
     {"key": "contenders", "label": "Contenders", "clr_min": 0.0, "color": "#8a94a3"},
 ]
 
