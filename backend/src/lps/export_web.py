@@ -363,6 +363,20 @@ def _year_achievements(
     `players` list in achievements.csv (same rule as `achievements.score_bonuses`).
     """
     names_lc = {str(n).lower(): str(n) for n in playernames}
+    # Also register bare-handle aliases for disambiguated names like "Knight (LPL)"
+    # so achievements CSV entries (which store plain handles) resolve correctly.
+    # Skip if the bare handle is already taken (non-disambiguated player with same
+    # handle) or if multiple disambiguated names share the same bare handle.
+    _bare_count: dict[str, int] = {}
+    for key in list(names_lc):
+        if "(" in key:
+            bare = re.sub(r"\s*\(.*\)\s*$", "", key).strip()
+            _bare_count[bare] = _bare_count.get(bare, 0) + 1
+    for key, canonical in list(names_lc.items()):
+        if "(" in key:
+            bare = re.sub(r"\s*\(.*\)\s*$", "", key).strip()
+            if bare not in names_lc and _bare_count.get(bare, 0) == 1:
+                names_lc[bare] = canonical
 
     out: dict[str, dict[str, dict]] = {}
 
