@@ -19,6 +19,9 @@ The repo is split into `backend/` (this Python system) and `frontend/` (the rank
 (`src/lps/`, `data/`, `info/`, generated `player_ratings_*.xlsx`) are relative to `backend/`.
 `config.PROJECT_ROOT` resolves to `backend/`. `README.md`/`CLAUDE.md`/`docs/` stay at the repo root.
 
+One-off investigation/debug scripts go in **`backend/analysis/`**, not `src/lps/` or the
+`backend/` root. They're kept for reference and aren't part of the pipeline (see its README).
+
 ## Environment & commands
 
 ```bash

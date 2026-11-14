@@ -97,6 +97,7 @@ dmypy.json
 # Generated outputs / scratch (backend now lives under backend/)
 player_above_expected_metrics.csv
 season_out.txt
+player_yearly_breakdown.json
 *.stackdump
 backend/info/backup/
 backend/info/backup2/
