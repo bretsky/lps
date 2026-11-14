@@ -347,9 +347,15 @@ _GLOSSARY: list[tuple[str, str]] = [
     ),
     (
         "Clutch",
-        "INDIVIDUAL clutch = LPS/Gm.wt - LPS/Gm. How much the player's OWN per-game "
-        "value rose (or fell) in higher-stakes games. Positive = stepped up in "
-        "playoffs/tournaments; negative = faded. (Distinct from Intangibles, which is "
+        "INDIVIDUAL clutch = Bayesian-shrunk (high-stakes contribution/game) minus "
+        "(regular-season contribution/game), using raw net_contribution. "
+        "High-stakes = domestic playoffs + international tournaments; international games "
+        "count 2× vs domestic playoffs (Worlds/MSI weigh more than LCK playoffs), and "
+        "international games are further weighted by bracket stage (Finals=3×, SF=2×, "
+        "QF=1.5×, group stage=1×). Bayesian shrinkage (k=20 games) pulls sparse samples "
+        "toward the population median so noise cases don't pollute the ranking. "
+        "Positive = raised their game in big moments; negative = faded. "
+        "(Distinct from Intangibles, which is "
         "team-level and identical for all 5 teammates.)",
     ),
     (
@@ -502,9 +508,19 @@ def build_export_frame(
     r["pts_per_game_w"] = r["total_score"] / r["total_weight"].where(
         r["total_weight"] > 0, 1.0
     )
-    # Individual "clutch": how much a player's own per-game value shifted UP in higher-stakes
-    # (higher-weight: playoff/tournament) games. Positive = raised their game when it mattered.
-    r["clutch_gap"] = r["pts_per_game_w"] - r["pts_per_game"]
+    # Per-year clutch: intl games count 2× vs domestic playoffs (same tier weighting as
+    # the career metric). No Bayesian shrinkage here — per-year view shows raw signal.
+    n_intl = r.get("tourn_games", pd.Series(0, index=r.index)).fillna(0.0)
+    n_playoff = r.get("playoff_games", pd.Series(0, index=r.index)).fillna(0.0)
+    eff_hs_n = 2.0 * n_intl + n_playoff
+    intl_pg = r.get("intl_contrib_pg", pd.Series(np.nan, index=r.index)).fillna(0.0)
+    playoff_pg = r.get("playoff_contrib_pg", pd.Series(np.nan, index=r.index)).fillna(0.0)
+    hs_pg = pd.Series(np.nan, index=r.index)
+    mask = eff_hs_n > 0
+    hs_pg[mask] = (
+        2.0 * n_intl[mask] * intl_pg[mask] + n_playoff[mask] * playoff_pg[mask]
+    ) / eff_hs_n[mask]
+    r["clutch_gap"] = hs_pg - r.get("reg_contrib_pg", pd.Series(np.nan, index=r.index))
     # Weighted contribution per game: contrib_pts / total accumulation weight (same match
     # scaling as LPS/Gm.wt, restricted to the contribution component).
     r["contrib_pg_w"] = r["contrib_pts"] / r["total_weight"].where(

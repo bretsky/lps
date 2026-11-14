@@ -22,8 +22,10 @@ any player. Baseline uses the OPPONENT league's Elo (domestic: your own league).
 
 from __future__ import annotations
 
+import json
 import logging
 import math
+from datetime import date as _date, timedelta
 from typing import Optional
 
 import numpy as np
@@ -676,6 +678,94 @@ def build_player_match_scores(
     return m
 
 
+_LP_STAGE_WEIGHT_CACHE: dict[int, dict] = {}
+
+
+def _lp_stage_weights(year: int) -> dict:
+    """Load Leaguepedia match JSONs and build a lookup:
+        (date_str "YYYY-MM-DD", frozenset({team_lower, team_lower})) -> stage_weight
+    Only caches QF/SF/Finals entries (default weight 1.0 is implicit).
+    Stage weights: Finals=3.0, Semifinals=2.0, Quarterfinals=1.5, else 1.0.
+    """
+    if year in _LP_STAGE_WEIGHT_CACHE:
+        return _LP_STAGE_WEIGHT_CACHE[year]
+
+    def _stage_w(match_id: str) -> float:
+        mid = match_id.lower()
+        if "quarterfinal" in mid:
+            return 1.5
+        if "semifinal" in mid:
+            return 2.0
+        if "final" in mid:  # grand final only (semi/quarter already caught above)
+            return 3.0
+        return 1.0
+
+    table: dict = {}
+    match_dir = DATA_DIR / "leaguepedia" / "matches"
+    for path in sorted(match_dir.glob("*.json")):
+        if path.stem.endswith("_all"):
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not isinstance(data, list):
+            continue
+        for match in data:
+            if str(match.get("Year", "")) != str(year):
+                continue
+            w = _stage_w(match.get("MatchId", ""))
+            if w == 1.0:
+                continue  # only cache above-default weights
+            t1 = (match.get("Team1") or "").strip().lower()
+            t2 = (match.get("Team2") or "").strip().lower()
+            if not t1 or not t2:
+                continue
+            teams = frozenset([t1, t2])
+            dt_str = (match.get("DateTime UTC") or "")[:10]
+            if len(dt_str) == 10:
+                table[(dt_str, teams)] = max(table.get((dt_str, teams), 0.0), w)
+
+    _LP_STAGE_WEIGHT_CACHE[year] = table
+    return table
+
+
+def _annotate_stage_weights(matches: pd.DataFrame, year: int) -> pd.DataFrame:
+    """Add a `stage_weight` column to the match frame (1.0 default; higher for QF/SF/Finals
+    in international tournaments). Uses Leaguepedia match data joined by date + team pair,
+    with ±1-day tolerance for multi-day BO5 series."""
+    table = _lp_stage_weights(year)
+    if not table:
+        matches = matches.copy()
+        matches["stage_weight"] = 1.0
+        return matches
+
+    intl_mask = matches["is_international"].fillna(False)
+    if not intl_mask.any():
+        matches = matches.copy()
+        matches["stage_weight"] = 1.0
+        return matches
+
+    matches = matches.copy()
+    matches["stage_weight"] = 1.0
+
+    dates = pd.to_datetime(matches["date"]).dt.date
+    t1 = matches["teamname"].str.strip().str.lower()
+    t2 = matches["opp_teamname"].str.strip().str.lower()
+
+    intl_idx = matches.index[intl_mask]
+    for idx in intl_idx:
+        teams = frozenset([t1[idx], t2[idx]])
+        d = dates[idx]
+        for delta in (0, -1, 1):
+            key = (str(d + timedelta(days=delta)), teams)
+            if key in table:
+                matches.at[idx, "stage_weight"] = table[key]
+                break
+
+    return matches
+
+
 def build_player_ratings(
     year: int,
     weights: Optional[ScoreWeights] = None,
@@ -739,6 +829,10 @@ def build_player_ratings(
                 f"minor tiers {sorted(matches.loc[drop, 'game_label'].unique())}"
             )
             matches = matches[~drop]
+
+    # Annotate each international game with a stage weight (Finals=3×, SF=2×, QF=1.5×, else 1×)
+    # sourced from Leaguepedia match JSON, joined by (date ±1d, team pair).
+    matches = _annotate_stage_weights(matches, year)
 
     def _mode(s: pd.Series):
         m = s.mode()
@@ -990,7 +1084,49 @@ def build_player_ratings(
         tourn_games=("phase", lambda s: int((s == "tournament").sum())),
     )
 
-    r = meta.join(src).join(phase_tot).join(by_tourn)
+    # Per-phase contribution averages — raw net_contribution (phase-weight-agnostic).
+    # reg: plain mean. playoff: plain mean. intl (tournament): stage-weighted mean so
+    # Finals/SF/QF games count more than group-stage games.
+    reg_contrib_pg = (
+        matches[matches["phase"] == "regular"]
+        .groupby("playername")["net_contribution"]
+        .mean()
+        .rename("reg_contrib_pg")
+    )
+    playoff_contrib_pg = (
+        matches[matches["phase"] == "playoff"]
+        .groupby("playername")["net_contribution"]
+        .mean()
+        .rename("playoff_contrib_pg")
+    )
+    _intl = matches[matches["phase"] == "tournament"]
+    if "stage_weight" in _intl.columns and _intl["stage_weight"].gt(0).any():
+        intl_contrib_pg = (
+            _intl.groupby("playername")
+            .apply(
+                lambda g: float(
+                    np.average(g["net_contribution"], weights=g["stage_weight"])
+                )
+                if g["stage_weight"].sum() > 0
+                else float(g["net_contribution"].mean())
+            )
+            .rename("intl_contrib_pg")
+        )
+    else:
+        intl_contrib_pg = (
+            _intl.groupby("playername")["net_contribution"]
+            .mean()
+            .rename("intl_contrib_pg")
+        )
+
+    r = (
+        meta.join(src)
+        .join(phase_tot)
+        .join(by_tourn)
+        .join(reg_contrib_pg)
+        .join(playoff_contrib_pg)
+        .join(intl_contrib_pg)
+    )
     r["total_weight"] = total_weight
     pts = (
         [

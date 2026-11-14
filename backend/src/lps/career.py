@@ -149,6 +149,9 @@ _GW_COLS = [
     "pts_per_game",
     "contrib_pg",
     "avg_contrib",
+    "reg_contrib_pg",
+    "playoff_contrib_pg",
+    "intl_contrib_pg",
     "avg_resid",
     "avg_p_model",
     "sched_strength",
@@ -405,7 +408,48 @@ def _aggregate(
     tw = out["total_weight"].replace(0, 1)
     out["pts_per_game_w"] = out["total_score"] / tw
     out["contrib_pg_w"] = out["contrib_pts"] / tw
-    out["clutch_gap"] = out["pts_per_game_w"] - out["pts_per_game"]
+
+    # Phase-contribution rates must be averaged weighted by PHASE game count, not total
+    # games (the _GW_COLS mechanism above uses total games, which over-weights years where
+    # the player happened to have more games overall). Recompute here with correct weights.
+    for n_col, rate_col in [
+        ("reg_games", "reg_contrib_pg"),
+        ("playoff_games", "playoff_contrib_pg"),
+        ("tourn_games", "intl_contrib_pg"),
+    ]:
+        if rate_col not in allyears.columns:
+            continue
+        tmp = allyears[list(keys) + [n_col, rate_col]].copy()
+        tmp["_w"] = tmp[rate_col].fillna(0.0) * tmp[n_col].fillna(0.0)
+        wsum = tmp.groupby(keys, sort=False)["_w"].sum()
+        nsum = out[n_col].replace(0, 1)
+        out[rate_col] = wsum / nsum
+
+    # Weighted high-stakes rate: international games count 2× vs domestic playoffs,
+    # reflecting the higher competition tier of Worlds/MSI vs domestic postseason.
+    _INTL_CLUTCH_WEIGHT = 2.0
+    n_intl = out["tourn_games"].fillna(0.0)
+    n_playoff = out["playoff_games"].fillna(0.0)
+    eff_hs_n = _INTL_CLUTCH_WEIGHT * n_intl + n_playoff
+    intl_pg = out.get("intl_contrib_pg", pd.Series(np.nan, index=out.index)).fillna(0.0)
+    playoff_pg = out.get("playoff_contrib_pg", pd.Series(np.nan, index=out.index)).fillna(0.0)
+    out["hs_contrib_pg"] = np.where(
+        eff_hs_n > 0,
+        (_INTL_CLUTCH_WEIGHT * n_intl * intl_pg + n_playoff * playoff_pg) / eff_hs_n.clip(lower=1e-9),
+        np.nan,
+    )
+
+    # Bayesian shrinkage toward population median — pulls small-sample players toward center
+    # so noise cases (3 Worlds games, 1 career playoff) don't dominate the clutch ranking.
+    # k=20 means a player needs 20+ phase games before their own data dominates the prior.
+    _K_BAYES = 20.0
+    n_reg = out["reg_games"].fillna(0.0)
+    has_both = (n_reg > 0) & (eff_hs_n > 0)
+    pop_reg = out.loc[has_both, "reg_contrib_pg"].median()
+    pop_hs = out.loc[has_both, "hs_contrib_pg"].median()
+    shrunk_reg = (n_reg * out["reg_contrib_pg"].fillna(pop_reg) + _K_BAYES * pop_reg) / (n_reg + _K_BAYES)
+    shrunk_hs = (eff_hs_n * out["hs_contrib_pg"].fillna(pop_hs) + _K_BAYES * pop_hs) / (eff_hs_n + _K_BAYES)
+    out["clutch_gap"] = np.where(has_both, shrunk_hs - shrunk_reg, np.nan)
 
     # Years active + peak.
     yr = g["year"].agg(n_years="nunique", first_year="min", last_year="max")
