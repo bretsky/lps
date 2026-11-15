@@ -31,7 +31,13 @@ export function PlayerRow({ row, maxClr }: { row: IndexRow; maxClr: number }) {
           {row.rank}
         </span>
       </div>
-      <Portrait src={row.photo} name={displayName(row.playername)} size={44} ring={isHol ? "#f1d58f" : tierColor} />
+      <Portrait
+        src={row.photo}
+        focus={{ cx: row.photo_cx, ar: row.photo_ar, top: row.photo_top, neck: row.photo_neck }}
+        name={displayName(row.playername)}
+        size={44}
+        ring={isHol ? "#f1d58f" : tierColor}
+      />
       <div className="min-w-0">
         <div className="flex items-center gap-1.5">
           <StatusDot row={row} />

@@ -111,7 +111,7 @@ _INDEX_FIELDS: list[str] = [
     "clr", "career_value", "pace_value", "peak_value", "resume_bonus",
     "total_score", "peak_lps", "tier",
     "hall_of_legends", "hol_year", "is_retired", "is_active",
-    "photo", "real_name", "titles",
+    "photo", "photo_cx", "photo_ar", "photo_top", "photo_neck", "real_name", "titles",
 ]
 
 # Round most floats to this many decimals when writing.
@@ -882,8 +882,9 @@ def _year_teams(
     return out
 
 
-def _player_photos(playernames: Iterable[str]) -> dict[str, dict[str, str | None]]:
-    """{playername: {url, photo_caption, real_name, country}} from the Leaguepedia photo cache.
+def _player_photos(playernames: Iterable[str]) -> dict[str, dict[str, str | float | None]]:
+    """{playername: {url, photo_caption, photo_cx/ar/top/neck, real_name, country}} from the
+    Leaguepedia photo cache (`photo_*` = head position and aspect, for avatar crops).
 
     Empty (and the frontend falls back to a monogram) until
     `python -m lps.fetch_player_images` has populated it.
@@ -896,13 +897,15 @@ def _player_photos(playernames: Iterable[str]) -> dict[str, dict[str, str | None
     import json as _json
 
     cache = _json.loads(PLAYER_IMAGES_JSON.read_text(encoding="utf-8"))
-    out: dict[str, dict[str, str | None]] = {}
+    out: dict[str, dict[str, str | float | None]] = {}
     for name in set(playernames):
         e = cache.get(name)
         if not e or not e.get("url"):
             continue
         bits = [b for b in (e.get("team"), str(e["year"]) if e.get("year") else None) if b]
         out[name] = {"url": e["url"], "photo_caption": " · ".join(bits) or None,
+                     "photo_cx": e.get("cx"), "photo_ar": e.get("ar"),
+                     "photo_top": e.get("top"), "photo_neck": e.get("neck"),
                      "real_name": e.get("real_name"), "country": e.get("country")}
     return out
 
@@ -1140,7 +1143,8 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
     # Leaguepedia photo per player (CDN thumbnail URL + "Team · Year" caption).
     photos = _player_photos(ov["playername"].tolist())
     ov["photo"] = ov["playername"].map(lambda n: (photos.get(n) or {}).get("url"))
-    for col in ("photo_caption", "real_name", "country"):
+    for col in ("photo_caption", "photo_cx", "photo_ar", "photo_top", "photo_neck",
+                "real_name", "country"):
         ov[col] = ov["playername"].map(lambda n, c=col: (photos.get(n) or {}).get(c))
     logger.info("[web] player photos: %d / %d players", int(ov["photo"].notna().sum()), len(ov))
 
@@ -1179,7 +1183,7 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
     enrich_cols = [
         "playername", "slug", "current_team", "current_league", "current_year",
         "hall_of_legends", "hol_year", "is_retired", "is_active", "positions", "photo",
-        "real_name", "titles",
+        "photo_cx", "photo_ar", "photo_top", "photo_neck", "real_name", "titles",
     ]
     ov_enrich = ov[[c for c in enrich_cols if c in ov.columns]].copy()
     for lane in ROLES:

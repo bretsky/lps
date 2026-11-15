@@ -60,7 +60,7 @@ Credentials live in `.env` (gitignored): `LP_USERNAME` / `LP_PASSWORD` are Leagu
 | `win_probability_ensemble.py` | Ensemble variant: 5 position models + a meta-model. This is the primary/current win-prob model. |
 | `top.py` | Standalone top-lane LPS v1 experiment (career value, replacement-level). |
 | `fetch_player_history.py` | Script: per-player, per-year LP team history + team logo URLs → `data/leaguepedia/{player_history,team_logos}.json`. |
-| `fetch_player_images.py` | Script: one Leaguepedia photo (+ real name, country) per workbook player → `data/leaguepedia/player_images.json`. Shared handles ("Knight (LPL)") are matched to the right wiki page by roster votes (`player_identity`'s team-year bridge); picks the newest photo from inside the player's career. Pin/block a photo in `info/player_image_overrides.csv` (`label,file`). |
+| `fetch_player_images.py` | Script: one Leaguepedia photo (+ real name, country) per workbook player → `data/leaguepedia/player_images.json`. Shared handles ("Knight (LPL)") are matched to the right wiki page by roster votes (`player_identity`'s team-year bridge); picks the newest photo from inside the player's career. Pin/block a photo in `info/player_image_overrides.csv` (`label,file`). Also measures where each cutout's head is (`cx`, `ar`, `top`, `neck`; Pillow) so circular avatars centre and zoom on the face — unmeasured entries every run, `--refocus` for all. |
 | `export_web.py` | Workbook + caches → the site's JSON bundle in `frontend/public/data/current/` (incl. `photo`, `real_name`, `honors`, `titles`). |
 | `main.py` / `top.py` | Scratch/experiment entry points — not the "real" pipeline. |
 

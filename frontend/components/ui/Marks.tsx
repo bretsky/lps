@@ -148,20 +148,80 @@ export function TrophyPills({ titles, compact = false }: { titles?: TitleTally |
   );
 }
 
+/**
+ * Ask Leaguepedia's (Fandom) CDN for a width-scaled render of a photo. Shrinking a full-size
+ * photo ~10x in the browser aliases fine detail (thin glasses frames break into dots); the
+ * CDN resamples properly. Non-Leaguepedia URLs pass through unchanged.
+ */
+function scaledPhoto(src: string, width: number): string {
+  if (!src.includes("/revision/latest")) return src;
+  return src.replace(
+    /\/revision\/latest(?:\/scale-to-width-down\/\d+)?/,
+    `/revision/latest/scale-to-width-down/${width}`,
+  );
+}
+
+/** Where the head sits in a photo, measured by fetch_player_images (all fractions 0..1). */
+export type PhotoFocus = {
+  cx?: number | null;   // head centre, of photo width
+  ar?: number | null;   // photo width / height
+  top?: number | null;  // top of the hair, of photo height
+  neck?: number | null; // neck, of photo height
+};
+
+// Avatar framing, as fractions of the circle: the hair starts HEAD_TOP down and hair-to-neck
+// spans HEAD_SPAN (calibrated on photos that looked right at a flat 1.3x zoom). Photos
+// without a measurement keep that flat zoom.
+const HEAD_TOP = 0.12;
+const HEAD_SPAN = 0.68;
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 1.6;
+const ZOOM_DEFAULT = 1.3;
+const TOP_DEFAULT = 0.09;
+
+/**
+ * Size, offset and object-position for a photo in a circle of side 1. The photo covers a
+ * square box of side `zoom`; it's the box that is offset and zoomed, so a photo shot closer
+ * (bigger head) gets less zoom and nobody's chin falls out of the circle.
+ *
+ * Horizontally, a photo of aspect ar > 1 overflows the box sideways by (ar - 1) box widths;
+ * object-position p shifts it left by p of that, so the head lands at cx*ar - p*(ar - 1),
+ * which should equal 0.5 for the head to sit in the middle.
+ */
+function frame(f: PhotoFocus | undefined) {
+  const ar = f?.ar ?? 1.26;
+  const hScale = ar >= 1 ? 1 : 1 / ar; // photo height per box side (taller photos overflow down)
+  let zoom = ZOOM_DEFAULT;
+  let top = TOP_DEFAULT;
+  if (f?.top != null && f.neck != null && f.neck > f.top) {
+    zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, HEAD_SPAN / ((f.neck - f.top) * hScale)));
+    // Keep the box covering the bottom of the circle even if that lifts the head a little.
+    top = Math.max(HEAD_TOP - f.top * hScale * zoom, 1 - zoom);
+  }
+  const posX = f?.cx == null || ar <= 1 ? 0.5 : Math.min(1, Math.max(0, (f.cx * ar - 0.5) / (ar - 1)));
+  return { zoom, top, posX, ar };
+}
+
 /** Round portrait in a gold ring (Leaguepedia photo, monogram fallback). */
 export function Portrait({
   src,
   name,
+  focus,
   size = 40,
   ring = "#c9a45c",
   className = "",
 }: {
   src?: string | null;
   name: string;
+  /** Head position in the photo; framed with a flat zoom when absent. */
+  focus?: PhotoFocus;
   size?: number;
   ring?: string;
   className?: string;
 }) {
+  const fr = frame(focus);
+  // On-screen width of the whole photo, for the CDN thumbnail (doubled for high-DPI screens).
+  const w1 = Math.ceil((size * fr.zoom * Math.max(fr.ar, 1)) / 10) * 10;
   return (
     <span
       className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full ${className}`}
@@ -174,13 +234,20 @@ export function Portrait({
     >
       {src ? (
         <img
-          src={src}
+          src={scaledPhoto(src, w1 * 2)}
+          srcSet={`${scaledPhoto(src, w1)} 1x, ${scaledPhoto(src, w1 * 2)} 2x`}
           alt=""
           loading="lazy"
           referrerPolicy="no-referrer"
-          // Zoom toward the face by sizing (not transform: scale, which upsamples a 44px raster and
-          // blurs it). Pinned to the top edge so the head is never clipped; overflow centers sideways.
-          className="mt-[7%] h-[150%] w-[150%] max-w-none shrink-0 self-start object-cover object-top"
+          // Zoom by sizing (not transform: scale, which upsamples a 44px raster and blurs it);
+          // the box overflows the circle and centres sideways.
+          className="max-w-none shrink-0 self-start object-cover"
+          style={{
+            width: size * fr.zoom,
+            height: size * fr.zoom,
+            marginTop: size * fr.top,
+            objectPosition: `${(fr.posX * 100).toFixed(1)}% 0%`,
+          }}
         />
       ) : (
         <span

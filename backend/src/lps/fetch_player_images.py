@@ -248,6 +248,98 @@ def _thumb_urls(files: list[str], width: int = _THUMB_WIDTH) -> dict[str, str]:
     return out
 
 
+_FOCUS_WIDTH = 160      # px; plenty to locate a head, tiny to download
+_FOCUS_WORKERS = 8
+_HEAD_BAND = 0.25       # fraction of image height below the top of the cutout taken as "head"
+_FOCUS_KEYS = ("cx", "ar", "top", "neck")
+
+
+def _scaled_url(url: str, width: int) -> str:
+    """Rewrite a Leaguepedia (Fandom) CDN url to its width-scaled render."""
+    return re.sub(r"/revision/latest(?:/scale-to-width-down/\d+)?",
+                  f"/revision/latest/scale-to-width-down/{width}", url)
+
+
+def head_focus(url: str) -> dict[str, float | None]:
+    """Where the head sits in a photo, so circular avatars can frame the face.
+
+    Returns {cx, ar, top, neck}: horizontal head centre (0..1 of width), width/height, and the
+    top of the hair and the neck (0..1 of height). Leaguepedia photos are transparent cutouts
+    but framing varies by team shoot -- players off-centre, some shot far closer than others
+    -- so one fixed crop can't fit them all.
+
+    - cx: centroid of the opaque pixels in a band `_HEAD_BAND` of the height below the top
+      of the cutout.
+    - neck: walking down from the top, the opaque width grows through the head, then shrinks.
+      Past the first shrink (the jaw can narrow before the neck under wide hair), keep going
+      until the shoulders outgrow the head and take the narrowest row in between.
+
+    All but `ar` are None for an opaque (non-cutout) image; `neck` is None if not found.
+    """
+    import io
+
+    import numpy as np
+    from PIL import Image
+
+    req = urllib.request.Request(_scaled_url(url, _FOCUS_WIDTH), headers={"User-Agent": _MW_UA})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        im = Image.open(io.BytesIO(resp.read())).convert("RGBA")
+    w, h = im.size
+    out: dict[str, float | None] = {"cx": None, "ar": round(w / h, 3), "top": None, "neck": None}
+    mask = np.asarray(im)[:, :, 3] > 128
+    if mask.mean() >= 0.97:
+        return out
+    counts = np.convolve(mask.sum(axis=1).astype(float), np.ones(3) / 3, mode="same")
+    rows = np.flatnonzero(counts >= 3)
+    if not rows.size:
+        return out
+    y0 = int(rows[0])
+    band = mask[y0 : y0 + max(1, round(_HEAD_BAND * h))]
+    cols = band.sum(axis=0)
+    if not cols.sum():
+        return out
+    out["cx"] = round(float((np.arange(w) + 0.5) @ cols / cols.sum()) / w, 3)
+    out["top"] = round(y0 / h, 3)
+    widest = 0.0
+    for y in range(y0, h):
+        widest = max(widest, counts[y])
+        if y > y0 + 0.1 * h and counts[y] < 0.8 * widest:
+            end = y
+            while end + 1 < h and counts[end + 1] <= widest:
+                end += 1
+            out["neck"] = round((y + int(np.argmin(counts[y : end + 1]))) / h, 3)
+            break
+    return out
+
+
+def add_head_focus(cache: dict[str, dict | None], force: bool = False) -> int:
+    """Fill head_focus keys on cached photo entries missing any (all of them with `force`)."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    todo = {lab: e for lab, e in cache.items()
+            if e and e.get("url") and (force or any(k not in e for k in _FOCUS_KEYS))}
+    if not todo:
+        return 0
+    logger.info("[images] locating heads in %d photos", len(todo))
+
+    def work(item: tuple[str, dict]) -> tuple[str, dict | None]:
+        lab, e = item
+        try:
+            return lab, head_focus(e["url"])
+        except Exception as exc:  # noqa: BLE001 -- an unmeasured photo just stays centred
+            logger.warning("[images] head focus failed for %s: %s", lab, exc)
+            return lab, None
+
+    done = 0
+    with ThreadPoolExecutor(_FOCUS_WORKERS) as pool:
+        for lab, focus in pool.map(work, todo.items()):
+            if focus:
+                todo[lab].update(focus)
+                done += 1
+    logger.info("[images] head focus: %d / %d measured", done, len(todo))
+    return done
+
+
 def _load_overrides() -> dict[str, str]:
     if not OVERRIDES_CSV.exists():
         return {}
@@ -344,6 +436,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--players", nargs="+", metavar="LABEL", help="Specific workbook labels (default: all).")
     parser.add_argument("--refresh", action="store_true", help="Re-pick photos for labels already cached.")
+    parser.add_argument("--refocus", action="store_true",
+                        help="Re-measure head position for every cached photo (default: only unmeasured).")
     args = parser.parse_args()
 
     cache: dict[str, dict | None] = {}
@@ -355,11 +449,14 @@ def main() -> None:
     labels = args.players or list(careers)
     if not (args.refresh or args.players):
         labels = [lab for lab in labels if lab not in cache]
-    if not labels:
-        logger.info("[images] nothing to fetch (use --refresh to re-pick)")
+    if labels:
+        cache.update(fetch_player_images(labels, LPClient(), careers))
+    else:
+        logger.info("[images] no new players to fetch (use --refresh to re-pick)")
+    # A re-picked photo replaces its whole entry, so it is re-measured here too.
+    measured = add_head_focus(cache, force=args.refocus)
+    if not (labels or measured):
         return
-
-    cache.update(fetch_player_images(labels, LPClient(), careers))
     LEAGUEPEDIA_DIR.mkdir(parents=True, exist_ok=True)
     PLAYER_IMAGES_JSON.write_text(json.dumps(cache, ensure_ascii=False, indent=1), encoding="utf-8")
     logger.info("[images] wrote %s", PLAYER_IMAGES_JSON)

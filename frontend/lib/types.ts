@@ -46,6 +46,10 @@ export interface IndexRow {
   is_retired: boolean | null;
   is_active: boolean | null;
   photo?: string | null;                 // Leaguepedia CDN thumbnail (fetch_player_images)
+  photo_cx?: number | null;              // head centre, 0..1 of photo width (null = centre)
+  photo_ar?: number | null;              // photo width / height
+  photo_top?: number | null;             // top of the hair, 0..1 of photo height
+  photo_neck?: number | null;            // neck, 0..1 of photo height (avatar zoom)
   titles?: TitleTally | null;            // champion counts for the trophy pills
   real_name?: string | null;             // Leaguepedia Players.Name
 }
