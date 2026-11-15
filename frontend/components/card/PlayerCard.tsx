@@ -17,6 +17,7 @@ import {
 } from "@/lib/theme";
 import { EventMark, HonorMark, LeagueMark } from "@/components/ui/Marks";
 import { Star } from "@/components/profile/AchievementIcons";
+import { ChampionIcon } from "@/components/ui/ChampionIcon";
 import { CardRadar } from "./CardRadar";
 
 // Card geometry (CSS px). Trading-card-ish proportions, a little taller to fit
@@ -574,7 +575,7 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
               </div>
 
               {/* readouts */}
-              <div className="mt-2 grid grid-cols-3 gap-x-2 gap-y-1.5 border-y border-gold-deep/50 py-2">
+              <div className="mt-2 grid grid-cols-3 gap-x-2 gap-y-1.5 border-y border-gold-deep/50 py-1.5">
                 <Readout label="Career LPS" value={fmtInt(cl?.total_score)} />
                 <Readout label="Seasons" value={`${player.n_years}`} sub={`${player.first_year}–${player.last_year}`} />
                 <Readout label="LPS / game" value={player.rates?.pts_per_game != null ? player.rates.pts_per_game.toFixed(3) : "—"} />
@@ -583,8 +584,37 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
                 <Readout label="Peak years" value={`${cl?.peak_years ?? "—"}`} />
               </div>
 
+              {/* signature champions (top 3 by LPS earned) + career KDA */}
+              {(player.champions?.length ?? 0) > 0 && (
+                <div className="mt-1.5 flex items-center gap-2">
+                  <div className="shrink-0 leading-none">
+                    <div className="font-serif text-[7px] font-bold tracking-[0.3em] text-gold">SIGNATURE</div>
+                    {player.career_stats?.kda != null && (
+                      <div className="mt-1 font-mono text-[8px] text-text-dim">
+                        {player.career_stats.kda.toFixed(2)} KDA
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex min-w-0 flex-1 justify-end gap-2">
+                    {player.champions!.slice(0, 3).map((ch) => (
+                      <div key={ch.champion} className="flex min-w-0 items-center gap-1">
+                        <ChampionIcon name={ch.champion} size={20} ring={`${GOLD}99`} />
+                        <div className="min-w-0 leading-none">
+                          <div className="max-w-[58px] truncate text-[8px] font-semibold uppercase tracking-[0.08em] text-text-muted">
+                            {ch.champion}
+                          </div>
+                          <div className="mt-[2px] font-mono text-[7.5px] text-text-dim">
+                            {ch.games}g · {fmt(ch.lps, 1)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* honors ribbon */}
-              <div className="mt-2 flex min-h-[28px] flex-nowrap items-center justify-center gap-x-1.5 overflow-hidden">
+              <div className="mt-1.5 flex min-h-[22px] flex-nowrap items-center justify-center gap-x-1.5 overflow-hidden">
                 {recentHonors.length ? (
                   <>
                     {recentHonors.map((h, i) => (

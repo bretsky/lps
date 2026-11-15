@@ -16,8 +16,8 @@ const AXES: { key: RadarAxes; label: string }[] = [
 
 const N = AXES.length;
 const CX = 128;
-const CY = 120;
-const R = 78;
+const CY = 116;
+const R = 76;
 const LABEL_R = R + 18;
 
 function axisAngle(i: number): number {
@@ -60,8 +60,8 @@ export function CardRadar({ player, accentColor }: CardRadarProps) {
       {/* SVG radar chart */}
       <svg
         width="256"
-        height="222"
-        viewBox="0 0 256 222"
+        height="212"
+        viewBox="0 0 256 212"
         className="overflow-visible"
       >
         {/* grid rings */}

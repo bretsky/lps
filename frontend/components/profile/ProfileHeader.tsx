@@ -138,6 +138,7 @@ export function ProfileHeader({
             <div className="mt-1 font-mono text-xs text-text-dim">
               {yearsLabel(player.first_year, player.last_year, player.n_years)} · {fmtInt(player.games)} games ·{" "}
               {fmtPct(player.win_rate)} win rate
+              {player.career_stats?.kda != null && <> · {fmt(player.career_stats.kda, 2)} KDA</>}
             </div>
 
             {/* headline trophies */}

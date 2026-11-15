@@ -6,6 +6,7 @@ import { ResumeGrid } from "@/components/profile/ResumeGrid";
 import { CareerLpsAnatomy } from "@/components/profile/CareerLpsAnatomy";
 import { TrajectoryChart } from "@/components/profile/TrajectoryChart";
 import { SplitsPanel } from "@/components/profile/SplitsPanel";
+import { ChampionPool } from "@/components/profile/ChampionPool";
 import { loadIndex, loadLane, loadPlayer } from "@/lib/data";
 import { displayName } from "@/lib/format";
 import type { Lane } from "@/lib/types";
@@ -71,6 +72,7 @@ export default async function PlayerPage({
         <ResumeGrid player={player} />
         <CareerLpsAnatomy player={player} />
         <TrajectoryChart player={player} />
+        <ChampionPool player={player} />
         <SplitsPanel player={player} />
       </div>
     </main>

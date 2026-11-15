@@ -59,3 +59,27 @@ export function leagueIcon(league: string | null | undefined): { src: string; in
   const hit = LEAGUE_FILES[league] ?? LEAGUE_FILES[league.toUpperCase()];
   return hit ? { src: `/icons/leagues/${hit.file}.png`, invert: !!hit.invert } : null;
 }
+
+// Champion square icons, hotlinked from Riot's Data Dragon. Pinned version: a champion
+// released after it 404s (ChampionIcon falls back to its initial), so bump this when the
+// data gains a new champion. 16.22.1 covers every champion in the data as of Nov 2026.
+const DDRAGON_VERSION = "16.22.1";
+
+// Display names (Oracle / Leaguepedia) whose Data Dragon id isn't just the name with
+// punctuation and spaces stripped.
+const CHAMPION_ID_EXCEPTIONS: Record<string, string> = {
+  Wukong: "MonkeyKing",
+  "Nunu & Willump": "Nunu",
+  "Renata Glasc": "Renata",
+  LeBlanc: "Leblanc",
+  "Cho'Gath": "Chogath",
+  "Kai'Sa": "Kaisa",
+  "Kha'Zix": "Khazix",
+  "Vel'Koz": "Velkoz",
+  "Bel'Veth": "Belveth",
+};
+
+export function championIcon(name: string): string {
+  const id = CHAMPION_ID_EXCEPTIONS[name] ?? name.replace(/[^A-Za-z0-9]/g, "");
+  return `https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VERSION}/img/champion/${id}.png`;
+}

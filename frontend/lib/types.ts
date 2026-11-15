@@ -227,6 +227,31 @@ export interface PlayerDetail {
     global: Record<RadarAxes, number | null>;
     lane: Record<RadarAxes, number | null> | null;
   };
+  champions?: ChampionLine[];            // top champions by LPS earned on them (export_web.TOP_CHAMPIONS)
+  career_stats?: CareerStats | null;     // career box-score totals over the LPS-scored games
+}
+
+/** Box-score line over a set of games. K/D/A + KDA only where box scores exist
+ *  (kda_games of them); CS + CS/min only where CS and game length were recorded. */
+export interface BoxLine {
+  games: number;
+  wins: number;
+  lps: number;                           // LPS earned in these games (sums to CareerLPS over all champions)
+  kda_games?: number;
+  kills?: number;
+  deaths?: number;
+  assists?: number;
+  kda?: number;                          // (K + A) / max(D, 1)
+  cs?: number;
+  cspm?: number;
+}
+
+export interface ChampionLine extends BoxLine {
+  champion: string;                      // display name as in Oracle / Leaguepedia ("Kai'Sa")
+}
+
+export interface CareerStats extends BoxLine {
+  n_champions: number;
 }
 
 export interface GlossaryJson {
