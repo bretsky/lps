@@ -43,7 +43,7 @@ export function RankingsPage({ data, meta, asOf }: { data: BoardData; meta: Meta
             href="/about"
             className="font-serif text-[10px] font-bold uppercase tracking-[0.3em] text-gold hover:text-gold-bright"
           >
-            About LPS &amp; glossary
+            About CLR &amp; glossary
           </Link>
         </p>
         <p className="mt-1 text-[11px] text-text-dim">

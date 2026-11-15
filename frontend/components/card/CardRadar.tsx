@@ -146,8 +146,8 @@ export function CardRadar({ player, accentColor }: CardRadarProps) {
         })}
       </svg>
 
-      {/* global / lane toggle */}
-      <div className="mt-1.5 deco-control flex items-center p-0.5">
+      {/* global / lane toggle: clicks here switch the view, not flip the card */}
+      <div className="mt-1.5 deco-control flex items-center p-0.5" onClick={(e) => e.stopPropagation()}>
         {(["global", "lane"] as const).map((m) => (
           <button
             key={m}

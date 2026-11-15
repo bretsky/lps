@@ -548,7 +548,7 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
                 <span>PERCENTILE PROFILE</span>
               </div>
 
-              <div className="mt-0.5 flex justify-center" onClick={(e) => e.stopPropagation()}>
+              <div className="mt-0.5 flex justify-center">
                 <CardRadar player={player} accentColor={accent} />
               </div>
 

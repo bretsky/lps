@@ -27,11 +27,11 @@ export async function generateMetadata({
   try {
     const p = await loadPlayer(slug);
     return {
-      title: `${displayName(p.playername)} · LPS`,
+      title: `${displayName(p.playername)} · CLR`,
       description: `${displayName(p.playername)} — CLR ${p.clr.toFixed(1)}, rank #${p.rank}.`,
     };
   } catch {
-    return { title: "Player · LPS" };
+    return { title: "Player · CLR" };
   }
 }
 

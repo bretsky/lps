@@ -18,11 +18,11 @@ export async function generateMetadata({
   try {
     const p = await loadPlayer(slug);
     return {
-      title: `${displayName(p.playername)} · LPS Card`,
+      title: `${displayName(p.playername)} · CLR Card`,
       description: `${displayName(p.playername)} — CLR ${p.clr.toFixed(1)}, rank #${p.rank}. Click to flip.`,
     };
   } catch {
-    return { title: "Player Card · LPS" };
+    return { title: "Player Card · CLR" };
   }
 }
 

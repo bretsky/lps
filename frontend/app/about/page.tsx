@@ -9,8 +9,8 @@ import { groupGlossary, tidy, type GlossarySection } from "@/lib/glossary";
 import type { Meta, ResumeScoring } from "@/lib/types";
 
 export const metadata: Metadata = {
-  title: "About · LPS",
-  description: "How LPS and the Career Legend Rating are built, and what every column on the site means.",
+  title: "About · CLR",
+  description: "How the Career Legend Rating (CLR) and its LPS game scores are built, and what every column on the site means.",
 };
 
 const WEIGHT_KEY = "Weights (w_career, w_pace, w_peak, w_bonus)";
@@ -250,13 +250,14 @@ export default async function AboutPage() {
         </div>
         <h1 className="mt-3 font-display text-[48px] font-black uppercase leading-[0.9] tracking-[0.02em] sm:text-[72px]">
           <span className="text-metal">About</span>{" "}
-          <span className="font-serif text-[0.6em] font-semibold tracking-[0.12em] text-text">LPS</span>
+          <span className="font-serif text-[0.6em] font-semibold tracking-[0.12em] text-text">CLR</span>
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-text-muted">
-          LPS (League Performance Score) measures how much each player moved their team&apos;s chances of winning,
-          game by game, against what an average player would have done in the same spot. Seasons are scored on their
-          own, then rolled up into the <span className="text-gold-bright">Career Legend Rating</span>, which also
-          counts titles, placements and awards.
+          The <span className="text-gold-bright">Career Legend Rating</span> (CLR) ranks every player&apos;s whole
+          career. Its base is LPS (League Performance Score), which measures how much each player moved their
+          team&apos;s chances of winning, game by game, against what an average player would have done in the same
+          spot. Seasons are scored on their own, then rolled up into CLR, which also counts titles, placements and
+          awards.
         </p>
       </header>
 

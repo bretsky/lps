@@ -35,7 +35,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LPS · All-Time Rankings",
+  title: "CLR · All-Time Rankings",
   description:
     "League of Legends esports all-time player rankings by CLR (Career Legend Rating).",
 };

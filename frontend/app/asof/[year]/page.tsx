@@ -14,7 +14,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ year: string }> }): Promise<Metadata> {
   const { year } = await params;
-  return { title: `LPS · All-Time Rankings as of ${year}` };
+  return { title: `CLR · All-Time Rankings as of ${year}` };
 }
 
 export default async function AsOfPage({ params }: { params: Promise<{ year: string }> }) {
