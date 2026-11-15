@@ -61,11 +61,10 @@ season — this is the spark for the trajectory chart).
 **Granular score sources (the breakdown engine):**
 - By phase: `reg_pts`, `playoff_pts`, `tourn_pts`
 - By component: `base_pts`, `contrib_pts`, `wbonus_pts`
-- By stat source (sum to Contribution): `kills_pts`, `deaths_pts`, `assists_pts`, `damage_pts`,
-  `fb_pts`
+- By stat source (sum to Contribution): `kills_pts`, `deaths_pts`, `assists_pts`, `damage_pts`
 - Per tournament: dynamic `WLDs`, `MSI`, `EWC`, … columns
 - Per-game rates: `pts_per_game`, `pts_per_game_w`, `clutch_gap`, `avg_contrib`, `avg_resid`
-  (Intangibles), `avg_p_model`, `sched_strength`, `fb_rate`, `best_game`, `worst_game`
+  (Intangibles), `avg_p_model`, `sched_strength`, `best_game`, `worst_game`
 
 **Career splits (already formatted for display):** `teams_lps`, `leagues_lps`, `lanes_lps` —
 "T1 (245.3), DAMWON Gaming (30.1)" style, orderable as shares with `--breakdown-pct`.
@@ -244,7 +243,7 @@ achievements).
 **Level 3 — CareerLPS anatomy:**
 - **By phase:** Regular / Playoffs / Tourneys donut (`reg_pts`/`playoff_pts`/`tourn_pts`).
 - **By component:** Baseline / Contribution / WinBonus.
-- **By stat source:** Kills/Deaths/Assists/Damage/FirstBlood bar (these *sum to Contribution*) —
+- **By stat source:** Kills/Deaths/Assists/Damage bar (these *sum to Contribution*) —
   the most granular layer, showing *where on the rift* the value came from.
 - **By tournament:** per-event bars (WLDs/MSI/EWC/…).
 
@@ -261,7 +260,7 @@ unexplained. A "methodology" page links out to `docs/holistic-lps-plan.md` in pl
 
 We evaluated adding a semantic **Laning vs Teamplay** split to the contribution breakdown (and a
 corresponding radar axis). **Decision: do not build it.** Keep the uniformly-available **by-stat-
-source** split (Kills / Deaths / Assists / Damage / FirstBlood) as the most granular layer.
+source** split (Kills / Deaths / Assists / Damage) as the most granular layer.
 
 **Two reasons, both hard blockers:**
 

@@ -42,7 +42,7 @@ frontend consumes. Read the existing `player_ratings_career_2011_2026.xlsx` (or 
 3. **`players/<slug>.json`** — full detail per player: CLR + weighted components
    (`career_value/pace_value/peak_value/resume_bonus`), résumé breakdown (9 `rb_*` categories: #
    and Pt), phase (`reg/playoff/tourn_pts`), component (`base/contrib/wbonus_pts`), **by-stat-source
-   (`kills/deaths/assists/damage/fb_pts`)**, per-tournament cols, per-year trajectory
+   (`kills/deaths/assists/damage_pts`)**, per-tournament cols, per-year trajectory
    (`y2011..y2026`), High Noon (`hn_*`), per-game rates (`pts_per_game`, `pts_per_game_w`,
    `clutch_gap`, `avg_contrib`, `avg_resid`, `avg_p_model`, `sched_strength`), splits
    (`teams_lps/leagues_lps/lanes_lps`), and the **`radar`** object (below).
