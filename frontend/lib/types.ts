@@ -45,6 +45,28 @@ export interface IndexRow {
   hol_year: number | null;
   is_retired: boolean | null;
   is_active: boolean | null;
+  photo?: string | null;                 // Leaguepedia CDN thumbnail (fetch_player_images)
+  titles?: TitleTally | null;            // champion counts for the trophy pills
+  real_name?: string | null;             // Leaguepedia Players.Name
+}
+
+export interface TitleTally {
+  worlds?: number;
+  msi?: number;
+  first_stand?: number;
+  domestic?: number;
+  league?: string;                       // league with the most domestic titles
+}
+
+export type HonorKind = "worlds" | "msi" | "first_stand" | "intl" | "domestic" | "cup";
+
+export interface Honor {
+  year: number;
+  kind: HonorKind;
+  medal: "gold" | "silver" | "bronze";
+  league?: string | null;                // short key for domestic / cup rows (LCK, LPL, ...)
+  event?: string | null;                 // raw event code for other intl / cup rows (EWC, KeSPA, ...)
+  page?: string | null;                  // Leaguepedia page
 }
 
 export interface TierMeta {
@@ -99,6 +121,10 @@ export interface PlayerDetail {
   playername: string;
   position: Lane | null;
   positions: LanePosition[];
+  photo?: string | null;                 // Leaguepedia CDN thumbnail
+  photo_caption?: string | null;         // "Team · Year" the photo was taken
+  real_name?: string | null;             // Leaguepedia Players.Name
+  country?: string | null;
   current_team: string | null;
   current_league: string | null;
   current_year: number | null;
@@ -157,6 +183,7 @@ export interface PlayerDetail {
   hn_year_ranks: Record<string, { global: number; lane: number }>;
   year_achievements: Record<string, YearAchievements>;
   year_teams: Record<string, { name: string; logo?: string }[]>;
+  honors?: Honor[];
   resume_breakdown: Partial<Record<string, { n: number; pts: number }>>;
   tournaments: Record<string, number>;
   trajectory: Record<string, number>;

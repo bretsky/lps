@@ -1,33 +1,24 @@
 import type { TierKey } from "@/lib/types";
+import { TIER_COLORS, TIER_LABELS } from "@/lib/theme";
 
-const LABELS: Record<TierKey, string> = {
-  goats: "GOATs",
-  legends: "Legends",
-  greats: "Greats",
-  elite: "Elite",
-  stars: "Stars",
-  contenders: "Contenders",
-};
-
-const CLASSES: Record<TierKey, string> = {
-  goats: "bg-tier-goats/20 text-tier-goats border-tier-goats/40",
-  legends: "bg-tier-legends/20 text-tier-legends border-tier-legends/40",
-  greats: "bg-tier-greats/20 text-tier-greats border-tier-greats/40",
-  elite: "bg-tier-elite/20 text-tier-elite border-tier-elite/40",
-  stars: "bg-tier-stars/20 text-tier-stars border-tier-stars/40",
-  contenders: "bg-tier-contenders/15 text-tier-contenders border-tier-contenders/30",
-};
-
+/** Engraved tier plaque: lozenge + caps in the tier's colour, chamfered edge. */
 export function TierBadge({ tier, size = "sm" }: { tier: TierKey; size?: "sm" | "md" }) {
-  const cls =
-    size === "md"
-      ? "px-2 py-0.5 text-xs font-semibold"
-      : "px-1.5 py-0.5 text-[10px] font-semibold";
+  const c = TIER_COLORS[tier];
+  const md = size === "md";
   return (
     <span
-      className={`inline-flex items-center rounded border uppercase tracking-wide ${cls} ${CLASSES[tier]}`}
+      className={`inline-flex items-center gap-1.5 font-serif font-bold uppercase ${
+        md ? "px-2.5 py-1 text-[11px] tracking-[0.22em]" : "px-1.5 py-0.5 text-[9px] tracking-[0.18em]"
+      }`}
+      style={{
+        color: c,
+        background: `linear-gradient(90deg, ${c}26, ${c}0d)`,
+        boxShadow: `inset 0 0 0 1px ${c}66`,
+        clipPath: "polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px)",
+      }}
     >
-      {LABELS[tier]}
+      <span className={`${md ? "h-1.5 w-1.5" : "h-1 w-1"} rotate-45`} style={{ background: c }} />
+      {TIER_LABELS[tier]}
     </span>
   );
 }

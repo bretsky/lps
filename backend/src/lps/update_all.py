@@ -11,7 +11,11 @@ workbooks on disk". Two modes:
 
 What a normal (incremental) run does, in order:
 
-  0. Preflight    -- resolve the target year from the newest Oracle CSV; verify
+  0. Oracle       -- pull any season CSV that changed on Oracle's Elixir's Drive
+                     folder (incl. a brand-new season) into data/oracle/ via
+                     lps.refresh_oracle. Older seasons OE corrected get their
+                     feature caches busted too, so step 4 rebuilds them.
+     Preflight    -- resolve the target year from the newest Oracle CSV; verify
                      that CSV and (unless --skip-fetch) Leaguepedia creds exist.
   1. Pull LP      -- force-refresh the *current year's* international match JSONs
                      (older cached years are left untouched) + re-fetch
@@ -26,7 +30,6 @@ What a normal (incremental) run does, in order:
                      workbooks (per-year + Career_LPS.xlsx) reusing prior years.
 
 Manual prerequisites this script does NOT do for you (by design):
-  * Downloading Oracle's Elixir CSVs into data/oracle/ (no public API exists).
   * Filling the `region` column for newly-seen teams (step 2 halts for this).
   * Seeding starting_elos_<year>.csv for a brand-new year (step 3 halts and
     tells you to run `--full`, which reseeds every boundary via rerun_elos.py).
@@ -35,6 +38,7 @@ Examples:
   poetry run python -m lps.update_all                 # incremental, latest year
   poetry run python -m lps.update_all --year 2024     # incremental, pin year
   poetry run python -m lps.update_all --skip-fetch    # recompute only, no network
+  poetry run python -m lps.update_all --skip-oracle   # keep the local Oracle CSVs
   poetry run python -m lps.update_all --full          # full rebuild, all years
   poetry run python -m lps.update_all --dry-run       # print the plan, run nothing
 """
@@ -52,6 +56,7 @@ from pathlib import Path
 from .config import INFO_DIR, LEAGUEPEDIA_DIR, LP_PASSWORD, LP_USERNAME, PROJECT_ROOT
 from .extract_team_names import extract_team_names_by_year
 from .io_oracle import _infer_year_from_name, list_oracle_files
+from .refresh_oracle import RefreshError, refresh
 
 logger = logging.getLogger("lps.update_all")
 
@@ -81,8 +86,31 @@ def _module_cmd(module: str, *args: str) -> list[str]:
 
 
 # --------------------------------------------------------------------------- #
-# phase 0 -- preflight
+# phase 0 -- Oracle's Elixir refresh + preflight
 # --------------------------------------------------------------------------- #
+def refresh_oracle_csvs(*, dry_run: bool) -> list[int]:
+    """Sync data/oracle/ with OE's Drive folder; returns the years swapped in.
+
+    A rejected download keeps the old file and only warns (the run goes on with
+    what's on disk); Drive being unreachable halts, since the point of the run is
+    the latest data -- pass --skip-oracle to rebuild from the local CSVs anyway."""
+    logger.info("\n[oracle] checking Oracle's Elixir's Drive folder for new data")
+    try:
+        result = refresh(check=dry_run)
+    except RefreshError as e:
+        raise HaltError(
+            f"Couldn't refresh Oracle's Elixir data: {e}. Fix that, or re-run with "
+            "--skip-oracle to use the CSVs already in data/oracle/."
+        ) from e
+    if result.failed:
+        logger.warning(
+            "[oracle] %s not updated (see above); continuing with the local copies",
+            ", ".join(map(str, result.failed)),
+        )
+    # On --dry-run, the seasons that *would* be pulled, so the plan shows their cache busts.
+    return result.stale if dry_run else result.updated
+
+
 def resolve_target_year(explicit: int | None) -> int:
     """Target year = explicit override, else the newest year with an Oracle CSV."""
     if explicit is not None:
@@ -321,13 +349,16 @@ def recompute_scores(
     full: bool,
     weight_args: list[str],
     dry_run: bool,
+    also_bust: list[int] | None = None,
 ) -> None:
     years_arg = f"{start_year}-{year}"
     if full:
         # force_recompute defaults True -> rebuilds every year + the lane remap.
         run(_module_cmd("career", "--years", years_arg, *weight_args), dry_run=dry_run)
     else:
-        bust_year_cache(year, dry_run=dry_run)
+        # The target year, plus any older season whose Oracle CSV OE just corrected.
+        for y in sorted({year, *(y for y in (also_bust or []) if start_year <= y < year)}):
+            bust_year_cache(y, dry_run=dry_run)
         run(
             _module_cmd("career", "--years", years_arg, "--no-recompute", *weight_args),
             dry_run=dry_run,
@@ -356,7 +387,13 @@ def build_weight_args(args: argparse.Namespace) -> list[str]:
 def orchestrate(args: argparse.Namespace) -> int:
     weight_args = build_weight_args(args)
 
-    # -- phase 0: preflight
+    # -- phase 0: newest Oracle data, then preflight (a brand-new season pulled
+    # here becomes the target year)
+    if args.skip_fetch or args.skip_oracle:
+        logger.info("\n[oracle] skipped (%s)", "--skip-fetch" if args.skip_fetch else "--skip-oracle")
+        oracle_updated: list[int] = []
+    else:
+        oracle_updated = refresh_oracle_csvs(dry_run=args.dry_run)
     year = resolve_target_year(args.year)
     mode = "FULL rebuild" if args.full else "INCREMENTAL update"
     logger.info("=" * 70)
@@ -388,7 +425,12 @@ def orchestrate(args: argparse.Namespace) -> int:
 
     # -- phase 4: scores + rankings
     recompute_scores(
-        args.start_year, year, full=args.full, weight_args=weight_args, dry_run=args.dry_run
+        args.start_year,
+        year,
+        full=args.full,
+        weight_args=weight_args,
+        dry_run=args.dry_run,
+        also_bust=oracle_updated,
     )
 
     # -- phase 5: website JSON bundle (turns the fresh career workbook into
@@ -396,6 +438,11 @@ def orchestrate(args: argparse.Namespace) -> int:
     if args.skip_web:
         logger.info("\n[web] skipped (--skip-web)")
     else:
+        # Leaguepedia player photos for the cards: new players only on incremental
+        # runs (cached picks are kept); --full re-picks every photo.
+        if not args.skip_fetch:
+            photo_args = ("--refresh",) if args.full else ()
+            run(_module_cmd("fetch_player_images", *photo_args), dry_run=args.dry_run)
         run(_module_cmd("export_web"), dry_run=args.dry_run)
 
     logger.info("\n%s", "=" * 70)
@@ -432,6 +479,9 @@ def main() -> int:
         "--start-year", type=int, default=DEFAULT_START_YEAR, help="first year in the career range"
     )
     ap.add_argument("--skip-fetch", action="store_true", help="no network; recompute from cache")
+    ap.add_argument(
+        "--skip-oracle", action="store_true", help="don't pull new Oracle's Elixir CSVs"
+    )
     ap.add_argument("--skip-achievements", action="store_true", help="don't re-fetch achievements")
     ap.add_argument("--skip-regions", action="store_true", help="skip the unmapped-team guard")
     ap.add_argument("--skip-elo", action="store_true", help="don't recompute regional Elo")

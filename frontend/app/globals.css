@@ -4,29 +4,154 @@
 
 :root {
   color-scheme: dark;
+  --gold: #c9a45c;
+  --gold-bright: #f1d58f;
+  --gold-deep: #7d5b28;
+  --teal: #1fd1c1;
+  --teal-deep: #0c6f74;
+  --panel: linear-gradient(180deg, #0b1724 0%, #07101a 100%);
+  /* Burnished metal: the rule/frame colour used across panels and plaques. */
+  --metal: linear-gradient(135deg, #7d5b28 0%, #f1d58f 22%, #b08440 45%, #f6e2a8 62%, #8d672e 82%, #d8b56d 100%);
 }
 
 html,
 body {
-  background-color: #0a0e14;
-  color: #e6ecf3;
+  background-color: #03070d;
+  color: #eee4cf;
 }
 
+/* The arena: a deep-blue sky with a faint gold sunburst rising from below the
+   fold, teal haze in the corners, and a neon grid that recedes into the dark. */
 body {
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background-image:
+    radial-gradient(ellipse 70% 45% at 50% -8%, rgba(31, 209, 193, 0.12), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(30, 70, 120, 0.35), transparent 75%),
+    repeating-conic-gradient(from -90deg at 50% -20%, rgba(201, 164, 92, 0.018) 0deg 1.2deg, transparent 1.2deg 7deg),
+    linear-gradient(rgba(31, 209, 193, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 209, 193, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 56px 56px, 56px 56px;
+  background-attachment: fixed;
 }
 
-/* Custom scrollbar in the board list */
-.board-scroll::-webkit-scrollbar {
+.font-mono,
+.font-display {
+  font-variant-numeric: tabular-nums;
+}
+
+@layer components {
+  /* --- Deco panel ---------------------------------------------------------
+     Octagonal (chamfered) plate with a continuous burnished-gold hairline,
+     including the diagonal corners: the element itself is the gold line, and
+     ::before is the panel face inset by 1px with the same octagon. */
+  .deco-panel {
+    --cut: 12px;
+    position: relative;
+    background: var(--metal);
+    clip-path: polygon(
+      var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut)
+    );
+    @apply p-5;
+  }
+  .deco-panel::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    background:
+      radial-gradient(ellipse 60% 120% at 50% 0%, rgba(31, 209, 193, 0.06), transparent 60%),
+      var(--panel);
+    clip-path: polygon(
+      calc(var(--cut) - 0.4px) 0, calc(100% - var(--cut) + 0.4px) 0, 100% calc(var(--cut) - 0.4px),
+      100% calc(100% - var(--cut) + 0.4px), calc(100% - var(--cut) + 0.4px) 100%,
+      calc(var(--cut) - 0.4px) 100%, 0 calc(100% - var(--cut) + 0.4px), 0 calc(var(--cut) - 0.4px)
+    );
+  }
+  .deco-panel > * {
+    position: relative;
+  }
+
+  /* --- Section title ------------------------------------------------------
+     Engraved caps flanked by a gold rule that ends in a lozenge. */
+  .deco-title {
+    @apply flex items-center gap-3 font-serif text-[15px] font-bold uppercase tracking-[0.18em] text-gold-bright;
+  }
+  .deco-title::before {
+    content: "";
+    width: 9px;
+    height: 9px;
+    flex-shrink: 0;
+    transform: rotate(45deg);
+    background: var(--teal);
+    box-shadow: 0 0 10px var(--teal);
+  }
+  .deco-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(201, 164, 92, 0.55), transparent);
+  }
+
+  /* --- Rule with a centre lozenge (◆) ------------------------------------ */
+  .deco-rule {
+    @apply flex items-center gap-2;
+  }
+  .deco-rule::before,
+  .deco-rule::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201, 164, 92, 0.7));
+  }
+  .deco-rule::after {
+    background: linear-gradient(90deg, rgba(201, 164, 92, 0.7), transparent);
+  }
+
+  /* --- Small chamfered control (inputs / tabs / selects) ------------------ */
+  .deco-control {
+    clip-path: polygon(7px 0, calc(100% - 7px) 0, 100% 7px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 7px 100%, 0 calc(100% - 7px), 0 7px);
+    @apply border border-gold-deep/70 bg-bg-card/90 text-text;
+  }
+
+  /* --- Text treatments --------------------------------------------------- */
+  .text-metal {
+    background: var(--metal);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-neon {
+    color: #c9fbf5;
+    text-shadow: 0 0 6px rgba(31, 209, 193, 0.9), 0 0 18px rgba(31, 209, 193, 0.45);
+  }
+  .outline-text {
+    color: transparent;
+    -webkit-text-stroke: 1px currentColor;
+  }
+  .neon-line {
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+    box-shadow: 0 0 8px rgba(31, 209, 193, 0.8);
+  }
+
+  /* An event mark (Worlds / MSI / First Stand) recoloured by its medal: the
+     icon is used as an alpha mask over a metal gradient. */
+  .mark-mask {
+    -webkit-mask: var(--mark) center / contain no-repeat;
+    mask: var(--mark) center / contain no-repeat;
+    background: var(--tint, var(--metal));
+  }
+}
+
+::-webkit-scrollbar {
   width: 10px;
+  height: 10px;
 }
-.board-scroll::-webkit-scrollbar-track {
-  background: #0f151d;
+::-webkit-scrollbar-track {
+  background: #050c15;
 }
-.board-scroll::-webkit-scrollbar-thumb {
-  background: #1e2a38;
+::-webkit-scrollbar-thumb {
+  background: #3a2f1c;
   border-radius: 5px;
 }
-.board-scroll::-webkit-scrollbar-thumb:hover {
-  background: #2c3e52;
+::-webkit-scrollbar-thumb:hover {
+  background: #7d5b28;
 }

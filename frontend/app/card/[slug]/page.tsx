@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PlayerCard } from "@/components/card/PlayerCard";
 import { loadIndex, loadPlayer } from "@/lib/data";
+import { displayName } from "@/lib/format";
 
 export async function generateStaticParams() {
   const rows = await loadIndex();
@@ -17,8 +18,8 @@ export async function generateMetadata({
   try {
     const p = await loadPlayer(slug);
     return {
-      title: `${p.playername} · LPS Card`,
-      description: `${p.playername} — CLR ${p.clr.toFixed(1)}, rank #${p.rank}. Click to flip.`,
+      title: `${displayName(p.playername)} · LPS Card`,
+      description: `${displayName(p.playername)} — CLR ${p.clr.toFixed(1)}, rank #${p.rank}. Click to flip.`,
     };
   } catch {
     return { title: "Player Card · LPS" };
@@ -40,20 +41,30 @@ export default async function CardPage({
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-12">
-      <nav className="flex gap-4 self-start text-xs text-text-dim">
-        <Link href="/" className="hover:text-text">
-          ← Board
+    <main className="relative flex min-h-screen flex-col items-center justify-center gap-6 overflow-hidden px-4 py-12">
+      {/* spotlight */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 40% 55% at 50% 50%, rgba(31,209,193,0.10), transparent 70%), radial-gradient(ellipse 30% 20% at 50% 92%, rgba(201,164,92,0.12), transparent 70%)",
+        }}
+      />
+      <nav className="relative flex gap-5 self-start font-serif text-[11px] font-bold uppercase tracking-[0.25em] text-text-dim">
+        <Link href="/" className="hover:text-gold-bright">
+          ◂ Rankings
         </Link>
-        <Link href={`/player/${slug}`} className="hover:text-text">
-          ← Profile
+        <Link href={`/player/${slug}`} className="hover:text-gold-bright">
+          ◂ Profile
         </Link>
       </nav>
 
-      <PlayerCard player={player} />
+      <div className="relative">
+        <PlayerCard player={player} />
+      </div>
 
-      <p className="text-[10px] uppercase tracking-widest text-text-dim">
-        Click card to flip
+      <p className="relative font-serif text-[10px] font-bold uppercase tracking-[0.35em] text-text-dim">
+        Click the card to flip
       </p>
     </main>
   );

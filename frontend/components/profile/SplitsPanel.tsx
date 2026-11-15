@@ -9,9 +9,9 @@ export function SplitsPanel({ player }: { player: PlayerDetail }) {
   const lanes = player.splits.lanes ?? [];
 
   return (
-    <section className="rounded-lg border border-border bg-bg-card p-5">
+    <section className="deco-panel">
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-text-muted">
+        <h2 className="deco-title">
           Splits & Context
         </h2>
       </div>

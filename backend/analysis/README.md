@@ -17,5 +17,6 @@ poetry run python analysis/<script>.py
 | `_faker_probe.py` | Faker's raw Oracle game rows, completeness and win rate for 2014, 2017 and 2018 |
 | `_ogn_probe.py` | Leaguepedia page structure for pre-2015 OGN/Champions events |
 | `_oracle2014.py` | 2014 Oracle CSV coverage: row counts, leagues, and whether SKT/Faker rows are present |
+| `fetch_brand_icons.py` | Not a check: re-downloads the official Worlds / MSI / First Stand / league marks into `frontend/public/icons/` (needs Pillow; run with a Python that has it) |
 
 The `_*.py` probes write their output to `G:/tmp_*.txt`, not stdout.

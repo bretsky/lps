@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { IndexRow, Lane, TierMeta } from "@/lib/types";
-import { PlayerRow } from "./PlayerRow";
+import { PlayerRow, ROW_GRID } from "./PlayerRow";
 import { LANE_LABELS } from "@/lib/format";
 
 type SortKey = "clr" | "total_score" | "peak_lps" | "resume_bonus" | "n_years";
@@ -49,7 +49,10 @@ export default function Board({ rows, laneRows, tiers }: Props) {
   const filtered = useMemo(() => {
     const qn = q.trim().toLowerCase();
     let out = source;
-    if (qn) out = out.filter((r) => r.playername.toLowerCase().includes(qn));
+    if (qn)
+      out = out.filter(
+        (r) => r.playername.toLowerCase().includes(qn) || (r.real_name ?? "").toLowerCase().includes(qn),
+      );
     if (league !== "all") out = out.filter((r) => r.current_league === league);
     out = [...out].sort((a, b) => (b[sortKey] ?? -Infinity) - (a[sortKey] ?? -Infinity));
     // Re-rank within the filtered view so ranks read 1..N.
@@ -71,103 +74,118 @@ export default function Board({ rows, laneRows, tiers }: Props) {
   }, [filtered, tiers, sortKey, q]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-16 pt-8">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">LPS All-Time Rankings</h1>
-        <p className="mt-1 text-sm text-text-muted">
-          Career Legend Rating (CLR) — a holistic all-time score blending career bulk, per-year
-          pace, peak, and résumé. Provisional beta weights.
-        </p>
-      </header>
-
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <input
-          type="text"
-          placeholder="Search player…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          className="w-56 rounded border border-border bg-bg-card px-3 py-1.5 text-sm placeholder:text-text-dim focus:border-accent-hex/60 focus:outline-none"
-        />
-        <div className="flex items-center gap-1 rounded border border-border bg-bg-card p-0.5 text-xs">
-          {LANE_FILTERS.map((l) => (
+    <div className="mx-auto max-w-6xl px-4 pb-16 pt-6">
+      {/* Lane tabs, client-nav style: caps, gold underline on the active tab */}
+      <nav className="mb-5 flex flex-wrap items-end gap-x-6 gap-y-2 border-b border-border">
+        {LANE_FILTERS.map((l) => {
+          const active = lane === l;
+          return (
             <button
               key={l}
               onClick={() => setLane(l)}
-              className={`rounded px-2 py-1 uppercase tracking-wide transition ${
-                lane === l ? "bg-accent-hex/20 text-accent-hex" : "text-text-muted hover:text-text"
+              className={`relative -mb-px pb-2.5 font-serif text-[13px] font-bold uppercase tracking-[0.18em] transition-colors ${
+                active ? "text-gold-bright" : "text-text-dim hover:text-text-muted"
               }`}
             >
-              {l === "all" ? "All" : LANE_LABELS[l]}
+              {l === "all" ? "All Roles" : LANE_LABELS[l]}
+              <span
+                className={`absolute inset-x-0 bottom-0 h-[2px] transition-opacity ${active ? "opacity-100" : "opacity-0"}`}
+                style={{ background: "linear-gradient(90deg, transparent, #f1d58f, transparent)", boxShadow: "0 0 8px #c9a45c" }}
+              />
             </button>
-          ))}
+          );
+        })}
+        <div className="ml-auto flex flex-wrap items-center gap-2 pb-2">
+          <input
+            type="text"
+            placeholder="Search player or name…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            className="deco-control w-52 px-3 py-1.5 text-sm placeholder:text-text-dim focus:border-teal focus:outline-none"
+          />
+          <select
+            value={league}
+            onChange={(e) => setLeague(e.target.value)}
+            className="deco-control px-2 py-1.5 text-xs uppercase tracking-wider"
+          >
+            {leagues.map((l) => (
+              <option key={l} value={l}>
+                {l === "all" ? "All leagues" : l}
+              </option>
+            ))}
+          </select>
+          <select
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            className="deco-control px-2 py-1.5 text-xs uppercase tracking-wider"
+          >
+            {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
+              <option key={k} value={k}>
+                Sort · {SORT_LABELS[k]}
+              </option>
+            ))}
+          </select>
         </div>
-        <select
-          value={league}
-          onChange={(e) => setLeague(e.target.value)}
-          className="rounded border border-border bg-bg-card px-2 py-1.5 text-xs"
-        >
-          {leagues.map((l) => (
-            <option key={l} value={l}>
-              {l === "all" ? "All leagues" : l}
-            </option>
-          ))}
-        </select>
-        <select
-          value={sortKey}
-          onChange={(e) => setSortKey(e.target.value as SortKey)}
-          className="ml-auto rounded border border-border bg-bg-card px-2 py-1.5 text-xs"
-        >
-          {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
-            <option key={k} value={k}>
-              Sort: {SORT_LABELS[k]}
-            </option>
-          ))}
-        </select>
+      </nav>
+
+      {/* column header */}
+      <div
+        className={`${ROW_GRID} px-4 pb-2 font-serif text-[10px] font-bold uppercase tracking-[0.2em] text-text-dim`}
+      >
+        <div className="text-right">#</div>
+        <div />
+        <div>Player</div>
+        <div className="hidden md:block">Role</div>
+        <div className="hidden lg:block">Career</div>
+        <div className="hidden sm:block">Titles</div>
+        <div className="text-right">CLR</div>
+        <div className="hidden lg:block text-right">Peak</div>
       </div>
 
-      <div className="mb-2 text-xs text-text-dim">
-        {filtered.length} player{filtered.length === 1 ? "" : "s"}
-      </div>
-
-      <div className="rounded-lg border border-border bg-bg-card">
-        {grouped ? (
-          <div>
-            {tiers.map((t) => {
-              const players = grouped.get(t.key) ?? [];
-              if (!players.length) return null;
-              return (
-                <section key={t.key}>
-                  <div
-                    className="sticky top-0 z-10 flex items-baseline justify-between border-y border-border/60 px-4 py-2 text-sm font-semibold uppercase tracking-widest backdrop-blur"
-                    style={{
-                      color: t.color,
-                      backgroundColor: "#111821e6",
-                      backgroundImage: `linear-gradient(${t.color}22, ${t.color}22)`,
-                      boxShadow: `inset 3px 0 0 0 ${t.color}`,
-                    }}
-                  >
-                    <span>{t.label}</span>
-                    <span className="font-mono text-xs opacity-70">
-                      {players.length} · CLR ≥ {t.clr_floor?.toFixed(1) ?? "—"}
-                    </span>
-                  </div>
-                  <div style={{ backgroundColor: `${t.color}0a` }}>
+      <div className="deco-panel !p-0">
+        <div>
+          {grouped
+            ? tiers.map((t) => {
+                const players = grouped.get(t.key) ?? [];
+                if (!players.length) return null;
+                return (
+                  <section key={t.key}>
+                    <TierBanner tier={t} count={players.length} />
                     {players.map((r) => (
                       <PlayerRow key={r.slug} row={r} maxClr={maxClr} />
                     ))}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-        ) : (
-          <div>
-            {filtered.map((r) => (
-              <PlayerRow key={r.slug} row={r} maxClr={maxClr} />
-            ))}
-          </div>
-        )}
+                  </section>
+                );
+              })
+            : filtered.map((r) => <PlayerRow key={r.slug} row={r} maxClr={maxClr} />)}
+        </div>
       </div>
+      <div className="mt-3 text-right font-mono text-[11px] text-text-dim">
+        {filtered.length} player{filtered.length === 1 ? "" : "s"}
+      </div>
+    </div>
+  );
+}
+
+/** Tier divider: a lozenge, engraved tier name, and a rule in the tier's colour. */
+function TierBanner({ tier, count }: { tier: TierMeta; count: number }) {
+  const c = tier.color;
+  return (
+    <div
+      className="sticky top-0 z-10 flex items-center gap-3 px-4 py-2.5 backdrop-blur"
+      style={{
+        background: `linear-gradient(90deg, ${c}26, rgba(5,11,20,0.92) 45%, rgba(5,11,20,0.92))`,
+        boxShadow: `inset 0 -1px 0 ${c}55, inset 0 1px 0 ${c}33`,
+      }}
+    >
+      <span className="h-2.5 w-2.5 rotate-45" style={{ background: c, boxShadow: `0 0 10px ${c}` }} />
+      <span className="font-serif text-sm font-extrabold uppercase tracking-[0.3em]" style={{ color: c }}>
+        {tier.label}
+      </span>
+      <span className="h-px flex-1" style={{ background: `linear-gradient(90deg, ${c}88, transparent)` }} />
+      <span className="font-mono text-[11px] text-text-muted">
+        {count} · CLR ≥ {tier.clr_floor?.toFixed(1) ?? "—"}
+      </span>
     </div>
   );
 }

@@ -21,6 +21,8 @@ mwrogue = "^0.1.5"
 pytz = "^2025.2"
 python-dotenv = "^1.2.1"
 openpyxl = "^3.1.5"
+google-auth = ">=2.58.1,<3.0.0"
+google-api-python-client = ">=2.200.0,<3.0.0"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.0"

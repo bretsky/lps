@@ -19,6 +19,10 @@ The repo is split into `backend/` (this Python system) and `frontend/` (the rank
 (`src/lps/`, `data/`, `info/`, generated `player_ratings_*.xlsx`) are relative to `backend/`.
 `config.PROJECT_ROOT` resolves to `backend/`. `README.md`/`CLAUDE.md`/`docs/` stay at the repo root.
 
+Site assets: official event/league marks live in `frontend/public/icons/{events,leagues}/` (committed;
+rebuilt by `backend/analysis/fetch_brand_icons.py`) and are mapped by league short name in
+`frontend/lib/icons.ts`. Player photos and team logos are hotlinked from Leaguepedia's CDN.
+
 One-off investigation/debug scripts go in **`backend/analysis/`**, not `src/lps/` or the
 `backend/` root. They're kept for reference and aren't part of the pipeline (see its README).
 
@@ -44,6 +48,7 @@ Credentials live in `.env` (gitignored): `LP_USERNAME` / `LP_PASSWORD` are Leagu
 | `update_all.py` | **Master driver** — pull latest LP/Oracle data → recompute Elos → rebuild all scores/rankings. Start here (see below). |
 | `config.py` | Paths + env. **Single source of truth for directory locations.** |
 | `io_oracle.py` | Load Oracle's Elixir CSVs by year → concatenated `DataFrame`. |
+| `refresh_oracle.py` | Pull changed/new season CSVs from OE's Google Drive folder into `data/oracle/` (port of draftpredict's `scripts/refresh_oracle.py`). Uses python-sharp's OAuth `token.json` (`PSHARP_PATH` overrides; default `../../python-sharp` from `backend/`); md5-diffed, validated (header kept, game count never drops; `--force`), atomic swap. `--check` reports only. |
 | `lp_client.py` | `LPClient` — Leaguepedia Cargo query wrapper with exponential backoff. |
 | `fetch_international_matches.py` | Script: pull MSI/Worlds/etc. matches → `data/leaguepedia/matches/*.json`. |
 | `extract_team_names.py` | Script: derive unique team names from matches → `team_regions_<year>.csv` stubs to fill in. |
@@ -54,6 +59,9 @@ Credentials live in `.env` (gitignored): `LP_USERNAME` / `LP_PASSWORD` are Leagu
 | `win_probability.py` | "Model 2" — win prob from actual per-lane performance (single-model). |
 | `win_probability_ensemble.py` | Ensemble variant: 5 position models + a meta-model. This is the primary/current win-prob model. |
 | `top.py` | Standalone top-lane LPS v1 experiment (career value, replacement-level). |
+| `fetch_player_history.py` | Script: per-player, per-year LP team history + team logo URLs → `data/leaguepedia/{player_history,team_logos}.json`. |
+| `fetch_player_images.py` | Script: one Leaguepedia photo (+ real name, country) per workbook player → `data/leaguepedia/player_images.json`. Shared handles ("Knight (LPL)") are matched to the right wiki page by roster votes (`player_identity`'s team-year bridge); picks the newest photo from inside the player's career. Pin/block a photo in `info/player_image_overrides.csv` (`label,file`). |
+| `export_web.py` | Workbook + caches → the site's JSON bundle in `frontend/public/data/current/` (incl. `photo`, `real_name`, `honors`, `titles`). |
 | `main.py` / `top.py` | Scratch/experiment entry points — not the "real" pipeline. |
 
 ## Data layout & the important gotcha
@@ -85,7 +93,7 @@ Elo config lives as module constants in `regional_elo.py` (`DEFAULT_ELO=1000`, `
 - **Incremental (default)** — refresh only the *latest* year end-to-end, reuse everything cached for prior years. The day-to-day run.
 - **Full (`--full`)** — re-pull everything, recompute the entire `2011→latest` Elo chain (via `rerun_elos.py --run`) and every per-year score. Use after a model/scoring change or region edits.
 
-Pipeline order: **preflight** (resolve target year from newest Oracle CSV; verify CSV + LP creds) → **pull LP** (force-refresh current-year match JSONs + re-fetch achievements) → **region guard** → **regional Elo** → **scores** (`career.py`).
+Pipeline order: **Oracle refresh** (`refresh_oracle`; any older season OE corrected also gets its feature cache busted; Drive unreachable → halt, `--skip-oracle` to use local CSVs) → **preflight** (resolve target year from newest Oracle CSV; verify CSV + LP creds) → **pull LP** (force-refresh current-year match JSONs + re-fetch achievements) → **region guard** → **regional Elo** → **scores** (`career.py`) → **photos** (`fetch_player_images`, new players only; `--full` re-picks all; skipped by `--skip-fetch`) → **web bundle** (`export_web`).
 
 Non-obvious behaviors that keep it safe — preserve these if you touch it:
 
@@ -95,13 +103,13 @@ Non-obvious behaviors that keep it safe — preserve these if you touch it:
 - **Backs up** `info/achievements*.csv` / `info/player_awards*.csv` to `info/backup_auto/` before `fetch_achievements` overwrites them.
 - A brand-new year with no `starting_elos_<year>.csv` halts and points to `--full` (only `rerun_elos.py` knows how to reseed boundaries across renames/merges).
 
-Useful flags: `--dry-run` (print the plan, run nothing), `--year N`, `--skip-fetch` (recompute from cache, no network), `--skip-elo`, `--skip-achievements`, `--skip-regions`. Exit codes: `2` = halted on a human-only prerequisite, `1` = a subcommand failed.
+Useful flags: `--dry-run` (print the plan, run nothing), `--year N`, `--skip-fetch` (recompute from cache, no network; also skips the Oracle refresh), `--skip-oracle`, `--skip-elo`, `--skip-achievements`, `--skip-regions`. Exit codes: `2` = halted on a human-only prerequisite, `1` = a subcommand failed.
 
 ### Adding a new season (first-time setup for year `YYYY`)
 
 The "latest year" is dynamic (`io_oracle.latest_oracle_year`, from the newest Oracle CSV), so most of the rollover is automatic — but a brand-new year has two human-only gates that `update_all` deliberately halts on:
 
-1. Drop the `YYYY` Oracle CSV into `data/oracle/` (filename must contain the year).
+1. Nothing to do for the Oracle CSV: `update_all`'s Oracle refresh downloads a new season as soon as OE publishes it to Drive (or drop it into `data/oracle/` by hand; the filename must contain the year).
 2. `update_all` → **halts at the region guard**; fill `region` in `info/team_regions_YYYY.csv` (use `N/A` to exclude a team — a *blank* keeps halting).
 3. Seed `info/starting_elos_YYYY.csv` from `ending_elos_<YYYY-1>.csv` (rename `ending_elo`→`starting_elo`; apply any region merges/renames at this boundary). Skipping it makes `update_all` carry the prior year forward with a warning; `--full` reseeds every boundary via `rerun_elos.py`.
 4. Re-run `update_all` (`--skip-fetch` to reuse the first run's pull).

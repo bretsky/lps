@@ -10,31 +10,47 @@ import type {
 } from "@/lib/types";
 import { fmt } from "@/lib/format";
 import {
-  CupWorlds,
-  CupMsi,
   CupIntl,
   CupDomestic,
   Laurel,
   Star,
   Shield,
 } from "./AchievementIcons";
+import { leagueIcon } from "@/lib/icons";
+
+// Official event marks drawn as alpha masks so the medal tint (currentColor)
+// still reads: gold / silver / bronze Worlds and MSI logos.
+function officialMark(src: string): IconComponent {
+  function Mark({ className }: { className?: string }) {
+    return (
+      <span
+        className={`mark-mask inline-block ${className ?? ""}`}
+        style={{ "--mark": `url(${src})`, "--tint": "currentColor" } as CSSProperties}
+      />
+    );
+  }
+  return Mark;
+}
+const OfficialWorlds = officialMark("/icons/events/worlds.png");
+const OfficialMsi = officialMark("/icons/events/msi.png");
 
 // Season-by-season LPS with High Noon peer ranks + notable achievements.
 //
 // Achievement badges: cup silhouette = tournament, tint = medal placement.
-//   - Cups: worlds / msi / intl / domestic / cup
+//   - Marks: official Worlds / MSI logos, the league logo for domestic podiums,
+//     cup silhouettes for other intl events and domestic cups
 //   - Medals: gold (champion) / silver (finalist) / bronze (semifinalist)
 //   - Awards: MVP (rose star), All-Pro (indigo shield) — no medal axis
 //
 // Layout is a three-row CSS grid (separate grid per row, same column template):
 //   icons / bars+rank-line-overlay / year-labels
-// HN ranks are shown as two line charts overlaid on the bars (gold=global, indigo=lane).
+// HN ranks are shown as two line charts overlaid on the bars (gold=global, teal=lane).
 
 type IconComponent = (p: { className?: string }) => ReactNode;
 
 const CUP_ICON: Record<TournamentFamily, IconComponent> = {
-  worlds: CupWorlds,
-  msi: CupMsi,
+  worlds: OfficialWorlds,
+  msi: OfficialMsi,
   intl: CupIntl,
   domestic: CupDomestic,
   cup: Laurel,
@@ -49,9 +65,9 @@ const CUP_LABEL: Record<TournamentFamily, string> = {
 };
 
 const MEDAL_TONE: Record<Medal, string> = {
-  gold: "text-accent-gold",           // #c8a95a
-  silver: "text-slate-300",           // steel
-  bronze: "text-[#cd7f32]",           // classic bronze
+  gold: "text-gold-bright",
+  silver: "text-slate-300",
+  bronze: "text-[#d18a55]",
 };
 
 const MEDAL_LABEL: Record<Medal, string> = {
@@ -97,14 +113,19 @@ export function TrajectoryChart({ player }: { player: PlayerDetail }) {
   const ranks = player.hn_year_ranks ?? {};
   const achievements = player.year_achievements ?? {};
   const yearTeams = player.year_teams ?? {};
+  // League each season's domestic podiums came from (for the league's own logo).
+  const domLeague: Record<string, string> = {};
+  for (const h of player.honors ?? []) {
+    if (h.kind === "domestic" && h.league && !domLeague[h.year]) domLeague[h.year] = h.league;
+  }
 
   const colTemplate = `minmax(4rem, auto) repeat(${entries.length}, minmax(4.5rem, 1fr))`;
   const gridStyle: CSSProperties = { gridTemplateColumns: colTemplate };
 
   return (
-    <section className="rounded-lg border border-border bg-bg-card p-5">
+    <section className="deco-panel">
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-text-muted">
+        <h2 className="deco-title">
           Season-by-Season
         </h2>
         <div className="text-xs text-text-dim">
@@ -121,6 +142,7 @@ export function TrajectoryChart({ player }: { player: PlayerDetail }) {
             <AchievementCell
               key={`ach-${year}`}
               ach={achievements[String(year)] ?? {}}
+              league={domLeague[String(year)]}
             />
           ))}
         </div>
@@ -367,8 +389,8 @@ function BarAndRankOverlay({
         height={BAR_HEIGHT_PX}
         style={{ pointerEvents: "none" }}
       >
-        {hasGlobal && renderLines(globalPts, "rgba(200,169,90,0.85)")}
-        {hasLane   && renderLines(lanePts,   "rgba(129,140,248,0.85)")}
+        {hasGlobal && renderLines(globalPts, "rgba(241,213,143,0.9)")}
+        {hasLane   && renderLines(lanePts,   "rgba(31,209,193,0.85)")}
         {globalPts.map(
           (p, i) =>
             p && (
@@ -376,7 +398,7 @@ function BarAndRankOverlay({
                 key={`gd-${entries[i][0]}`}
                 cx={p.xPct} cy={p.yPx}
                 r={hoveredIdx === i ? 4 : 2.5}
-                fill="rgb(200,169,90)"
+                fill="rgb(241,213,143)"
                 opacity={hoveredIdx === i ? 1 : 0.75}
               />
             ),
@@ -388,7 +410,7 @@ function BarAndRankOverlay({
                 key={`ld-${entries[i][0]}`}
                 cx={p.xPct} cy={p.yPx}
                 r={hoveredIdx === i ? 4 : 2.5}
-                fill="rgb(129,140,248)"
+                fill="rgb(31,209,193)"
                 opacity={hoveredIdx === i ? 1 : 0.75}
               />
             ),
@@ -433,10 +455,10 @@ function BarAndRankOverlay({
               </div>
             )}
             {yr?.global != null && (
-              <div style={{ color: "rgb(200,169,90)" }}>Global #{yr.global}</div>
+              <div style={{ color: "rgb(241,213,143)" }}>Global #{yr.global}</div>
             )}
             {yr?.lane != null && (
-              <div style={{ color: "rgb(129,140,248)" }}>Lane #{yr.lane}</div>
+              <div style={{ color: "rgb(31,209,193)" }}>Lane #{yr.lane}</div>
             )}
           </div>
         );
@@ -455,7 +477,8 @@ function RowLabel({ children }: { children: ReactNode }) {
   );
 }
 
-function AchievementCell({ ach }: { ach: YearAchievements }) {
+function AchievementCell({ ach, league }: { ach: YearAchievements; league?: string }) {
+  const lg = leagueIcon(league);
   const chips: ReactNode[] = [];
 
   for (const family of CUP_ORDER) {
@@ -465,6 +488,25 @@ function AchievementCell({ ach }: { ach: YearAchievements }) {
     for (const medal of MEDAL_ORDER) {
       const n = medals[medal] ?? 0;
       if (n <= 0) continue;
+      if (family === "domestic" && lg) {
+        chips.push(
+          <span
+            key={`${family}-${medal}`}
+            title={`${league} ${MEDAL_LABEL[medal]}${n > 1 ? ` ×${n}` : ""}`}
+            className={`inline-flex items-center gap-0.5 leading-none ${MEDAL_TONE[medal]}`}
+          >
+            <span
+              className="inline-flex h-6 w-6 items-center justify-center rounded-full"
+              style={{ boxShadow: "inset 0 0 0 1.5px currentColor" }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={lg.src} alt="" className="h-4 w-4 object-contain" style={{ filter: lg.invert ? "invert(1)" : undefined }} />
+            </span>
+            {n > 1 && <span className="text-[10px] font-bold tabular-nums">×{n}</span>}
+          </span>,
+        );
+        continue;
+      }
       chips.push(
         <IconChip
           key={`${family}-${medal}`}
@@ -550,11 +592,11 @@ function Legend() {
           <span className="inline-block h-2 w-2 rounded-sm bg-rose-500/60" /> negative
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-0.5 w-4 rounded-sm" style={{ background: "rgb(200,169,90)" }} />
+          <span className="inline-block h-0.5 w-4 rounded-sm" style={{ background: "rgb(241,213,143)" }} />
           HN global rank
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-0.5 w-4 rounded-sm" style={{ background: "rgb(129,140,248)" }} />
+          <span className="inline-block h-0.5 w-4 rounded-sm" style={{ background: "rgb(31,209,193)" }} />
           HN lane rank
         </span>
         <span className="text-text-dim">(line top = rank #1)</span>

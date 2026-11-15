@@ -54,9 +54,9 @@ export function CareerLpsAnatomy({ player }: { player: PlayerDetail }) {
   const total = player.career_lps.total_score ?? null;
 
   return (
-    <section className="space-y-4 rounded-lg border border-border bg-bg-card p-5">
+    <section className="deco-panel space-y-4">
       <div className="flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-text-muted">
+        <h2 className="deco-title">
           CareerLPS Anatomy
         </h2>
         <div className="text-xs text-text-dim">

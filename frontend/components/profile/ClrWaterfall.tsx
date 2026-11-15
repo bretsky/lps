@@ -15,15 +15,15 @@ const PARTS = [
   {
     key: "pace_value" as const,
     label: "Pace",
-    color: "bg-emerald-500/70",
-    text: "text-emerald-400",
+    color: "bg-[#3fbfe8]/70",
+    text: "text-[#3fbfe8]",
     tip: "Per-year rate — production adjusted for career length.",
   },
   {
     key: "peak_value" as const,
     label: "Peak",
-    color: "bg-fuchsia-500/70",
-    text: "text-fuchsia-400",
+    color: "bg-tier-greats/70",
+    text: "text-tier-greats",
     tip: "Peak seasons — reward for how high the ceiling was.",
   },
   {
@@ -41,9 +41,9 @@ export function ClrWaterfall({ player }: { player: PlayerDetail }) {
   const positiveTotal = values.reduce((s, p) => s + Math.max(0, p.v), 0) || 1;
 
   return (
-    <section className="rounded-lg border border-border bg-bg-card p-5">
+    <section className="deco-panel">
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-text-muted">
+        <h2 className="deco-title">
           CLR Composition
         </h2>
         <div className="text-xs text-text-dim">

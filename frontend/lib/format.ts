@@ -30,3 +30,15 @@ export function yearsLabel(first: number, last: number, n: number): string {
   if (first === last) return `${first} · ${n}yr`;
   return `${first}–${last} · ${n}yr`;
 }
+
+/** Player handle for display: drops the disambiguation suffix the pipeline adds to
+ *  shared handles ("Knight (LPL)" -> "Knight", "Tatu (CBLOLA) #2" -> "Tatu").
+ *  Keep using `playername` for keys, slugs and search. */
+export function displayName(playername: string): string {
+  let s = playername;
+  for (let prev = ""; prev !== s; ) {
+    prev = s;
+    s = s.replace(/\s*(#\d+|\([^)]*\))\s*$/, "");
+  }
+  return s.trim() || playername;
+}

@@ -70,7 +70,7 @@ export function CardRadar({ player, accentColor }: CardRadarProps) {
             key={frac}
             points={gridPolygon(frac)}
             fill="none"
-            stroke="#1e2a38"
+            stroke="rgba(77,163,255,0.22)"
             strokeWidth={frac === 1.0 ? 1.5 : 0.75}
           />
         ))}
@@ -84,7 +84,7 @@ export function CardRadar({ player, accentColor }: CardRadarProps) {
               y1={CY}
               x2={x2.toFixed(1)}
               y2={y2.toFixed(1)}
-              stroke="#1e2a38"
+              stroke="rgba(77,163,255,0.22)"
               strokeWidth={0.75}
             />
           );
@@ -92,7 +92,8 @@ export function CardRadar({ player, accentColor }: CardRadarProps) {
         {/* player polygon */}
         <polygon
           points={polygonPoints(values)}
-          fill={`${accentColor}1a`}
+          fill={`${accentColor}2e`}
+          style={{ filter: `drop-shadow(0 0 6px ${accentColor}aa)` }}
           stroke={accentColor}
           strokeWidth={1.5}
           strokeLinejoin="round"
@@ -123,9 +124,9 @@ export function CardRadar({ player, accentColor }: CardRadarProps) {
                 x={lx.toFixed(1)}
                 y={(ly - 3).toFixed(1)}
                 textAnchor={anchor}
-                fontSize="8"
-                fontFamily="ui-sans-serif, system-ui, sans-serif"
-                fill="#5c6675"
+                fontSize="9"
+                fontFamily="var(--font-display), sans-serif" fontStyle="italic" fontWeight="600" letterSpacing="0.06em"
+                fill="#7f93bd"
               >
                 {axis.label}
               </text>
@@ -134,9 +135,9 @@ export function CardRadar({ player, accentColor }: CardRadarProps) {
                 y={(ly + 8).toFixed(1)}
                 textAnchor={anchor}
                 fontSize="8.5"
-                fontFamily="ui-monospace, Consolas, monospace"
+                fontFamily="var(--font-mono), monospace"
                 fontWeight={bright ? "600" : "400"}
-                fill={bright ? accentColor : "#8a94a3"}
+                fill={bright ? accentColor : "#c9d6f2"}
               >
                 {pct != null ? Math.round(pct) : "—"}
               </text>
@@ -146,15 +147,15 @@ export function CardRadar({ player, accentColor }: CardRadarProps) {
       </svg>
 
       {/* global / lane toggle */}
-      <div className="mt-1.5 flex items-center rounded-full border border-border bg-bg-rail p-0.5">
+      <div className="mt-1.5 deco-control flex items-center p-0.5">
         {(["global", "lane"] as const).map((m) => (
           <button
             key={m}
             onClick={() => setMode(m)}
             disabled={m === "lane" && !hasLane}
-            className={`rounded-full px-2.5 py-0.5 text-[9px] font-medium uppercase tracking-wide transition-colors ${
+            className={`px-2.5 py-0.5 font-display text-[10px] font-semibold uppercase italic tracking-wider transition-colors ${
               mode === m
-                ? "bg-bg-card text-text"
+                ? "bg-accent-hex/20 text-accent-cyan"
                 : "text-text-dim hover:text-text-muted disabled:cursor-not-allowed disabled:opacity-25"
             }`}
           >

@@ -55,13 +55,13 @@ from typing import Iterable, Optional
 import numpy as np
 import pandas as pd
 
-from .achievements import _ach_category, _MVP_AWARDS, load_achievements, load_awards
+from .achievements import FULL2CODE, _ach_category, _MVP_AWARDS, load_achievements, load_awards
 from .career import _career_layout, YEARS_DEFAULT, CLRConfig
 from .config import INFO_DIR, PROJECT_ROOT
 from .contribution import ROLES
 from .export_excel import _GLOSSARY
 from .io_oracle import load_oracle_all
-from .player_identity import label_map
+from .player_identity import label_map, resolve_label
 from .season import _LANE_NAMES
 
 HALL_OF_LEGENDS_CSV = INFO_DIR / "hall_of_legends.csv"
@@ -111,6 +111,7 @@ _INDEX_FIELDS: list[str] = [
     "clr", "career_value", "pace_value", "peak_value", "resume_bonus",
     "total_score", "peak_lps", "tier",
     "hall_of_legends", "hol_year", "is_retired", "is_active",
+    "photo", "real_name", "titles",
 ]
 
 # Round most floats to this many decimals when writing.
@@ -324,6 +325,137 @@ def _load_yearly_breakdown() -> dict[str, dict[str, dict[str, float]]]:
         return json.load(f)
 
 
+def _achievement_name_map(playernames: Iterable[str]) -> dict[str, str]:
+    """{lowercase handle: workbook label} for matching achievements.csv `players`.
+
+    Also registers bare-handle aliases for disambiguated names like "Knight (LPL)"
+    so achievements CSV entries (which store plain handles) resolve correctly.
+    Skips a bare handle that is already taken (non-disambiguated player with the
+    same handle) or shared by several disambiguated names.
+    """
+    names_lc = {str(n).lower(): str(n) for n in playernames}
+    _bare_count: dict[str, int] = {}
+    for key in list(names_lc):
+        if "(" in key:
+            bare = re.sub(r"\s*\(.*\)\s*$", "", key).strip()
+            _bare_count[bare] = _bare_count.get(bare, 0) + 1
+    for key, canonical in list(names_lc.items()):
+        if "(" in key:
+            bare = re.sub(r"\s*\(.*\)\s*$", "", key).strip()
+            if bare not in names_lc and _bare_count.get(bare, 0) == 1:
+                names_lc[bare] = canonical
+    return names_lc
+
+
+def _resolve_achiever(
+    handle: str,
+    names_lc: dict[str, str],
+    league_full: object = None,
+    team: object = None,
+    year: object = None,
+) -> Optional[str]:
+    """Leaguepedia handle on an achievement/award row -> workbook label (or None).
+
+    Goes through the same identity bridge the résumé scoring uses
+    (`player_identity.resolve_label`: handle + team + year, then handle + league), so a
+    shared handle like "Knight" lands on "Knight (LPL)" vs "Knight (VCS)" by roster.
+    Falls back to the plain / bare-handle name map.
+    """
+    h = str(handle or "").strip()
+    if not h:
+        return None
+    region = FULL2CODE.get(str(league_full)) if league_full else None
+    lab = resolve_label(h, region, team, year)
+    if isinstance(lab, str) and lab.lower() in names_lc:
+        return names_lc[lab.lower()]
+    return names_lc.get(h.lower())
+
+
+# achievements.csv `league_full` (or the page's leading token when that's blank) ->
+# the short league key the frontend has an icon for (frontend/lib/icons.ts).
+_LEAGUE_KEYS = {
+    "lol champions korea": "LCK", "lck": "LCK",
+    "lol the champions": "OGN", "ogn": "OGN", "champions": "OGN",
+    "tencent lol pro league": "LPL", "lol pro league": "LPL", "lpl": "LPL",
+    "lol emea championship": "LEC", "lec": "LEC",
+    "europe league championship series": "EU LCS", "eu lcs": "EU LCS",
+    "north america league championship series": "NA LCS", "na lcs": "NA LCS",
+    "league of legends championship series": "LCS", "lcs": "LCS",
+    "circuit brazilian league of legends": "CBLOL", "cblol": "CBLOL",
+    "turkish championship league": "TCL", "tcl": "TCL",
+    "lol japan league": "LJL", "ljl": "LJL",
+    "vietnam championship series": "VCS", "vcs": "VCS",
+    "pacific championship series": "PCS", "pcs": "PCS",
+    "lol master series": "LMS", "lms": "LMS",
+    "liga latinoamerica": "LLA", "lla": "LLA",
+    "league of legends championship pacific": "LCP", "lcp": "LCP",
+    "league of legends championship of the americas south": "LTA S",
+    "league of legends championship of the americas north": "LTA N",
+    "oceanic pro league": "OPL", "opl": "OPL",
+    "league of legends circuit oceania": "LCO", "lco": "LCO",
+}
+
+_INTL_EVENT_KIND = {"WLDs": "worlds", "MSI": "msi", "FST": "first_stand"}
+
+
+def _honors(playernames: Iterable[str]) -> dict[str, list[dict]]:
+    """Every podium finish (champion / finalist / semifinalist) per player, newest first.
+
+    [{year, kind, medal, league?, event?, page}] where kind is worlds | msi |
+    first_stand | intl | domestic | cup; `league` is a short key (LCK, LPL, ...) for
+    domestic rows and `event` the raw event code (EWC, IEM, KeSPA, ...) for other intl
+    and cup rows. Powers the card's trophy shelf and the profile trophy case.
+    """
+    names_lc = _achievement_name_map(playernames)
+    medal_of = {"champion": "gold", "finalist": "silver", "semifinalist": "bronze"}
+    kind_rank = {"worlds": 0, "msi": 1, "first_stand": 2, "intl": 3, "domestic": 4, "cup": 5}
+    medal_rank = {"gold": 0, "silver": 1, "bronze": 2}
+    out: dict[str, list[dict]] = {}
+    ach = load_achievements()
+    if ach.empty or "players" not in ach.columns:
+        return out
+    ach = ach.copy()
+    ach["year"] = pd.to_numeric(ach["year"], errors="coerce")
+    ach = ach[ach["year"].notna() & ach["players"].notna()]
+    for _, row in ach.iterrows():
+        medal = medal_of.get(str(row.get("bucket") or ""))
+        cat, ev = str(row.get("category") or ""), str(row.get("event") or "")
+        if medal is None or cat not in ("intl", "domestic", "domestic_cup"):
+            continue
+        page = str(row.get("page") or "")
+        h: dict = {"year": int(row["year"]), "medal": medal, "page": page or None}
+        if cat == "intl":
+            h["kind"] = _INTL_EVENT_KIND.get(ev, "intl")
+            if h["kind"] == "intl":
+                h["event"] = ev or None
+        else:
+            h["kind"] = "domestic" if cat == "domestic" else "cup"
+            lf = str(row.get("league_full") or "").strip().lower()
+            lead = re.split(r"[/ ]", page, maxsplit=1)[0].lower() if page else ""
+            h["league"] = _LEAGUE_KEYS.get(lf) or _LEAGUE_KEYS.get(lead)
+            if cat == "domestic_cup":
+                h["event"] = ev or None
+        for p in str(row.get("players") or "").split(";"):
+            canonical = _resolve_achiever(p, names_lc, row.get("league_full"), row.get("team"), int(row["year"]))
+            if canonical:
+                out.setdefault(canonical, []).append(dict(h))
+    for lst in out.values():
+        lst.sort(key=lambda x: (-x["year"], kind_rank[x["kind"]], medal_rank[x["medal"]]))
+    return out
+
+
+def _title_tally(honors: list[dict]) -> dict | None:
+    """{worlds, msi, first_stand, domestic, league} champion counts for the index row;
+    `league` is the league the player won most domestic titles in. None when no titles."""
+    gold = [h for h in honors if h["medal"] == "gold"]
+    if not gold:
+        return None
+    out: dict = {k: sum(h["kind"] == k for h in gold) for k in ("worlds", "msi", "first_stand", "domestic")}
+    leagues = [h["league"] for h in gold if h["kind"] == "domestic" and h.get("league")]
+    out["league"] = max(set(leagues), key=leagues.count) if leagues else None
+    return {k: v for k, v in out.items() if v}
+
+
 def _year_achievements(
     playernames: Iterable[str],
 ) -> dict[str, dict[str, dict]]:
@@ -362,34 +494,17 @@ def _year_achievements(
     Player names are matched case-insensitively against the semicolon-separated
     `players` list in achievements.csv (same rule as `achievements.score_bonuses`).
     """
-    names_lc = {str(n).lower(): str(n) for n in playernames}
-    # Also register bare-handle aliases for disambiguated names like "Knight (LPL)"
-    # so achievements CSV entries (which store plain handles) resolve correctly.
-    # Skip if the bare handle is already taken (non-disambiguated player with same
-    # handle) or if multiple disambiguated names share the same bare handle.
-    _bare_count: dict[str, int] = {}
-    for key in list(names_lc):
-        if "(" in key:
-            bare = re.sub(r"\s*\(.*\)\s*$", "", key).strip()
-            _bare_count[bare] = _bare_count.get(bare, 0) + 1
-    for key, canonical in list(names_lc.items()):
-        if "(" in key:
-            bare = re.sub(r"\s*\(.*\)\s*$", "", key).strip()
-            if bare not in names_lc and _bare_count.get(bare, 0) == 1:
-                names_lc[bare] = canonical
-
+    names_lc = _achievement_name_map(playernames)
     out: dict[str, dict[str, dict]] = {}
 
-    def _bump_medal(name_lc: str, year: int, family: str, medal: str) -> None:
-        canonical = names_lc.get(name_lc)
+    def _bump_medal(canonical: Optional[str], year: int, family: str, medal: str) -> None:
         if canonical is None:
             return
         by_year = out.setdefault(canonical, {}).setdefault(str(year), {})
         fam = by_year.setdefault(family, {})
         fam[medal] = fam.get(medal, 0) + 1
 
-    def _bump_award(name_lc: str, year: int, kind: str) -> None:
-        canonical = names_lc.get(name_lc)
+    def _bump_award(canonical: Optional[str], year: int, kind: str) -> None:
         if canonical is None:
             return
         by_year = out.setdefault(canonical, {}).setdefault(str(year), {})
@@ -429,7 +544,8 @@ def _year_achievements(
                 continue
             year = int(row["year"])
             for p in str(row.get("players") or "").split(";"):
-                _bump_medal(p.strip().lower(), year, fam, medal)
+                who = _resolve_achiever(p, names_lc, row.get("league_full"), row.get("team"), year)
+                _bump_medal(who, year, fam, medal)
 
     aw = load_awards()
     if not aw.empty and "playername" in aw.columns and "award" in aw.columns:
@@ -439,7 +555,8 @@ def _year_achievements(
         aw["year"] = aw["year"].astype(int)
         for _, row in aw.iterrows():
             kind = "mvp" if str(row.get("award") or "") in _MVP_AWARDS else "allpro"
-            _bump_award(str(row["playername"]).lower(), int(row["year"]), kind)
+            who = _resolve_achiever(row["playername"], names_lc, row.get("league_full"))
+            _bump_award(who, int(row["year"]), kind)
 
     return out
 
@@ -547,6 +664,7 @@ def _resume_breakdown(row: pd.Series) -> dict:
 # The scalar columns we send on the full player detail JSON, grouped for the
 # frontend's breakdown view.
 _DETAIL_HEADLINE = ["rank", "slug", "playername", "position", "positions",
+                    "photo", "photo_caption", "real_name", "country",
                     "current_team", "current_league", "current_year",
                     "region_elo", "n_years", "first_year", "last_year", "games",
                     "win_rate", "clr", "tier",
@@ -570,7 +688,8 @@ def _detail_json(row: pd.Series, tourn_cols: list[str], years: tuple[int, ...],
                  hn_year_ranks: dict[str, dict[str, int]],
                  year_achievements: dict[str, dict],
                  year_teams: dict[str, list[dict[str, str]]],
-                 yearly_breakdown: dict[str, dict[str, float]] | None = None) -> dict:
+                 yearly_breakdown: dict[str, dict[str, float]] | None = None,
+                 honors: list[dict] | None = None) -> dict:
     def _grp(cols):
         return {c: _round(_clean(row.get(c))) for c in cols if c in row}
 
@@ -586,6 +705,7 @@ def _detail_json(row: pd.Series, tourn_cols: list[str], years: tuple[int, ...],
         "hn_year_ranks": hn_year_ranks,
         "year_achievements": year_achievements,
         "year_teams": year_teams,
+        "honors": honors or [],
         "resume_breakdown": _resume_breakdown(row),
         "tournaments": _tournament_dict(row, tourn_cols),
         "trajectory": _trajectory(row, years),
@@ -759,6 +879,31 @@ def _year_teams(
             ]
             for year, teams in by_year.items()
         }
+    return out
+
+
+def _player_photos(playernames: Iterable[str]) -> dict[str, dict[str, str | None]]:
+    """{playername: {url, photo_caption, real_name, country}} from the Leaguepedia photo cache.
+
+    Empty (and the frontend falls back to a monogram) until
+    `python -m lps.fetch_player_images` has populated it.
+    """
+    from .fetch_player_images import PLAYER_IMAGES_JSON
+
+    if not PLAYER_IMAGES_JSON.exists():
+        logger.warning("[web] player_images.json not found -- run fetch_player_images for photos")
+        return {}
+    import json as _json
+
+    cache = _json.loads(PLAYER_IMAGES_JSON.read_text(encoding="utf-8"))
+    out: dict[str, dict[str, str | None]] = {}
+    for name in set(playernames):
+        e = cache.get(name)
+        if not e or not e.get("url"):
+            continue
+        bits = [b for b in (e.get("team"), str(e["year"]) if e.get("year") else None) if b]
+        out[name] = {"url": e["url"], "photo_caption": " · ".join(bits) or None,
+                     "real_name": e.get("real_name"), "country": e.get("country")}
     return out
 
 
@@ -986,6 +1131,19 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
         int(ov["is_retired"].isna().sum()),
     )
 
+    # Podium finishes (official event / league marks on the site) + an index-sized
+    # title tally for the rankings table's trophy pills.
+    honors_by_name = _honors(ov["playername"].tolist())
+    logger.info("[web] honors: %d players with a podium finish", len(honors_by_name))
+    ov["titles"] = ov["playername"].map(lambda n: _title_tally(honors_by_name.get(n, [])))
+
+    # Leaguepedia photo per player (CDN thumbnail URL + "Team · Year" caption).
+    photos = _player_photos(ov["playername"].tolist())
+    ov["photo"] = ov["playername"].map(lambda n: (photos.get(n) or {}).get("url"))
+    for col in ("photo_caption", "real_name", "country"):
+        ov[col] = ov["playername"].map(lambda n, c=col: (photos.get(n) or {}).get(c))
+    logger.info("[web] player photos: %d / %d players", int(ov["photo"].notna().sum()), len(ov))
+
     # Rated pool: games >= floor.
     rated = ov[ov["games"] >= cfg.rated_min_games].copy().reset_index(drop=True)
     logger.info("[web] rated pool: %d / %d players (games >= %d)",
@@ -1020,7 +1178,8 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
     # Overview-derived `ov` frame by playername.)
     enrich_cols = [
         "playername", "slug", "current_team", "current_league", "current_year",
-        "hall_of_legends", "hol_year", "is_retired", "is_active", "positions",
+        "hall_of_legends", "hol_year", "is_retired", "is_active", "positions", "photo",
+        "real_name", "titles",
     ]
     ov_enrich = ov[[c for c in enrich_cols if c in ov.columns]].copy()
     for lane in ROLES:
@@ -1089,7 +1248,8 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
                               hn_year_ranks_by_name.get(row["playername"], {}),
                               year_achievements_by_name.get(row["playername"], {}),
                               year_teams_by_name.get(row["playername"], {}),
-                              yearly_breakdown_all.get(row["playername"], {}))
+                              yearly_breakdown_all.get(row["playername"], {}),
+                              honors_by_name.get(row["playername"], []))
         detail["rated"] = slug in rated_by_slug.index
         _write_json(out_dir / "players" / f"{slug}.json", detail)
 

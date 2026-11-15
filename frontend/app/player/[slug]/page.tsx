@@ -7,6 +7,7 @@ import { CareerLpsAnatomy } from "@/components/profile/CareerLpsAnatomy";
 import { TrajectoryChart } from "@/components/profile/TrajectoryChart";
 import { SplitsPanel } from "@/components/profile/SplitsPanel";
 import { loadIndex, loadLane, loadPlayer } from "@/lib/data";
+import { displayName } from "@/lib/format";
 import type { Lane } from "@/lib/types";
 
 export async function generateStaticParams() {
@@ -25,8 +26,8 @@ export async function generateMetadata({
   try {
     const p = await loadPlayer(slug);
     return {
-      title: `${p.playername} · LPS`,
-      description: `${p.playername} — CLR ${p.clr.toFixed(1)}, rank #${p.rank}.`,
+      title: `${displayName(p.playername)} · LPS`,
+      description: `${displayName(p.playername)} — CLR ${p.clr.toFixed(1)}, rank #${p.rank}.`,
     };
   } catch {
     return { title: "Player · LPS" };
@@ -56,20 +57,14 @@ export default async function PlayerPage({
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-6">
-      <div className="mb-4 flex items-center justify-between">
-        <Link
-          href="/"
-          className="text-xs uppercase tracking-wide text-text-muted hover:text-text"
-        >
-          ← Back to board
+      <nav className="mb-4 flex items-center justify-between font-serif text-[11px] font-bold uppercase tracking-[0.25em]">
+        <Link href="/" className="text-text-dim hover:text-gold-bright">
+          ◂ All-time rankings
         </Link>
-        <Link
-          href={`/card/${slug}`}
-          className="text-xs uppercase tracking-wide text-text-dim hover:text-text-muted"
-        >
-          View Card →
+        <Link href={`/card/${slug}`} className="text-text-dim hover:text-gold-bright">
+          Player card ▸
         </Link>
-      </div>
+      </nav>
       <ProfileHeader player={player} laneRank={laneRank} />
       <div className="mt-6 space-y-6">
         <ClrWaterfall player={player} />
