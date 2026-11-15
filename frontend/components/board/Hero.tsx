@@ -5,7 +5,7 @@
 
 import { displayName } from "@/lib/format";
 import Link from "next/link";
-import type { IndexRow, Meta } from "@/lib/types";
+import type { IndexRow } from "@/lib/types";
 import { TIER_COLORS } from "@/lib/theme";
 
 // Stage slot per leaderboard rank (#1 centre, #2 left, #3 right, #4 / #5 outer):
@@ -20,7 +20,7 @@ const SLOTS: [number, number, number, number][] = [
 // Left-to-right reading order of the stage, for the name roll beneath it.
 const STAGE_ORDER = [3, 1, 0, 2, 4];
 
-export function Hero({ rows, meta }: { rows: IndexRow[]; meta: Meta }) {
+export function Hero({ rows }: { rows: IndexRow[] }) {
   const top = rows.slice(0, 5);
   const roll = STAGE_ORDER.map((i) => top[i]).filter(Boolean);
 
@@ -62,8 +62,7 @@ export function Hero({ rows, meta }: { rows: IndexRow[]; meta: Meta }) {
             <span className="font-serif text-[0.62em] font-semibold tracking-[0.12em] text-text">Rankings</span>
           </h1>
           <p className="mt-3 font-serif text-[11px] font-semibold uppercase tracking-[0.32em] text-text-muted">
-            Career Legend Rating <span className="text-teal">◆</span> {meta.years[0]}–{meta.years[1]}{" "}
-            <span className="text-teal">◆</span> {meta.counts.rated.toLocaleString()} rated players
+            Career Legend Rating
           </p>
         </div>
 
@@ -81,18 +80,26 @@ export function Hero({ rows, meta }: { rows: IndexRow[]; meta: Meta }) {
                 title={`#${rank} ${displayName(r.playername)} — view card`}
               >
                 {r.photo ? (
-                  <img
-                    src={r.photo}
-                    alt={displayName(r.playername)}
-                    referrerPolicy="no-referrer"
-                    className="w-auto max-w-none object-contain"
+                  // Glow lives on the wrapper: a mask clips its own element's filter output to the
+                  // border box, which squared off the drop-shadow when both sat on the <img>.
+                  <span
+                    className="block"
                     style={{
-                      height: `min(${slot[1]}px, ${Math.round(slot[1] / 5.4)}vw)`,
                       filter: `drop-shadow(0 0 1px rgba(255,255,255,0.3)) drop-shadow(0 0 22px ${TIER_COLORS[r.tier]}55)`,
-                      maskImage: "linear-gradient(to bottom, black 72%, transparent 100%)",
-                      WebkitMaskImage: "linear-gradient(to bottom, black 72%, transparent 100%)",
                     }}
-                  />
+                  >
+                    <img
+                      src={r.photo}
+                      alt={displayName(r.playername)}
+                      referrerPolicy="no-referrer"
+                      className="block w-auto max-w-none object-contain"
+                      style={{
+                        height: `min(${slot[1]}px, ${Math.round(slot[1] / 5.4)}vw)`,
+                        maskImage: "linear-gradient(to bottom, black 72%, transparent 100%)",
+                        WebkitMaskImage: "linear-gradient(to bottom, black 72%, transparent 100%)",
+                      }}
+                    />
+                  </span>
                 ) : (
                   <div style={{ height: slot[1] * 0.6 }} />
                 )}

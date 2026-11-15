@@ -164,7 +164,7 @@ export function Portrait({
 }) {
   return (
     <span
-      className={`relative inline-flex shrink-0 items-end justify-center overflow-hidden rounded-full ${className}`}
+      className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full ${className}`}
       style={{
         width: size,
         height: size,
@@ -178,7 +178,9 @@ export function Portrait({
           alt=""
           loading="lazy"
           referrerPolicy="no-referrer"
-          className="h-[118%] w-[118%] max-w-none object-cover object-top"
+          // Zoom toward the face by sizing (not transform: scale, which upsamples a 44px raster and
+          // blurs it). Pinned to the top edge so the head is never clipped; overflow centers sideways.
+          className="mt-[7%] h-[150%] w-[150%] max-w-none shrink-0 self-start object-cover object-top"
         />
       ) : (
         <span

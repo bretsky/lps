@@ -21,7 +21,7 @@ export default async function Page() {
           <span className="text-teal">◆</span> data through {meta.years[1]}
         </div>
       )}
-      <Hero rows={rows} meta={meta} />
+      <Hero rows={rows} />
       <Board rows={rows} laneRows={laneRows} tiers={tiers.tiers} />
       <footer className="border-t border-gold-deep/40 py-8 text-center">
         <div className="deco-rule mx-auto mb-3 max-w-xs">

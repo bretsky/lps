@@ -68,17 +68,23 @@ export function ProfileHeader({
           {/* portrait */}
           <div className="relative mx-auto h-[260px] w-[300px] shrink-0 md:mx-0 md:mt-6 md:h-[290px]">
             {player.photo ? (
-              <img
-                src={player.photo}
-                alt={handle}
-                referrerPolicy="no-referrer"
-                className="absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 object-contain"
-                style={{
-                  filter: `drop-shadow(0 0 1px rgba(255,255,255,0.3)) drop-shadow(0 0 24px ${accent}55)`,
-                  maskImage: "linear-gradient(to bottom, black 80%, transparent 100%)",
-                  WebkitMaskImage: "linear-gradient(to bottom, black 80%, transparent 100%)",
-                }}
-              />
+              // Glow lives on the wrapper: a mask clips its own element's filter output to the
+              // border box, which squared off the drop-shadow when both sat on the <img>.
+              <div
+                className="absolute bottom-0 left-1/2 h-full -translate-x-1/2"
+                style={{ filter: `drop-shadow(0 0 1px rgba(255,255,255,0.3)) drop-shadow(0 0 24px ${accent}55)` }}
+              >
+                <img
+                  src={player.photo}
+                  alt={handle}
+                  referrerPolicy="no-referrer"
+                  className="block h-full w-auto max-w-none object-contain"
+                  style={{
+                    maskImage: "linear-gradient(to bottom, black 80%, transparent 100%)",
+                    WebkitMaskImage: "linear-gradient(to bottom, black 80%, transparent 100%)",
+                  }}
+                />
+              </div>
             ) : (
               <div className="absolute inset-x-0 bottom-10 flex justify-center">
                 <div
