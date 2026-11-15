@@ -45,6 +45,19 @@ launch a second server on another port — open the existing one (`.claude/launc
 entry attaches to :3000 without starting anything). If :3000 isn't responding, ask the user rather than
 starting your own.
 
+**Deploying the site.** Static export (`output: "export"`) to Cloudflare Pages via
+`frontend/scripts/deploy.mjs` (`npm run stage` builds `frontend/out/` only; `npm run deploy` also
+uploads with `npx wrangler@4`; `update_all --deploy` runs it last). Gotchas:
+- **Never run `next build` in `frontend/` itself.** Under `output: "export"` it always wipes and
+  rewrites `.next/` (a custom `distDir` only renames `out/`), which breaks the running dev server
+  (500s: missing `middleware-manifest.json`). `deploy.mjs` builds in a `.build/` copy for this reason.
+- Everything in `public/` is copied into the site, and Pages caps a site at 20,000 files (free) and
+  25 MiB per file. `public/data/current/` is read only at build time, so the script drops `out/data/`;
+  past bundles archive to `frontend/data-archive/` (outside `public/`, gitignored). Keep new bulky
+  build inputs out of `public/` too. Each player costs 4 files (profile + card, each HTML + RSC payload).
+- Every route must stay prerenderable (`generateStaticParams`, `force-static` route handlers, no
+  middleware/cookies/`next/image` optimisation): there's no server in production.
+
 Credentials live in `.env` (gitignored): `LP_USERNAME` / `LP_PASSWORD` are Leaguepedia bot passwords, only needed for fetching Leaguepedia data. `config.py` loads `.env` at import.
 
 ## Module map (`src/lps/`)
@@ -100,7 +113,7 @@ Elo config lives as module constants in `regional_elo.py` (`DEFAULT_ELO=1000`, `
 - **Incremental (default)** — refresh only the *latest* year end-to-end, reuse everything cached for prior years. The day-to-day run.
 - **Full (`--full`)** — re-pull everything, recompute the entire `2011→latest` Elo chain (via `rerun_elos.py --run`) and every per-year score. Use after a model/scoring change or region edits.
 
-Pipeline order: **Oracle refresh** (`refresh_oracle`; any older season OE corrected also gets its feature cache busted; Drive unreachable → halt, `--skip-oracle` to use local CSVs) → **preflight** (resolve target year from newest Oracle CSV; verify CSV + LP creds) → **pull LP** (force-refresh current-year match JSONs + re-fetch achievements) → **region guard** → **regional Elo** → **scores** (`career.py`) → **photos** (`fetch_player_images`, new players only; `--full` re-picks all; skipped by `--skip-fetch`) → **web bundle** (`export_web`).
+Pipeline order: **Oracle refresh** (`refresh_oracle`; any older season OE corrected also gets its feature cache busted; Drive unreachable → halt, `--skip-oracle` to use local CSVs) → **preflight** (resolve target year from newest Oracle CSV; verify CSV + LP creds) → **pull LP** (force-refresh current-year match JSONs + re-fetch achievements) → **region guard** → **regional Elo** → **scores** (`career.py`) → **photos** (`fetch_player_images`, new players only; `--full` re-picks all; skipped by `--skip-fetch`) → **web bundle** (`export_web`) → **deploy** (only with `--deploy`: `npm run deploy` in `frontend/`).
 
 Non-obvious behaviors that keep it safe — preserve these if you touch it:
 
@@ -110,7 +123,7 @@ Non-obvious behaviors that keep it safe — preserve these if you touch it:
 - **Backs up** `info/achievements*.csv` / `info/player_awards*.csv` to `info/backup_auto/` before `fetch_achievements` overwrites them.
 - A brand-new year with no `starting_elos_<year>.csv` halts and points to `--full` (only `rerun_elos.py` knows how to reseed boundaries across renames/merges).
 
-Useful flags: `--dry-run` (print the plan, run nothing), `--year N`, `--skip-fetch` (recompute from cache, no network; also skips the Oracle refresh), `--skip-oracle`, `--skip-elo`, `--skip-achievements`, `--skip-regions`. Exit codes: `2` = halted on a human-only prerequisite, `1` = a subcommand failed.
+Useful flags: `--dry-run` (print the plan, run nothing), `--year N`, `--skip-fetch` (recompute from cache, no network; also skips the Oracle refresh), `--skip-oracle`, `--skip-elo`, `--skip-achievements`, `--skip-regions`, `--deploy` (publish the site at the end). Exit codes: `2` = halted on a human-only prerequisite, `1` = a subcommand failed.
 
 ### Adding a new season (first-time setup for year `YYYY`)
 

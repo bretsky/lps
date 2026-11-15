@@ -5,8 +5,11 @@ rankings site consumes.
 Reads `player_ratings_career_<first>_<last>.xlsx` (the workbook `career.py`
 writes) and emits the bundle under `frontend/public/data/current/`. The
 previous `current/` (if any) is auto-moved to
-`frontend/public/data/archive/<its_build_id>/` -- past snapshots stay
-recoverable locally, but only `current/` is tracked in git. The current
+`frontend/data-archive/<its_build_id>/` -- past snapshots stay recoverable
+locally, but only `current/` is tracked in git. The archive lives outside
+`public/` on purpose: Next copies all of `public/` into the static export, and
+the archive alone is tens of thousands of files (Cloudflare Pages caps a site
+at 20,000). The current
 build's own id + generated timestamp live in `current/meta.json`. Contents:
 
     index.json          -- slim ranking rows (the rated pool) for the board
@@ -1439,6 +1442,7 @@ def web_glossary(about: Optional[dict] = None, year: Optional[int] = None) -> di
 class ExportConfig:
     workbook: Optional[Path] = None
     out_root: Optional[Path] = None
+    archive_root: Optional[Path] = None  # default: <repo>/frontend/data-archive
     build_id: Optional[str] = None
     rated_min_games: int = RATED_MIN_GAMES
 
@@ -1712,9 +1716,10 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
     wb = cfg.workbook or _latest_career_workbook()
     out_root = cfg.out_root or (PROJECT_ROOT.parent / "frontend" / "public" / "data")
     build_id = cfg.build_id or _dt.date.today().isoformat()
-    # The site always serves current/. Any existing current/ is moved to
-    # archive/<its_build_id>/ so past snapshots are recoverable locally; the
-    # archive dir is gitignored (only current/ ships in the repo).
+    archive_root = cfg.archive_root or (PROJECT_ROOT.parent / "frontend" / "data-archive")
+    # The site always reads current/. Any existing current/ is moved to
+    # <archive_root>/<its_build_id>/ so past snapshots are recoverable locally;
+    # the archive is gitignored and kept out of public/ (see module docstring).
     out_dir = out_root / "current"
     if out_dir.exists():
         prev_meta = out_dir / "meta.json"
@@ -1723,7 +1728,7 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
             prev_build = json.loads(prev_meta.read_text("utf-8")).get("build_id", build_id)
         except Exception:
             pass
-        archive_dst = out_root / "archive" / prev_build
+        archive_dst = archive_root / prev_build
         if archive_dst.exists():
             shutil.rmtree(archive_dst)
         archive_dst.parent.mkdir(parents=True, exist_ok=True)
@@ -2199,6 +2204,8 @@ def main() -> None:
                     help="career workbook path (default: newest player_ratings_career_*.xlsx)")
     ap.add_argument("--out", type=Path, default=None,
                     help="output root (default: <repo>/frontend/public/data)")
+    ap.add_argument("--archive", type=Path, default=None,
+                    help="where the previous current/ is archived (default: <repo>/frontend/data-archive)")
     ap.add_argument("--build-id", type=str, default=None,
                     help="build id / subdirectory name (default: today's date)")
     ap.add_argument("--rated-min-games", type=int, default=RATED_MIN_GAMES,
@@ -2208,6 +2215,7 @@ def main() -> None:
     build_web_bundle(ExportConfig(
         workbook=args.workbook,
         out_root=args.out,
+        archive_root=args.archive,
         build_id=args.build_id,
         rated_min_games=args.rated_min_games,
     ))

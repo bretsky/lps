@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "stage": "node scripts/deploy.mjs --stage",
+    "deploy": "node scripts/deploy.mjs"
   },
   "dependencies": {
     "html-to-image": "1.11.11",

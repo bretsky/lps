@@ -1,8 +1,9 @@
 // Data loaders. The bundle lives under `frontend/public/data/current/`
 // (overwritten on each `python -m lps.export_web` run). The build id +
 // generated timestamp are in `current/meta.json`. Past snapshots are
-// auto-archived to `frontend/public/data/archive/<build_id>/` locally but
-// are gitignored -- only `current/` ships in the repo.
+// auto-archived to `frontend/data-archive/<build_id>/` locally but are
+// gitignored -- only `current/` ships in the repo. These files are read only at
+// build time; the deployed site never fetches /data/ (scripts/deploy.mjs strips it).
 
 import type {
   AsOfJson,

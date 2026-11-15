@@ -28,6 +28,9 @@ What a normal (incremental) run does, in order:
   3. Regional Elo -- recompute ending_elos_<year>.csv for the target year.
   4. Scores       -- bust the target year's feature cache, then rebuild all
                      workbooks (per-year + Career_LPS.xlsx) reusing prior years.
+  5. Web bundle   -- new players' photos, then export_web -> frontend/public/data/current/.
+  6. Deploy       -- only with --deploy: build the static site and upload it to
+                     Cloudflare Pages (`npm run deploy` in frontend/).
 
 Manual prerequisites this script does NOT do for you (by design):
   * Filling the `region` column for newly-seen teams (step 2 halts for this).
@@ -41,6 +44,7 @@ Examples:
   poetry run python -m lps.update_all --skip-oracle   # keep the local Oracle CSVs
   poetry run python -m lps.update_all --full          # full rebuild, all years
   poetry run python -m lps.update_all --dry-run       # print the plan, run nothing
+  poetry run python -m lps.update_all --deploy        # ...and publish the site
 """
 
 from __future__ import annotations
@@ -434,7 +438,7 @@ def orchestrate(args: argparse.Namespace) -> int:
     )
 
     # -- phase 5: website JSON bundle (turns the fresh career workbook into
-    # frontend/public/data/<build_id>/*.json for the rankings site)
+    # frontend/public/data/current/*.json for the rankings site)
     if args.skip_web:
         logger.info("\n[web] skipped (--skip-web)")
     else:
@@ -444,6 +448,14 @@ def orchestrate(args: argparse.Namespace) -> int:
             photo_args = ("--refresh",) if args.full else ()
             run(_module_cmd("fetch_player_images", *photo_args), dry_run=args.dry_run)
         run(_module_cmd("export_web"), dry_run=args.dry_run)
+
+    # -- phase 6: publish (opt-in). frontend/scripts/deploy.mjs builds the static
+    # export and uploads it with wrangler; it refuses if over Pages' file limits.
+    if args.deploy:
+        npm = shutil.which("npm")
+        if npm is None and not args.dry_run:
+            raise HaltError("--deploy needs npm on PATH (Node.js) to build and upload the site")
+        run([npm or "npm", "run", "deploy"], cwd=PROJECT_ROOT.parent / "frontend", dry_run=args.dry_run)
 
     logger.info("\n%s", "=" * 70)
     logger.info("Done. Outputs:")
@@ -456,7 +468,9 @@ def orchestrate(args: argparse.Namespace) -> int:
     if not args.skip_elo:
         logger.info("  * info/ending_elos_%s.csv     (refreshed regional Elos)", year)
     if not args.skip_web:
-        logger.info("  * frontend/public/data/<build_id>/  (website JSON bundle)")
+        logger.info("  * frontend/public/data/current/  (website JSON bundle)")
+    if args.deploy:
+        logger.info("  * Cloudflare Pages deploy           (frontend/out/)")
     logger.info("=" * 70)
     return 0
 
@@ -486,6 +500,9 @@ def main() -> int:
     ap.add_argument("--skip-regions", action="store_true", help="skip the unmapped-team guard")
     ap.add_argument("--skip-elo", action="store_true", help="don't recompute regional Elo")
     ap.add_argument("--skip-web", action="store_true", help="don't rebuild the website JSON bundle")
+    ap.add_argument(
+        "--deploy", action="store_true", help="finally build + upload the site to Cloudflare Pages"
+    )
     ap.add_argument("--dry-run", action="store_true", help="print the plan; run nothing")
     # Scoring knobs -- default None so career.py's finalized defaults win unless set.
     ap.add_argument("--min-games", type=int, default=None)

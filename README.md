@@ -19,6 +19,29 @@ poetry install
 poetry run python -m lps.career        # build the career ranking workbook
 ```
 
+## Publishing the site
+
+The site is a fully static Next.js export hosted on **Cloudflare Pages** (no server). The
+backend writes the data bundle to `frontend/public/data/current/`; `frontend/scripts/deploy.mjs`
+builds every page from it into `frontend/out/` and uploads that with `wrangler`.
+
+```bash
+cd backend && poetry run python -m lps.update_all --deploy   # refresh data, then publish
+cd frontend && npm run stage                                 # build out/ only, no upload
+cd frontend && npm run deploy                                # build + upload the current bundle
+```
+
+One-time setup: `npx wrangler@4 login`, then
+`npx wrangler@4 pages project create lps --production-branch main`, then add the custom domain
+under the project's *Custom domains* tab in the Cloudflare dashboard. Deploys from `main` go to
+production; from any other branch, to a `<branch>.lps.pages.dev` preview.
+
+Limits to keep in mind: Pages allows 20,000 files per site on the free plan (100,000 paid) and
+25 MiB per file. The script checks both before uploading. Today's build is about 8.7k files
+(four per player: profile and card, each as HTML plus an RSC payload). The JSON bundle itself
+isn't uploaded, since the site only reads it at build time, and past bundles are archived to
+`frontend/data-archive/`, outside `public/`.
+
 ## Docs
 
 - [`docs/website-plan.md`](docs/website-plan.md) — full website build plan (data pipeline, tiers, cards, breakdowns).
