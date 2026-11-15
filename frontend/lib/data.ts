@@ -88,7 +88,8 @@ async function loadAsOfFull(year: number): Promise<FullBoard> {
     byClr(
       (rows ?? []).flatMap((r) => {
         const b = bySlug.get(r.slug);
-        return b ? [{ ...b, ...r } as IndexRow] : [];
+        // Not on today's board (early-season floors are lower): the row carries its own identity.
+        return b ? [{ ...b, ...r } as IndexRow] : r.playername ? [r as IndexRow] : [];
       }),
     );
   const views = { all: join(snap.all) } as Record<BoardView, IndexRow[]>;

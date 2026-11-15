@@ -77,6 +77,11 @@ logger = logging.getLogger(__name__)
 # Config
 # ---------------------------------------------------------------------------
 RATED_MIN_GAMES = 100  # inclusion floor for the public board (see plan §11.1)
+# Past-year boards: early on nobody COULD have 100 career games yet (end of 2013 the 99th
+# percentile had 132), so a snapshot's floor is this share of its p99 career games, clamped
+# to [ASOF_MIN_GAMES_LOW, rated_min_games]. Binds through 2015; 2016 on is the full floor.
+ASOF_MIN_GAMES_FRAC = 0.35
+ASOF_MIN_GAMES_LOW = 20
 
 # Tier ladder (top -> bottom).  Cutoffs are absolute CLR floors -- round
 # numbers so the meaning of "Legend" (CLR >= 30) is stable across reruns
@@ -441,6 +446,9 @@ _LEAGUE_KEYS = {
     "league of legends circuit oceania": "LCO", "lco": "LCO",
 }
 
+# League renames folded together in the index-row title tally (old key -> current key).
+_TALLY_LEAGUE = {"OGN": "LCK"}
+
 _INTL_EVENT_KIND = {"WLDs": "worlds", "MSI": "msi", "FST": "first_stand", "EWC": "ewc"}
 
 
@@ -494,13 +502,17 @@ def _title_tally(honors: list[dict]) -> dict | None:
     """{worlds, msi, first_stand, ewc, domestic, league, leagues} champion counts for the
     index row. `leagues` is domestic titles per league, most first ({"LCK": 3, "LPL": 1};
     titles whose league is unknown count only toward `domestic`); `league` is its top key
-    (the pill's mark). Ties go to the more recent league. None when no titles."""
+    (the pill's mark). Ties go to the more recent league. Predecessor names in
+    `_TALLY_LEAGUE` count as their successor (OGN titles are LCK titles here; the
+    per-year honors keep the historical name). None when no titles."""
     gold = [h for h in honors if h["medal"] == "gold"]
     if not gold:
         return None
     out: dict = {k: sum(h["kind"] == k for h in gold) for k in ("worlds", "msi", "first_stand", "ewc", "domestic")}
     # honors are newest first and most_common keeps first-seen order on ties.
-    leagues = Counter(h["league"] for h in gold if h["kind"] == "domestic" and h.get("league")).most_common()
+    leagues = Counter(
+        _TALLY_LEAGUE.get(h["league"], h["league"]) for h in gold if h["kind"] == "domestic" and h.get("league")
+    ).most_common()
     out["leagues"] = dict(leagues) or None
     out["league"] = leagues[0][0] if leagues else None
     return {k: v for k, v in out.items() if v}
@@ -1117,7 +1129,7 @@ def _player_photos(playernames: Iterable[str]) -> dict[str, dict[str, str | floa
     Empty (and the frontend falls back to a monogram) until
     `python -m lps.fetch_player_images` has populated it.
     """
-    from .fetch_player_images import PLAYER_IMAGES_JSON
+    from .fetch_player_images import PLAYER_IMAGES_JSON, clean_text
 
     if not PLAYER_IMAGES_JSON.exists():
         logger.warning("[web] player_images.json not found -- run fetch_player_images for photos")
@@ -1134,7 +1146,8 @@ def _player_photos(playernames: Iterable[str]) -> dict[str, dict[str, str | floa
         out[name] = {"url": e["url"], "photo_caption": " · ".join(bits) or None,
                      "photo_cx": e.get("cx"), "photo_ar": e.get("ar"),
                      "photo_top": e.get("top"), "photo_neck": e.get("neck"),
-                     "real_name": e.get("real_name"), "country": e.get("country")}
+                     "real_name": clean_text(e.get("real_name")) or None,
+                     "country": clean_text(e.get("country")) or None}
     return out
 
 
@@ -1401,7 +1414,7 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
 
     # asof/<year>.json -- past-year boards (career numbers through that season). Written
     # before today's files so every live view can carry its rank on last season's board.
-    asof_ranks = _write_asof(out_dir, ov, honors_by_name, cfg.rated_min_games)
+    asof_ranks = _write_asof(out_dir, ov, honors_by_name, cfg.rated_min_games, set(rated["slug"]))
     prev_ranks = asof_ranks.get(latest_year - 1)
     rated["rank_prev"] = _prev_ranks(rated, prev_ranks, "all")
 
@@ -1542,14 +1555,22 @@ _ASOF_FIELDS: list[str] = [
     "total_score", "peak_lps", "tier", "hall_of_legends", "is_retired", "is_active", "titles",
     "rank_prev",
 ]
+# Identity fields an as-of row carries itself when the player isn't on today's board (a
+# 2013 regular who never reached today's games floor) -- the site has nothing to join.
+_ASOF_IDENTITY_FIELDS: list[str] = [
+    "playername", "photo", "photo_cx", "photo_ar", "photo_top", "photo_neck", "real_name",
+    "hol_year",
+]
 
 
 def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[dict]],
-                rated_min_games: int) -> dict[int, dict[str, dict[str, int]]]:
+                rated_min_games: int, today_slugs: set[str]) -> dict[int, dict[str, dict[str, int]]]:
     """Per-season "rankings as of the end of Y" boards -> `asof/<Y>.json`
     ({year, rated_count, tiers, all, lanes: {lane: rows}}), from career.py's
-    `player_ratings_asof.json`. Rated pool, ranks and tiers follow the same rules as the
-    live board, applied to the career-through-Y numbers; titles and Hall of Legends only
+    `player_ratings_asof.json`. Ranks and tiers follow the same rules as the live board,
+    applied to the career-through-Y numbers; the rated pool's games floor scales down for
+    early seasons (ASOF_MIN_GAMES_FRAC), so rows for players not on today's board carry
+    their own identity fields (_ASOF_IDENTITY_FIELDS). Titles and Hall of Legends only
     count what had happened by Y. Status is read in hindsight: active = played in Y,
     retired = never played again, otherwise between teams (hiatus). Each row's `rank_prev` is
     its rank on the previous season's board in the same view (all roles / one lane), null if
@@ -1569,6 +1590,8 @@ def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[
         df = df[df["playername"].isin(base.index)].copy()
         b = base.loc[df["playername"]]
         df["slug"] = b["slug"].to_numpy()
+        for c in _ASOF_IDENTITY_FIELDS[1:]:
+            df[c] = b[c].to_numpy() if c in b.columns else None
         df["current_team"] = df["team"]
         df["current_league"] = df["league"]
         active = df["last_year"] == year
@@ -1579,8 +1602,12 @@ def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[
         df["hall_of_legends"] = b["hall_of_legends"].to_numpy(dtype=bool) & ~(hol_y > year)
         return df
 
-    def _rank(df: pd.DataFrame) -> pd.DataFrame:
-        df = df[df["games"] >= rated_min_games].copy()
+    def _floor(all_rows: pd.DataFrame) -> int:
+        p99 = float(all_rows["games"].quantile(0.99)) if len(all_rows) else 0.0
+        return int(min(rated_min_games, max(ASOF_MIN_GAMES_LOW, round(ASOF_MIN_GAMES_FRAC * p99))))
+
+    def _rank(df: pd.DataFrame, min_games: int) -> pd.DataFrame:
+        df = df[df["games"] >= min_games].copy()
         df["rank"] = df["clr"].rank(ascending=False, method="first").astype(int)
         df = df.sort_values("rank").reset_index(drop=True)
         df["tier"] = _assign_tiers(df["clr"])[0].values
@@ -1588,6 +1615,8 @@ def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[
 
     def _row(r: pd.Series) -> dict:
         d = _row_dict(r, _ASOF_FIELDS)
+        if r["slug"] not in today_slugs:
+            d.update(_row_dict(r, _ASOF_IDENTITY_FIELDS))
         for k in ("clr", "career_value", "pace_value", "peak_value", "resume_bonus",
                   "total_score", "peak_lps", "win_rate", "region_elo"):
             d[k] = _round(d.get(k))
@@ -1616,7 +1645,8 @@ def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[
         all_df["positions"] = all_df["playername"].map(lambda n: positions.get(n, []))
         all_df["position"] = all_df["positions"].map(lambda p: p[0]["lane"] if p else None)
         all_df["titles"] = all_df["playername"].map(_titles)
-        rated = _rank(all_df)
+        min_games = _floor(all_df)
+        rated = _rank(all_df, min_games)
         if not len(rated):
             continue
         prev = ranks.get(year - 1)
@@ -1628,7 +1658,7 @@ def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[
             lf = lanes_df[lanes_df["position"] == lane].copy()
             lf["positions"] = lf["playername"].map(lambda n: positions.get(n, []))
             lf["titles"] = lf["playername"].map(_titles)
-            lf = _rank(lf)
+            lf = _rank(lf, min_games)
             ranks[year][lane] = dict(zip(lf["slug"], lf["rank"].astype(int)))
             lf["rank_prev"] = _prev_ranks(lf, prev, lane)
             lane_rows[lane] = [_row(r) for _, r in lf.iterrows()]
@@ -1638,6 +1668,7 @@ def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[
             "year": year,
             "prev_year": year - 1 if prev else None,
             "rated_count": int(len(rated)),
+            "rated_min_games": min_games,
             "tiers": tier_meta,
             "all": [_row(r) for _, r in rated.iterrows()],
             "lanes": lane_rows,

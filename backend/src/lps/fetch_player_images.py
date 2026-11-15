@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import html
 import json
 import logging
 import re
@@ -202,6 +203,12 @@ def _match_pages(
     return out
 
 
+def clean_text(s: str | None) -> str:
+    """Cargo text with HTML entities decoded (Players.Name comes back as
+    'Yiliang&nbsp;"Peter" Peng') and non-breaking spaces made plain."""
+    return " ".join(html.unescape(s or "").replace("\xa0", " ").split())
+
+
 def _page_bios(pages: list[str], lp: LPClient) -> dict[str, dict[str, str]]:
     """{page_casefold: {real_name, country}} from the Players table."""
     out: dict[str, dict[str, str]] = {}
@@ -209,8 +216,8 @@ def _page_bios(pages: list[str], lp: LPClient) -> dict[str, dict[str, str]]:
         for r in lp.query(tables="Players", fields="OverviewPage=page, Name=name, Country=country",
                           where=f"OverviewPage IN ({quoted})"):
             if r.get("page"):
-                out[r["page"].casefold()] = {"real_name": (r.get("name") or "").strip(),
-                                             "country": (r.get("country") or "").strip()}
+                out[r["page"].casefold()] = {"real_name": clean_text(r.get("name")),
+                                             "country": clean_text(r.get("country"))}
         time.sleep(1)
     return out
 
