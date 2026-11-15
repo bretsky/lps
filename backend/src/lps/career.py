@@ -80,18 +80,22 @@ class CLRConfig:
     career_divisor: float = (
         7.5  # D: avg career length (yrs) of retired top-100-by-CareerLPS
     )
-    # PEAK = "plateau" definition. A season counts as a PEAK YEAR if it is within `peak_band` of
-    # the player's best season (>= (1-peak_band)*best). PeakVal = mean(peak years) + a length
-    # bonus for each EXTRA peak year:
-    #     PeakVal = avg(peak years) + peak_len_bonus * best_season * (k - 1)
+    # PEAK = "plateau" definition. With seasons sorted best-first (s1 >= s2 >= ...), the peak is
+    # the best plateau of the player's top-k seasons:
+    #     PeakVal = max over k of [ mean(s1..sk) + peak_len_bonus * sk * (k - 1) ]
     # A one-year peak (Marin) scores exactly its single great season; a wide plateau (Faker)
-    # scores its plateau average plus a length reward. The length bonus offsets the fact that
-    # averaging in a slightly-lower peak year would otherwise drag the mean down -- so a longer
-    # peak is NEVER penalized as long as peak_len_bonus >= peak_band/2 (the worst-case average
-    # drop from adding a year at the band edge). Both default safely above that floor.
-    peak_band: float = 0.15  # within 15% of the best season counts as a peak year
+    # scores its plateau average plus a length reward per extra year, priced off the plateau's
+    # WEAKEST season (sk) -- so a flat plateau of k equal seasons s scores s*(1 + bonus*(k-1)),
+    # and a season only joins when it is close enough to the rest (~77% of the best at 0.15).
+    # MONOTONE + CONTINUOUS by construction: every candidate rises when any season rises, so a
+    # better season can never lower PeakVal, and nothing jumps at a cutoff.
+    # (`peak_smooth=False` restores the legacy hard band: seasons >= (1-peak_band)*best are
+    # peak years, PeakVal = mean + bonus*best*(k-1). That cutoff moves with the best season, so
+    # improving it could push another year out and LOWER PeakVal -- Knight 2026.)
+    peak_smooth: bool = True
+    peak_band: float = 0.15  # legacy hard band only (peak_smooth=False)
     peak_len_bonus: float = (
-        0.15  # per extra peak year, as a fraction of the best season (tuned)
+        0.15  # per extra peak year, as a fraction of a season's LPS (tuned)
     )
     pace_prior_games: float = (
         25.0  # empirical-Bayes shrinkage strength (weighted games)
@@ -561,6 +565,36 @@ def _add_clr_year(
     return ally.drop(columns="_yb")
 
 
+def _peak_plateau(
+    yv: np.ndarray, best: np.ndarray, cfg: CLRConfig
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Per player: (peak years k, plateau mean, PeakValue) from the season matrix `yv`
+    (rows = players, NaN = no season). The best season always counts (k >= 1)."""
+    n = len(best)
+    k = np.ones(n)
+    band_avg = best.copy()
+    value = best.copy()
+    b = cfg.peak_len_bonus
+    for i, row in enumerate(yv):
+        s = np.sort(row[np.isfinite(row)])[::-1]
+        if s.size == 0:
+            continue
+        if not cfg.peak_smooth:  # legacy hard band (non-monotone at the cutoff)
+            pk = s[s >= best[i] * (1.0 - cfg.peak_band)]
+            if pk.size:
+                k[i], band_avg[i] = pk.size, pk.mean()
+                value[i] = pk.mean() + b * best[i] * (pk.size - 1.0)
+            continue
+        # Best plateau over top-k: mean(s1..sk) + b * sk * (k-1). Each candidate is
+        # non-decreasing in every season, so the max is too (and continuous).
+        kk = np.arange(1, s.size + 1)
+        cand = np.cumsum(s) / kk + b * s * (kk - 1)
+        cand[(kk > 1) & (s <= 0)] = -np.inf  # a non-positive season never extends a peak
+        j = int(np.argmax(cand))
+        k[i], band_avg[i], value[i] = j + 1, s[: j + 1].mean(), cand[j]
+    return k, band_avg, value
+
+
 def _add_clr(
     career: pd.DataFrame, years: tuple[int, ...], cfg: CLRConfig
 ) -> pd.DataFrame:
@@ -572,28 +606,19 @@ def _add_clr(
         careers longer than D keep a bulk advantage, shorter ones scale down (Pace counters).
       - PaceValue   = per-active-year production, empirical-Bayes shrunk toward the cohort mean
         by weighted games so brilliant short careers aren't buried yet tiny samples can't win.
-      - PeakValue   = "plateau" peak: mean of the player's PEAK YEARS (seasons within `peak_band`
-        of their best season) plus a length bonus per extra peak year. A one-year peak (Marin)
-        scores its single great season exactly; a wide plateau (Faker) scores its plateau average
-        plus a length reward. A longer peak is never penalized (see CLRConfig for the guarantee).
+      - PeakValue   = "plateau" peak: the best of mean(top-k seasons) + a length bonus per
+        extra year, priced off the k-th season. A one-year peak (Marin) scores its single great
+        season exactly; a wide plateau (Faker) scores its plateau average plus a length reward.
+        Monotone: a better season never lowers it (see CLRConfig).
     Also exposes peak_years (count) and peak_band_avg (plateau mean) as standalone columns.
     """
     best = career["peak_lps"].to_numpy(dtype=float)  # absolute peak season (== PeakLPS)
-    thr = best * (1.0 - cfg.peak_band)  # peak-year threshold, per player
     ycols = [f"y{y}" for y in years if f"y{y}" in career.columns]
     yv = career[ycols].to_numpy(dtype=float) if ycols else np.zeros((len(career), 0))
-    k = np.ones(
-        len(career)
-    )  # number of peak years (>= 1: the best season always counts)
-    band_avg = best.copy()  # mean of the peak years (defaults to the best season)
-    for i, row in enumerate(yv):
-        peak_yrs = row[row >= thr[i]]  # seasons within the band of the peak
-        if peak_yrs.size:
-            k[i] = peak_yrs.size
-            band_avg[i] = peak_yrs.mean()
+    k, band_avg, peak_value = _peak_plateau(yv, best, cfg)
     career["peak_years"] = k.astype(int)
     career["peak_band_avg"] = band_avg
-    career["peak_value"] = band_avg + cfg.peak_len_bonus * best * (k - 1.0)
+    career["peak_value"] = peak_value
 
     career["career_value"] = career["total_score"] / cfg.career_divisor
 
@@ -916,9 +941,17 @@ def _write_about(writer, meta: dict) -> None:
             ),
             (
                 "  PeakVal",
-                f"mean(peak years) + {cfg.peak_len_bonus:g}*PeakLPS*(PeakYrs-1); a "
-                f"season is a peak year if >= {1 - cfg.peak_band:g}*PeakLPS (within "
-                f"{cfg.peak_band:.0%} of the best). Longer peaks never penalized.",
+                (
+                    f"best plateau of the top-k seasons: max over k of mean(top k) + "
+                    f"{cfg.peak_len_bonus:g}*(k-th best season)*(k-1); PeakYrs = that k. "
+                    f"A better season never lowers it."
+                )
+                if cfg.peak_smooth
+                else (
+                    f"mean(peak years) + {cfg.peak_len_bonus:g}*PeakLPS*(PeakYrs-1); a "
+                    f"season is a peak year if >= {1 - cfg.peak_band:g}*PeakLPS (within "
+                    f"{cfg.peak_band:.0%} of the best)."
+                ),
             ),
             (
                 "  + Resume",

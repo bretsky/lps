@@ -106,9 +106,9 @@ first three terms; the bonus terms are added in Phase 2.
 - **PaceValue** = length-robust rate (`LPS/Gm·wt`) shrunk toward the mean via an empirical-Bayes
   prior on games, so small samples don't top the board.
 - **PeakValue** = "plateau" peak (see §5 for the exact formula): the mean of a player's **peak
-  years** (seasons within `peak_band` of their best) plus a length bonus per extra peak year. A
-  one-year great (Marin) scores his single best season exactly; a wide plateau (Faker) scores its
-  plateau average plus a length reward — and a longer peak is never penalized.
+  years** (their top seasons, as many as make the best plateau) plus a length bonus per extra peak
+  year. A one-year great (Marin) scores his single best season exactly; a wide plateau (Faker)
+  scores its plateau average plus a length reward — and a better season never lowers it.
 - **High Noon** = peer rank among that season's players (global + per-lane); HN3 = average over a
   player's 3 best-ranked seasons (non-consecutive) — **companion columns**, not summed in.
 
@@ -123,14 +123,19 @@ components sit on a ~one-season scale so the weights are unit-free.
 - **CareerValue** = `CareerLPS / 7.5`.
 - **PaceValue** = per-active-year LPS, empirical-Bayes shrunk toward the cohort mean by weighted
   games (prior strength `pace_prior_games`).
-- **PeakValue** = `mean(peak years) + peak_len_bonus · best · (PeakYrs − 1)`, where a **peak
-  year** is a season `≥ (1 − peak_band) · best`. Mean-of-plateau captures peak *height*; the
-  length bonus rewards peak *width*. **Never-penalized guarantee:** adding a qualifying peak year
-  changes PeakVal by `≥ best·(peak_len_bonus − peak_band/2)`, so as long as
-  `peak_len_bonus ≥ peak_band/2` (0.10 ≥ 0.075 by default) a longer peak can never lower the
-  score. `peak_years` (plateau width) and `peak_band_avg` (plateau height) are exposed as columns.
-  *Known trade-off:* the hard `(1−band)` cutoff is a knife-edge (a season at 84.9% vs 85.1% of the
-  peak flips in/out) — a soft, distance-weighted band is the fallback if that proves too brittle.
+- **PeakValue** = `max over k of [ mean(s₁…s_k) + peak_len_bonus · s_k · (k − 1) ]`, with seasons
+  sorted best-first; `PeakYrs` = the winning k. Mean-of-plateau captures peak *height*; the length
+  bonus rewards peak *width*, priced off the plateau's weakest season so a season only joins when
+  it is close to the rest (~77% of the best at `peak_len_bonus=0.15`). A flat plateau of k equal
+  seasons s scores `s·(1 + bonus·(k−1))`, same as the original band formula. **Monotone and
+  continuous by construction:** every top-k candidate rises when any season rises, so a better
+  season can never lower PeakVal and nothing flips at a cutoff. `peak_years` (plateau width) and
+  `peak_band_avg` (plateau height) are exposed as columns.
+  *History:* this replaced (2026-11) a hard band — peak years were seasons `≥ (1 − peak_band) ·
+  best`, PeakVal `= mean + bonus · best · (k − 1)`. Because that cutoff moved with the best season,
+  improving it could push another year out of the plateau and *lower* PeakVal (Knight's better
+  2026 cost him 0.67). A soft ramp on the cutoff was tried and still non-monotone when several
+  seasons sit near it. The old form remains available as `CLRConfig(peak_smooth=False)`.
 - **First-run sanity (defaults, uncalibrated):** top of board is a clean consensus ordering
   (Faker ≫ Canyon, Ruler, Knight, Keria, ShowMaker, Chovy …). Peak correctly isolates sharp
   peaks (Marin PeakVal ≈ 34.7, elite despite a 5-yr career). Known distortions are all

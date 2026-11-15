@@ -16,6 +16,11 @@ Callers replace `playername` with this label at the point names attach to the sc
 now separating the real people. The label is STABLE across years (keyed on playerid), so
 cross-year career aggregation stays correct too.
 
+Oracle occasionally issues the SAME person a second playerid (e.g. Doran 2020-2023). Those
+are merged via the hand-curated `info/player_id_aliases.csv` (alias_playerid ->
+canonical_playerid): alias rows are re-keyed to the canonical id before labels are built, and
+the alias id maps to the same label, so the person is one identity everywhere.
+
 For data that only has a handle (pre-2014 Leaguepedia, or Leaguepedia-sourced achievements),
 `resolve_label(handle, region)` bridges to a playerid -- by (handle, league) when the handle
 collides, else by a globally-unique handle -- and returns the same label; unbridged handles
@@ -31,13 +36,14 @@ import re
 
 import pandas as pd
 
-from .config import DATA_DIR
+from .config import DATA_DIR, INFO_DIR
 from .io_oracle import _infer_year_from_name, list_oracle_files
 
 logger = logging.getLogger(__name__)
 
 _CACHE = DATA_DIR / "cache" / "player_identity.pkl"
-_CACHE_VERSION = 2  # bump when the built dict's schema changes
+_CACHE_VERSION = 3  # bump when the built dict's schema changes
+ALIASES_CSV = INFO_DIR / "player_id_aliases.csv"
 _ID_COLS = ("playername", "playerid", "league", "position", "teamname")
 _TEAM_KEY_RE = re.compile(r"[^a-z0-9]+")
 _TEAM_PAREN_RE = re.compile(r"\s*\([^)]*\)")
@@ -55,6 +61,29 @@ def _team_key(s: object) -> str:
 def _mode(s: pd.Series) -> str:
     """Most common value (ties broken by first-seen via value_counts ordering)."""
     return s.value_counts().idxmax()
+
+
+def load_aliases() -> dict[str, str]:
+    """{alias playerid -> canonical playerid} from info/player_id_aliases.csv (may be absent).
+
+    Chains (a -> b -> c) are collapsed so every alias points straight at its final id.
+    """
+    if not ALIASES_CSV.exists():
+        return {}
+    df = pd.read_csv(ALIASES_CSV, dtype=str, comment="#").fillna("")
+    raw = {
+        a.strip(): c.strip()
+        for a, c in zip(df["alias_playerid"], df["canonical_playerid"])
+        if a.strip() and c.strip() and a.strip() != c.strip()
+    }
+    out: dict[str, str] = {}
+    for a in raw:
+        c, seen = raw[a], {a}
+        while c in raw and c not in seen:
+            seen.add(c)
+            c = raw[c]
+        out[a] = c
+    return out
 
 
 def _read_identity_rows() -> pd.DataFrame:
@@ -76,6 +105,9 @@ def _read_identity_rows() -> pd.DataFrame:
     d["playername"] = d["playername"].astype(str).str.strip()
     d["playerid"] = d["playerid"].astype(str).str.strip()
     d = d[(d["playername"] != "") & (d["playerid"] != "")]
+    aliases = load_aliases()
+    if aliases:
+        d["playerid"] = d["playerid"].replace(aliases)
     d["league"] = d.get("league", "").astype(str).str.strip() if "league" in d.columns else ""
     d["teamname"] = d.get("teamname", "").astype(str).str.strip() if "teamname" in d.columns else ""
     return d
@@ -104,6 +136,10 @@ def _build() -> dict:
             k += 1
         used.add(label.lower())
         label_by_pid[pid] = label
+    # Alias ids (merged away above) still appear on raw Oracle rows -> same label.
+    for alias, canon in load_aliases().items():
+        if canon in label_by_pid:
+            label_by_pid[alias] = label_by_pid[canon]
 
     hlow = d["playername"].str.lower()
     # (handle, league) -> playerid, only where that pair is unambiguous.
@@ -141,6 +177,8 @@ def _build() -> dict:
 @functools.lru_cache(maxsize=1)
 def _identity() -> dict:
     files = list_oracle_files()
+    if ALIASES_CSV.exists():
+        files = [*files, ALIASES_CSV]  # editing the alias table rebuilds the identity cache
     mtime = max((f.stat().st_mtime for f in files), default=0.0)
     if _CACHE.exists():
         try:

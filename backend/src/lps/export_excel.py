@@ -276,16 +276,16 @@ _GLOSSARY: list[tuple[str, str]] = [
     ),
     (
         "PeakVal",
-        "CLR peak term = w_peak * (mean of a player's PEAK YEARS + a length bonus). A season is a "
-        "'peak year' if it is within a set band of the player's best season (e.g. >=85% "
-        "of PeakLPS). PeakVal = mean(peak years) + bonus*PeakLPS*(PeakYrs-1). A one-year "
-        "peak scores its single best season exactly; a wide plateau scores its plateau "
-        "average plus a reward for length -- and a longer peak is never penalized. See "
-        "the About sheet for the band and bonus values.",
+        "CLR peak term = w_peak * (mean of a player's PEAK YEARS + a length bonus). The peak "
+        "years are the player's top k seasons, with k chosen to maximize "
+        "mean(top k) + bonus*(k-th best season)*(k-1). A one-year peak scores its single best "
+        "season exactly; a wide plateau scores its plateau average plus a reward for length, "
+        "and a season only joins if it is close to the rest. A better season can never lower "
+        "PeakVal. See the About sheet for the bonus value.",
     ),
     (
         "PeakYrs",
-        "Number of PEAK YEARS: seasons within the peak band of the player's best season "
+        "Number of PEAK YEARS: the top seasons that make up the player's peak plateau "
         "(always >= 1, since the best season counts). The width of the peak plateau.",
     ),
     (

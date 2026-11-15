@@ -1,0 +1,10 @@
+# Oracle playerids that belong to the SAME person as another id. player_identity re-keys
+# alias_playerid -> canonical_playerid before building labels. Add a row only when the two ids
+# are verifiably one player (e.g. same team across the id boundary). Editing this file
+# rebuilds the identity cache, but per-year feature caches bake labels in: bust the affected
+# years' data/cache/match_features_<year>_*.pkl (or run update_all --full) afterwards.
+alias_playerid,canonical_playerid,note
+oe:player:a1f3b2bb3f36e5113237f92d76dc4c8,oe:player:57acacc1f182893280e7400073a3dd1,Doran: 2020-23 id; Kiwoom DRX 2019 KeSPA Cup -> DRX 2020
+oe:player:dfbb32609398e07a30933a617d2d9b7,oe:player:0e124d33946bb002315d287841dd97a,klowny: 2020 id; SAIM SE SuppUp 2020 and 2021
+oe:player:c32e66894e6e164bea6d26fe5aaf78b,oe:player:5ef20c339663b3e40f1978b16101aed,GianKios: 2020 id; LHE every year 2019-2026
+oe:player:758f8ba33181e7a547944455dc73def,oe:player:b4b98082fd3e3a35446a7f50ebf3060,Ozgur: 2018 id; Galakticos 2018 and 2020-24
