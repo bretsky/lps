@@ -1,7 +1,7 @@
 import type { Honor, PlayerDetail } from "@/lib/types";
 import { fmt } from "@/lib/format";
 import { MEDAL_COLOR } from "@/lib/theme";
-import { leagueIcon } from "@/lib/icons";
+import { isEventKind, leagueIcon } from "@/lib/icons";
 import { EventMark, LeagueMark } from "@/components/ui/Marks";
 import { CupDomestic, CupIntl, Laurel, Shield, Star } from "./AchievementIcons";
 
@@ -128,11 +128,12 @@ function Tile({ cat, n, pts }: { cat: Cat; n: number; pts: number }) {
   );
 }
 
-const KIND_ORDER: Honor["kind"][] = ["worlds", "msi", "first_stand", "intl", "domestic", "cup"];
+const KIND_ORDER: Honor["kind"][] = ["worlds", "msi", "first_stand", "ewc", "intl", "domestic", "cup"];
 const KIND_NAME: Record<Honor["kind"], string> = {
   worlds: "Worlds",
   msi: "MSI",
   first_stand: "First Stand",
+  ewc: "EWC",
   intl: "Intl",
   domestic: "League",
   cup: "Cup",
@@ -173,7 +174,7 @@ function HonorChip({ h }: { h: Honor }) {
   const place = h.medal === "gold" ? "Champion" : h.medal === "silver" ? "Finalist" : "Semis";
   const name = h.kind === "domestic" ? h.league ?? "League" : h.kind === "intl" || h.kind === "cup" ? h.event ?? KIND_NAME[h.kind] : KIND_NAME[h.kind];
   const mark =
-    h.kind === "worlds" || h.kind === "msi" || h.kind === "first_stand" ? (
+    isEventKind(h.kind) ? (
       <EventMark event={h.kind} medal={h.medal} size={16} />
     ) : h.kind === "domestic" && leagueIcon(h.league) ? (
       <LeagueMark league={h.league} size={14} />

@@ -1219,7 +1219,110 @@ def build_and_write(
         f"[career] wrote {out.name}  ({len(career_all)} players, {len(got)} years)"
     )
     _write_yearly_breakdown(allyears, out.parent)
+    _write_champion_stats(records, allyears, clr_cfg.era_mults, out.parent)
+    _write_asof_snapshots(allyears, roster, all_tourn, got, clr_cfg, bonus_cfg, out.parent)
     return out
+
+
+# Career-board columns frozen per "as of" snapshot (the site's past-year rankings view).
+_ASOF_COLS = [
+    "playername", "clr", "career_value", "pace_value", "peak_value", "resume_bonus",
+    "total_score", "peak_lps", "n_years", "first_year", "last_year", "games", "win_rate",
+    "region_elo",
+]
+
+
+def _asof_frames(
+    allyears: pd.DataFrame,
+    roster: pd.DataFrame,
+    all_tourn: list[str],
+    years: tuple[int, ...],
+    clr_cfg: CLRConfig,
+    bonus_cfg: BonusConfig,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """The career board exactly as `build_and_write` computes it, but from the seasons in
+    `allyears` only (the caller pre-filters to year <= Y). Returns (overview, per-lane) frames
+    with `_ASOF_COLS` plus `team` / `league`: the season-Y affiliation for players active in the
+    snapshot's last year, else the team / league they earned the most CLR with up to then."""
+    w_bonus = bonus_cfg.w_bonus
+    c_all = _add_clr(_aggregate(allyears, ["playername"], all_tourn, years), years, clr_cfg)
+    c_lane = _add_clr(
+        _aggregate(allyears, ["playername", "position"], all_tourn, years), years, clr_cfg
+    )
+    bonus_long = score_bonuses(roster, bonus_cfg)
+    if len(bonus_long):
+        bonus_long = bonus_long[bonus_long["year"] <= years[-1]]
+    c_all, c_lane = _add_bonuses(c_all, c_lane, bonus_long, w_bonus)
+
+    # Affiliation: active in the last season -> that season's main team; else top-CLR team.
+    ally_clr = _add_clr_year(allyears, c_all, bonus_long, w_bonus)
+    last = years[-1]
+    now = (
+        allyears[allyears["year"] == last]
+        .sort_values("games")
+        .drop_duplicates("playername", keep="last")
+        .set_index("playername")[["team", "league"]]
+    )
+    best = {}
+    for col in ("team", "league"):
+        g = ally_clr.groupby(["playername", col], dropna=True)["clr_year"].sum().reset_index()
+        g = g[g[col].astype(str) != ""].sort_values("clr_year", ascending=False)
+        best[col] = g.drop_duplicates("playername").set_index("playername")[col]
+    for frame in (c_all, c_lane):
+        for col in ("team", "league"):
+            frame[col] = frame["playername"].map(now[col]).fillna(
+                frame["playername"].map(best[col])
+            )
+
+    c_all = _scale_clr_components(c_all, clr_cfg, w_bonus)
+    c_lane = _scale_clr_components(c_lane, clr_cfg, w_bonus)
+    keep = [c for c in _ASOF_COLS if c in c_all.columns] + ["team", "league"]
+    return c_all[keep], c_lane[keep + ["position"]]
+
+
+def _write_asof_snapshots(
+    allyears: pd.DataFrame,
+    roster: pd.DataFrame,
+    all_tourn: list[str],
+    years: tuple[int, ...],
+    clr_cfg: CLRConfig,
+    bonus_cfg: BonusConfig,
+    out_dir: Path,
+) -> None:
+    """Write `player_ratings_asof.json`: for every season Y before the latest, the career board
+    as it stood at the end of Y -- every career number (CLR, its components, résumé, games,
+    years) rebuilt from seasons <= Y only. Uses today's models and normalization, so it answers
+    "how would LPS have ranked everyone through Y", not "what did an older build say".
+    export_web turns it into the site's per-year `asof/<Y>.json` boards."""
+    import json as _json
+
+    def _rows(df: pd.DataFrame) -> list[dict]:
+        df = df.astype(object).where(df.notna(), None)
+        out = []
+        for rec in df.to_dict("records"):
+            for k, v in rec.items():
+                if isinstance(v, (float, np.floating)):
+                    rec[k] = round(float(v), 4)
+                elif isinstance(v, np.integer):
+                    rec[k] = int(v)
+            out.append(rec)
+        return out
+
+    snaps: dict[str, dict] = {}
+    for y in years[:-1]:
+        sub = allyears[allyears["year"] <= y]
+        if sub.empty:
+            continue
+        ys = tuple(t for t in years if t <= y)
+        c_all, c_lane = _asof_frames(
+            sub, roster[roster["year"] <= y], all_tourn, ys, clr_cfg, bonus_cfg
+        )
+        snaps[str(y)] = {"all": _rows(c_all), "lanes": _rows(c_lane)}
+    path = out_dir / "player_ratings_asof.json"
+    path.write_text(
+        _json.dumps(snaps, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
+    )
+    logger.info(f"[career] wrote as-of snapshots for {len(snaps)} seasons -> {path.name}")
 
 
 def _write_yearly_breakdown(allyears: pd.DataFrame, out_dir: Path) -> None:
@@ -1245,6 +1348,136 @@ def _write_yearly_breakdown(allyears: pd.DataFrame, out_dir: Path) -> None:
         _json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
     )
     logger.info(f"[career] wrote per-year breakdown -> {path.name}")
+
+
+_ROLE_ALIASES = {"jungle": "jng", "adc": "bot", "support": "sup"}
+
+
+def _box_scores(year: int, source: str) -> pd.DataFrame:
+    """Per (gameid, side, position) box score for a season: champion, kills, deaths, assists, cs,
+    minutes -- from Oracle and/or the Leaguepedia scoreboards (`source` as in run_year_frames)."""
+    from . import lp_ingest
+
+    parts = []
+    if "oracle" in source:
+        o = load_oracle_years((year,))
+        o = o[o["position"].astype(str).str.lower() != "team"]
+        cs = o["total cs"] if "total cs" in o.columns else pd.Series(np.nan, index=o.index)
+        if {"minionkills", "monsterkills"} <= set(o.columns):  # old seasons lack 'total cs'
+            cs = cs.fillna(o["minionkills"] + o["monsterkills"])
+        parts.append(
+            pd.DataFrame(
+                {c: o[c] for c in ("gameid", "side", "position", "champion", "kills",
+                                   "deaths", "assists", "gamelength") if c in o.columns}
+            ).assign(cs=cs)
+        )
+    if "lp" in source:
+        parts.append(lp_ingest.load_year(year))
+    if not parts:
+        return pd.DataFrame()
+    cols = ["gameid", "side", "position", "champion", "kills", "deaths", "assists", "cs",
+            "gamelength"]
+    box = pd.concat([p.reindex(columns=cols) for p in parts], ignore_index=True)
+    box["gameid"] = box["gameid"].astype(str)
+    box["position"] = box["position"].astype(str).str.lower().replace(_ROLE_ALIASES)
+    gl = pd.to_numeric(box["gamelength"], errors="coerce")
+    # Oracle stores seconds, Leaguepedia minutes -- tell them apart per source block by scale.
+    box["minutes"] = np.where(gl > 200, gl / 60.0, gl)
+    return box.drop(columns="gamelength").drop_duplicates(["gameid", "side", "position"])
+
+
+def _write_champion_stats(
+    records: list[dict],
+    allyears: pd.DataFrame,
+    era_mults: tuple[float, float, float],
+    out_dir: Path,
+) -> None:
+    """Write `player_champions.json`: per player, career box-score totals (K/D/A, CS) and a
+    per-champion split -- games, wins, K/D/A, CS and the LPS earned on that champion. LPS per
+    champion sums each scored game's exact share of its season's LPS (season.build_player_ratings
+    game credit) after the same per-year schedule + era scalars the career totals get, so a
+    player's champion LPS adds up to their CareerLPS. Same game set as LPS (rated leagues)."""
+    import json as _json
+
+    canon = {str(n).lower(): n for n in allyears["playername"].unique()}
+    frames = []
+    for rec in records:
+        gc = rec["meta"].get("game_credit")
+        if gc is None or not len(gc):
+            continue
+        # Only seasons that made the frame (min_games), as in the career totals.
+        fr = rec["frame"]
+        kept = set(fr["playername"] if "playername" in fr.columns else fr.index)
+        g = gc[gc["playername"].isin(kept)].copy()
+        g["credit"] = g["credit"] * rec.get("mult", 1.0) * era_mults[_era_index(rec["year"])]
+        g["gameid"] = g["gameid"].astype(str)
+        try:
+            box = _box_scores(rec["year"], rec["source"])
+        except Exception as e:  # box scores are a nice-to-have; never fail the run over them
+            logger.warning(f"[career] {rec['year']}: no box scores ({type(e).__name__}: {e})")
+            box = pd.DataFrame()
+        if len(box) and {"side", "position"} <= set(g.columns):
+            g = g.merge(box, on=["gameid", "side", "position"], how="left")
+        frames.append(g)
+    if not frames:
+        return
+    g = pd.concat(frames, ignore_index=True)
+    g["playername"] = g["playername"].astype(str).str.lower().map(canon)
+    g = g.dropna(subset=["playername"])
+    for c in ("champion", "kills", "deaths", "assists", "cs", "minutes"):
+        if c not in g.columns:
+            g[c] = np.nan
+    g["champion"] = g["champion"].astype("string").str.strip().replace("", pd.NA)
+    has_kda = g[["kills", "deaths", "assists"]].notna().all(axis=1)
+    has_cs = g["cs"].notna() & (g["minutes"] > 0)
+    g["_kda_g"] = has_kda.astype(int)
+    g["_cs"] = g["cs"].where(has_cs, 0.0)
+    g["_min"] = g["minutes"].where(has_cs, 0.0)
+    for c in ("kills", "deaths", "assists"):
+        g[c] = g[c].where(has_kda, 0.0)
+
+    def _stats(df: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
+        return df.groupby(keys, sort=False).agg(
+            games=("gameid", "size"),
+            wins=("result", "sum"),
+            lps=("credit", "sum"),
+            kda_games=("_kda_g", "sum"),
+            kills=("kills", "sum"),
+            deaths=("deaths", "sum"),
+            assists=("assists", "sum"),
+            cs=("_cs", "sum"),
+            cs_minutes=("_min", "sum"),
+        )
+
+    def _pack(r) -> dict:
+        d = {
+            "games": int(r.games),
+            "wins": int(r.wins),
+            "lps": round(float(r.lps), 2),
+        }
+        if r.kda_games:
+            d.update(
+                kda_games=int(r.kda_games),
+                kills=int(r.kills),
+                deaths=int(r.deaths),
+                assists=int(r.assists),
+            )
+        if r.cs_minutes > 0:
+            d.update(cs=int(r.cs), cs_minutes=round(float(r.cs_minutes), 1))
+        return d
+
+    out: dict[str, dict] = {}
+    for player, r in _stats(g, ["playername"]).iterrows():
+        out[str(player)] = {"totals": _pack(r), "champions": []}
+    champs = _stats(g.dropna(subset=["champion"]), ["playername", "champion"]).reset_index()
+    champs = champs.sort_values(["playername", "lps"], ascending=[True, False])
+    for r in champs.itertuples(index=False):
+        out[str(r.playername)]["champions"].append({"champion": str(r.champion), **_pack(r)})
+    path = out_dir / "player_champions.json"
+    path.write_text(
+        _json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
+    )
+    logger.info(f"[career] wrote champion splits for {len(out)} players -> {path.name}")
 
 
 def _parse_years(s: str) -> tuple[int, ...]:

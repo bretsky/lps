@@ -546,6 +546,9 @@ def build_export_frame(
         "n_ref": ratings.attrs.get("n_ref", 0.0),
         "tournament_weights": ratings.attrs.get("tournament_weights", {}),
         "elos": elos,
+        # per-(player, game) share of total_score (season.build_player_ratings); career.py
+        # splits it by champion for the site
+        "game_credit": ratings.attrs.get("game_credit"),
     }
     return r, tourn_cols, meta
 

@@ -10,7 +10,38 @@ import { HolCrown, StatusDot } from "./StatusBadges";
 export const ROW_GRID =
   "grid grid-cols-[2.5rem_3rem_minmax(0,1fr)_6.5rem] sm:grid-cols-[2.5rem_3rem_minmax(0,1fr)_minmax(0,9rem)_6.5rem] md:grid-cols-[2.75rem_3rem_minmax(0,1fr)_5.5rem_minmax(0,9.5rem)_8rem] lg:grid-cols-[2.75rem_3rem_minmax(0,1fr)_5.5rem_6.5rem_minmax(0,10rem)_9rem_5rem] items-center gap-3";
 
-export function PlayerRow({ row, maxClr }: { row: IndexRow; maxClr: number }) {
+/** Rank movement since the previous season's board, under the rank number:
+ *  ▲n up, ▼n down, – unchanged, NEW = not yet rated then. Nothing when there's no
+ *  previous board to compare with (`prevYear` null, e.g. the first frozen year). */
+function RankMove({ rank, prev, prevYear }: { rank: number; prev: number | null | undefined; prevYear: number | null }) {
+  if (prevYear === null || prev === undefined) return null;
+  const base = "block font-mono text-[10px] font-bold leading-none mt-1";
+  if (prev === null)
+    return (
+      <span className={`${base} tracking-wider text-teal`} title={`Not yet rated at the end of ${prevYear}`}>
+        NEW
+      </span>
+    );
+  const d = prev - rank;
+  const title = `#${prev} at the end of ${prevYear}`;
+  if (d === 0)
+    return (
+      <span className={`${base} text-text-dim`} title={`${title} (no change)`}>
+        –
+      </span>
+    );
+  return (
+    <span
+      className={`${base} ${d > 0 ? "text-emerald-400" : "text-rose-400"}`}
+      title={`${d > 0 ? "Up" : "Down"} ${Math.abs(d)} · ${title}`}
+    >
+      {d > 0 ? "▲" : "▼"}
+      {Math.abs(d)}
+    </span>
+  );
+}
+
+export function PlayerRow({ row, maxClr, prevYear = null }: { row: IndexRow; maxClr: number; prevYear?: number | null }) {
   const isHol = row.hall_of_legends;
   const tierColor = TIER_COLORS[row.tier];
   const podium = row.rank <= 3;
@@ -30,6 +61,7 @@ export function PlayerRow({ row, maxClr }: { row: IndexRow; maxClr: number }) {
         >
           {row.rank}
         </span>
+        <RankMove rank={row.rank} prev={row.rank_prev} prevYear={prevYear} />
       </div>
       <Portrait
         src={row.photo}

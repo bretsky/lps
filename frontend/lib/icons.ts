@@ -1,20 +1,27 @@
 // Official event + league marks bundled under public/icons/ (built by
-// backend/analysis/fetch_brand_icons.py from the LoL Esports CDN and Leaguepedia).
+// backend/analysis/fetch_brand_icons.py from the LoL Esports CDN, Leaguepedia and Commons).
 
 import type { HonorKind } from "./types";
 
-export type EventKey = "worlds" | "msi" | "first_stand";
+export type EventKey = "worlds" | "msi" | "first_stand" | "ewc";
 
 export const EVENT_ICON: Record<EventKey, string> = {
   worlds: "/icons/events/worlds.png",
   msi: "/icons/events/msi.png",
   first_stand: "/icons/events/first-stand.png",
+  ewc: "/icons/events/ewc.png",
 };
+
+/** Honor kinds drawn with an official event mark (vs a cup silhouette / league logo). */
+export function isEventKind(kind: HonorKind): kind is EventKey {
+  return kind in EVENT_ICON;
+}
 
 export const EVENT_LABEL: Record<HonorKind, string> = {
   worlds: "Worlds",
   msi: "MSI",
   first_stand: "First Stand",
+  ewc: "Esports World Cup",
   intl: "International",
   domestic: "League",
   cup: "Cup",

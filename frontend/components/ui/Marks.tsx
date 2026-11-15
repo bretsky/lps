@@ -3,13 +3,13 @@
 // player portrait used across the board, profile and card.
 
 import type { Honor, TitleTally } from "@/lib/types";
-import { EVENT_ICON, EVENT_LABEL, leagueIcon, type EventKey } from "@/lib/icons";
+import { EVENT_ICON, EVENT_LABEL, isEventKind, leagueIcon, type EventKey } from "@/lib/icons";
 import { MEDAL_COLOR, MEDAL_METAL } from "@/lib/theme";
 import { CupDomestic, CupIntl } from "@/components/profile/AchievementIcons";
 
 type Medal = "gold" | "silver" | "bronze";
 
-/** Worlds / MSI / First Stand mark, cast in a medal metal (default: gold). */
+/** Worlds / MSI / First Stand / EWC mark, cast in a medal metal (default: gold). */
 export function EventMark({
   event,
   medal = "gold",
@@ -66,11 +66,11 @@ export function LeagueMark({
   );
 }
 
-/** One podium finish as a glyph: official mark for Worlds / MSI / First Stand /
+/** One podium finish as a glyph: official mark for Worlds / MSI / First Stand / EWC /
  *  the league, a cup silhouette for everything else. Medal shown by tint/ring. */
 export function HonorMark({ honor, size = 20 }: { honor: Honor; size?: number }) {
   const label = honorLabel(honor);
-  if (honor.kind === "worlds" || honor.kind === "msi" || honor.kind === "first_stand") {
+  if (isEventKind(honor.kind)) {
     return <EventMark event={honor.kind} medal={honor.medal} size={size} title={label} />;
   }
   if (honor.kind === "domestic" && leagueIcon(honor.league)) {
@@ -109,7 +109,17 @@ export function honorLabel(h: Honor): string {
   return `${h.year} ${what} — ${PLACE[h.medal]}`;
 }
 
-/** Trophy pills for a rankings row: Worlds / MSI / First Stand / league titles. */
+/** "10× LCK champion", "3× LCK, 1× LPL champion"; titles with no known league read "other". */
+function domesticLabel(t: TitleTally): string {
+  const parts = Object.entries(t.leagues ?? {}).map(([lg, n]) => `${n}× ${lg}`);
+  const known = Object.values(t.leagues ?? {}).reduce((a, b) => a + b, 0);
+  const other = (t.domestic ?? 0) - known;
+  if (!parts.length) return `${t.domestic}× domestic champion`;
+  if (other > 0) parts.push(`${other}× other league`);
+  return `${parts.join(", ")} champion`;
+}
+
+/** Trophy pills for a rankings row: Worlds / MSI / First Stand / EWC / league titles. */
 export function TrophyPills({ titles, compact = false }: { titles?: TitleTally | null; compact?: boolean }) {
   if (!titles) return <span className="text-xs text-text-dim">—</span>;
   const pills: { key: string; node: React.ReactNode; n: number; label: string }[] = [];
@@ -118,11 +128,12 @@ export function TrophyPills({ titles, compact = false }: { titles?: TitleTally |
   ev("worlds", titles.worlds);
   ev("msi", titles.msi);
   ev("first_stand", titles.first_stand);
+  ev("ewc", titles.ewc);
   if (titles.domestic) {
     pills.push({
       key: "dom",
       n: titles.domestic,
-      label: `${titles.domestic}× domestic champion${titles.league ? ` (mostly ${titles.league})` : ""}`,
+      label: domesticLabel(titles),
       node: leagueIcon(titles.league) ? (
         <LeagueMark league={titles.league} size={15} />
       ) : (

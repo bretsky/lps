@@ -52,17 +52,20 @@ export interface IndexRow {
   photo_neck?: number | null;            // neck, 0..1 of photo height (avatar zoom)
   titles?: TitleTally | null;            // champion counts for the trophy pills
   real_name?: string | null;             // Leaguepedia Players.Name
+  rank_prev?: number | null;             // rank on the previous season's board, same view (null = unrated then)
 }
 
 export interface TitleTally {
   worlds?: number;
   msi?: number;
   first_stand?: number;
+  ewc?: number;
   domestic?: number;
-  league?: string;                       // league with the most domestic titles
+  league?: string;                       // league with the most domestic titles (the pill's mark)
+  leagues?: Record<string, number>;      // domestic titles per league, most first; unknown-league titles only in `domestic`
 }
 
-export type HonorKind = "worlds" | "msi" | "first_stand" | "intl" | "domestic" | "cup";
+export type HonorKind = "worlds" | "msi" | "first_stand" | "ewc" | "intl" | "domestic" | "cup";
 
 export interface Honor {
   year: number;
@@ -85,15 +88,29 @@ export interface TiersJson {
   tiers: TierMeta[];
   rated_min_games: number;
   rated_count: number;
+  prev_year?: number | null;             // season `rank_prev` on today's rows refers to
+}
+
+// asof/<year>.json -- the board frozen at the end of a past season. Rows carry only the
+// fields that change with the snapshot; the loader joins the rest from the current index.
+export type AsOfRow = Partial<IndexRow> & Pick<IndexRow, "slug" | "rank" | "clr" | "tier">;
+
+export interface AsOfJson {
+  year: number;
+  prev_year: number | null;              // board `rank_prev` refers to (null = first board)
+  rated_count: number;
+  tiers: TierMeta[];
+  all: AsOfRow[];
+  lanes: Partial<Record<Lane, AsOfRow[]>>;
 }
 
 export interface Meta {
+  asof_years?: number[];                 // seasons with a frozen past-year board
   build_id: string;
   generated: string;
   years: [number, number];
   source_workbook: string;
   rated_min_games: number;
-  beta: boolean;
   counts: {
     total: number;
     rated: number;
@@ -108,6 +125,8 @@ export type RadarAxes = "peak" | "longevity" | "consistency" | "resume" | "impac
 export type TournamentFamily =
   | "worlds"
   | "msi"
+  | "first_stand"
+  | "ewc"
   | "intl"
   | "domestic"
   | "cup";

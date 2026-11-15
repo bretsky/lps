@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { CSSProperties, ReactNode } from "react";
 import type {
   Medal,
@@ -19,7 +20,7 @@ import {
 import { leagueIcon } from "@/lib/icons";
 
 // Official event marks drawn as alpha masks so the medal tint (currentColor)
-// still reads: gold / silver / bronze Worlds and MSI logos.
+// still reads: gold / silver / bronze Worlds, MSI, First Stand and EWC logos.
 function officialMark(src: string): IconComponent {
   function Mark({ className }: { className?: string }) {
     return (
@@ -33,11 +34,13 @@ function officialMark(src: string): IconComponent {
 }
 const OfficialWorlds = officialMark("/icons/events/worlds.png");
 const OfficialMsi = officialMark("/icons/events/msi.png");
+const OfficialFirstStand = officialMark("/icons/events/first-stand.png");
+const OfficialEwc = officialMark("/icons/events/ewc.png");
 
 // Season-by-season LPS with High Noon peer ranks + notable achievements.
 //
 // Achievement badges: cup silhouette = tournament, tint = medal placement.
-//   - Marks: official Worlds / MSI logos, the league logo for domestic podiums,
+//   - Marks: official Worlds / MSI / First Stand / EWC logos, the league logo for domestic podiums,
 //     cup silhouettes for other intl events and domestic cups
 //   - Medals: gold (champion) / silver (finalist) / bronze (semifinalist)
 //   - Awards: MVP (rose star), All-Pro (indigo shield) — no medal axis
@@ -51,6 +54,8 @@ type IconComponent = (p: { className?: string }) => ReactNode;
 const CUP_ICON: Record<TournamentFamily, IconComponent> = {
   worlds: OfficialWorlds,
   msi: OfficialMsi,
+  first_stand: OfficialFirstStand,
+  ewc: OfficialEwc,
   intl: CupIntl,
   domestic: CupDomestic,
   cup: Laurel,
@@ -59,6 +64,8 @@ const CUP_ICON: Record<TournamentFamily, IconComponent> = {
 const CUP_LABEL: Record<TournamentFamily, string> = {
   worlds: "Worlds",
   msi: "MSI",
+  first_stand: "First Stand",
+  ewc: "Esports World Cup",
   intl: "Other international",
   domestic: "Domestic league",
   cup: "Domestic cup",
@@ -76,7 +83,7 @@ const MEDAL_LABEL: Record<Medal, string> = {
   bronze: "semifinalist",
 };
 
-const CUP_ORDER: TournamentFamily[] = ["worlds", "msi", "intl", "domestic", "cup"];
+const CUP_ORDER: TournamentFamily[] = ["worlds", "msi", "first_stand", "ewc", "intl", "domestic", "cup"];
 const MEDAL_ORDER: Medal[] = ["gold", "silver", "bronze"];
 
 const BAR_HEIGHT_PX = 128;
@@ -251,7 +258,32 @@ function BarAndRankOverlay({
   lowerFrac: number;
 }) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  // Viewport anchor for the tooltip. It's portalled to <body> with fixed
+  // positioning: the chart sits in an overflow-x scroller (which forces
+  // overflow-y to auto) inside a clip-path panel, so an in-place tooltip
+  // got clipped and spawned a vertical scrollbar.
+  const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
+  const plotRef = useRef<HTMLDivElement>(null);
   const n = entries.length;
+
+  const hover = (i: number, el: HTMLElement) => {
+    const col = el.getBoundingClientRect();
+    const plot = plotRef.current?.getBoundingClientRect() ?? col;
+    setHoveredIdx(i);
+    setAnchor({ x: col.left + col.width / 2, y: plot.top + 4 });
+  };
+
+  // Fixed tooltip would drift from its bar on scroll — just dismiss it.
+  useEffect(() => {
+    if (hoveredIdx == null) return;
+    const clear = () => setHoveredIdx(null);
+    window.addEventListener("scroll", clear, true);
+    window.addEventListener("resize", clear);
+    return () => {
+      window.removeEventListener("scroll", clear, true);
+      window.removeEventListener("resize", clear);
+    };
+  }, [hoveredIdx]);
 
   const allRankVals = entries.flatMap(([y]) => {
     const r = ranks[String(y)];
@@ -264,7 +296,6 @@ function BarAndRankOverlay({
     RANK_PAD + ((rank - 1) / Math.max(1, maxRank - 1)) * RANK_SPAN;
 
   const colXPct = (i: number) => `${((i + 0.5) / n) * 100}%`;
-  const colX = (i: number) => ((i + 0.5) / n) * 100;
 
   type Pt = { xPct: string; yPx: number; rank: number; year: number } | null;
   const globalPts: Pt[] = entries.map(([y], i) => {
@@ -299,6 +330,7 @@ function BarAndRankOverlay({
 
   return (
     <div
+      ref={plotRef}
       className="relative"
       style={{ height: `${BAR_HEIGHT_PX}px`, gridColumn: "2 / -1" }}
       onMouseLeave={() => setHoveredIdx(null)}
@@ -319,7 +351,7 @@ function BarAndRankOverlay({
             <div
               key={`bar-${year}`}
               className="flex flex-1 flex-col"
-              onMouseEnter={() => setHoveredIdx(i)}
+              onMouseEnter={(e) => hover(i, e.currentTarget)}
             >
               {/* Positive bar area */}
               <div
@@ -418,12 +450,11 @@ function BarAndRankOverlay({
       </svg>
 
       {/* Hover tooltip */}
-      {hoveredIdx != null && (() => {
+      {hoveredIdx != null && anchor && createPortal((() => {
         const [year, v] = entries[hoveredIdx];
         const yr = ranks[String(year)];
         const teams = yearTeams[String(year)] ?? [];
         const bd = breakdown[String(year)];
-        const xPct = colX(hoveredIdx);
         const isLeft = hoveredIdx / n < 0.2;
         const isRight = hoveredIdx / n > 0.78;
         const transform = isLeft
@@ -433,8 +464,8 @@ function BarAndRankOverlay({
             : "translateX(-50%)";
         return (
           <div
-            className="pointer-events-none absolute z-20 rounded border border-border bg-bg-card/95 px-2 py-1.5 text-xs shadow-md"
-            style={{ top: "4px", left: `${xPct}%`, transform }}
+            className="pointer-events-none fixed z-50 rounded border border-border bg-bg-card/95 px-2 py-1.5 text-xs shadow-md"
+            style={{ top: anchor.y, left: anchor.x, transform }}
           >
             <div className="font-mono font-semibold text-text">{year}</div>
             {teams.length > 0 && (
@@ -462,7 +493,7 @@ function BarAndRankOverlay({
             )}
           </div>
         );
-      })()}
+      })(), document.body)}
     </div>
   );
 }

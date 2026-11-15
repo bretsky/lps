@@ -57,7 +57,7 @@ export function CareerLpsAnatomy({ player }: { player: PlayerDetail }) {
     <section className="deco-panel space-y-4">
       <div className="flex items-baseline justify-between">
         <h2 className="deco-title">
-          CareerLPS Anatomy
+          Career LPS Anatomy
         </h2>
         <div className="text-xs text-text-dim">
           Total <span className="font-mono text-text">{fmt(total, 1)}</span>

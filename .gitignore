@@ -98,6 +98,8 @@ dmypy.json
 player_above_expected_metrics.csv
 season_out.txt
 player_yearly_breakdown.json
+player_ratings_asof.json
+player_champions.json
 *.stackdump
 backend/info/backup/
 backend/info/backup2/

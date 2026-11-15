@@ -148,6 +148,9 @@ export function ProfileHeader({
                 {count("first_stand") > 0 && (
                   <Trophy node={<EventMark event="first_stand" size={30} />} n={count("first_stand")} label="First Stand" />
                 )}
+                {count("ewc") > 0 && (
+                  <Trophy node={<EventMark event="ewc" size={30} />} n={count("ewc")} label="EWC" />
+                )}
                 {count("domestic") > 0 && (
                   <Trophy
                     node={<LeagueMark league={topLeague(player)} size={28} />}

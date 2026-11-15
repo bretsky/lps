@@ -988,10 +988,16 @@ def build_player_ratings(
     # full-run player), but each MATCH is weighted by N_ref / (deepest run in matches in that
     # league) so a FULL run ~ one phase unit in every region -- equalizing schedule/bracket
     # length across regions without removing the volume signal within one.
-    def _accumulate(series_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
+    def _accumulate(
+        series_df: pd.DataFrame,
+    ) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame]:
         d = series_df.copy()
         if d.empty:
-            return pd.DataFrame(columns=comps), pd.Series(dtype=float)
+            return (
+                pd.DataFrame(columns=comps),
+                pd.Series(dtype=float),
+                pd.DataFrame(columns=["playername", "seriesid", "w"]),
+            )
         run = (
             d.groupby(["own_league", "playername"])
             .size()
@@ -1004,10 +1010,10 @@ def build_player_ratings(
         # denominator) counts EFFECTIVE matches -- w scaled by participation.
         comp_sums = d[comps].mul(d["w"], axis=0).groupby(d["playername"]).sum()
         weight_sums = (d["w"] * d["part_frac"]).groupby(d["playername"]).sum()
-        return comp_sums, weight_sums
+        return comp_sums, weight_sums, d[["playername", "seriesid", "w"]]
 
-    reg_c, reg_w = _accumulate(reg)
-    plf_c, plf_w = _accumulate(plf)
+    reg_c, reg_w, reg_sw = _accumulate(reg)
+    plf_c, plf_w, plf_sw = _accumulate(plf)
     # Per-phase point multipliers (regular = reference; tournaments are scaled by intl_weight in
     # tourn_scale below). Scale BOTH the points and the accumulation weight so the weighted per-game
     # average within a phase is unchanged -- only the phase's share of the career total moves.
@@ -1046,6 +1052,49 @@ def build_player_ratings(
         .rename(columns=rename)
     )
     src["total_score"] = src[["base_pts", "contrib_pts", "wbonus_pts"]].sum(axis=1)
+
+    # Per-GAME credit: each game's exact share of total_score, so LPS can be split by anything
+    # game-level (champion played, ...). A series' points are its games' MEAN comps x the
+    # fractional credit x the series weight, so a game carries 1/n of that (n = the player's games
+    # in the series): baseline x base_frac + volume x part_frac, x series weight / n. Summed per
+    # player this reproduces total_score (before career's per-year schedule/era scalars).
+    sw = pd.concat(
+        [
+            reg_sw.assign(w=reg_sw["w"] * weights.w_regular, phase="regular"),
+            plf_sw.assign(w=plf_sw["w"] * weights.w_playoff, phase="playoff"),
+            tourn[["playername", "seriesid"]].assign(
+                w=tourn["w_eff"] * tourn_scale, phase="tournament"
+            ),
+        ],
+        ignore_index=True,
+    )
+    gcols = ["playername", "seriesid", "phase", "gameid", "result"]
+    gcols += [c for c in ("side", "position") if c in m.columns]
+    gm = m[gcols + ["baseline_term", "contribution_term", "win_bonus"]].merge(
+        sw, on=["playername", "seriesid", "phase"]
+    )
+    gm = gm.merge(
+        _credit.drop_duplicates(["playername", "seriesid"]),
+        on=["playername", "seriesid"],
+        how="left",
+    )
+    n_in_series = gm.groupby(["playername", "seriesid", "phase"])["gameid"].transform(
+        "size"
+    )
+    gm["credit"] = (
+        gm["w"].astype(float)
+        * (
+            gm["baseline_term"].fillna(0.0) * gm["base_frac"].fillna(0.0)
+            + (gm["contribution_term"].fillna(0.0) + gm["win_bonus"].fillna(0.0))
+            * gm["part_frac"].fillna(1.0)
+        )
+        / n_in_series
+    )
+    game_credit = gm[[c for c in gcols if c != "seriesid"] + ["credit"]]
+    _chk = game_credit.groupby("playername")["credit"].sum()
+    _gap = (_chk - src["total_score"].reindex(_chk.index).fillna(0.0)).abs().max()
+    if np.isfinite(_gap) and _gap > 1e-6:
+        logging.warning(f"[ratings] {year}: per-game credit off total_score by {_gap:.2e}")
 
     # Phase totals sum only the real score components (baseline/contrib/win_bonus) -- NOT
     # the source-decomposition terms (which decompose contribution) or the fb diagnostic.
@@ -1152,6 +1201,7 @@ def build_player_ratings(
     r.attrs["tournament_weights"] = tw
     r.attrs["tournament_cols"] = tourn_cols
     r.attrs["intl_weight"] = intl_weight
+    r.attrs["game_credit"] = game_credit  # per-(player, game) LPS share, see above
     return r
 
 

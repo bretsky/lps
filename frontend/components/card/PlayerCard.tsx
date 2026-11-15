@@ -1,7 +1,8 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useState } from "react";
+import { forwardRef, useCallback, useRef, useState } from "react";
+import { toPng } from "html-to-image";
 import type { PlayerDetail, TierKey } from "@/lib/types";
 import { displayName, fmt, fmtInt, fmtPct, laneLabel } from "@/lib/format";
 import {
@@ -23,6 +24,9 @@ import { CardRadar } from "./CardRadar";
 const W = 340;
 const H = 520;
 const CUT = 18;
+
+const BLANK_PIXEL =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
 const octagon = (inset: number, cut: number) => {
   const a = inset, b = W - inset, c = H - inset;
@@ -92,19 +96,20 @@ function FrameLines({ accent }: { accent: string }) {
   );
 }
 
-function Face({
-  children,
-  back = false,
-  accent,
-  shimmer,
-}: {
+type FaceProps = {
   children: React.ReactNode;
   back?: boolean;
   accent: string;
   shimmer: boolean;
-}) {
+};
+
+const Face = forwardRef<HTMLDivElement, FaceProps>(function Face(
+  { children, back = false, accent, shimmer },
+  ref,
+) {
   return (
     <div
+      ref={ref}
       className="absolute inset-0"
       style={{
         backfaceVisibility: "hidden",
@@ -123,6 +128,7 @@ function Face({
         {children}
         {shimmer && (
           <div
+            data-export-skip
             className="pointer-events-none absolute inset-0 animate-sheen mix-blend-screen"
             style={{
               backgroundImage:
@@ -135,7 +141,7 @@ function Face({
       <FrameLines accent={accent} />
     </div>
   );
-}
+});
 
 // ---------------------------------------------------------------------------
 // Front pieces
@@ -381,10 +387,12 @@ function TrophyShelf({ player }: { player: PlayerDetail }) {
   const worlds = count("worlds") || n("wlds_title");
   const msi = count("msi") || n("msi_title");
   const fst = count("first_stand");
+  const ewc = count("ewc");
   const dom = count("domestic") || n("dom_champ");
   if (worlds) items.push({ key: "w", n: worlds, title: "Worlds titles", node: <EventMark event="worlds" size={22} /> });
   if (msi) items.push({ key: "m", n: msi, title: "MSI titles", node: <EventMark event="msi" size={22} /> });
   if (fst) items.push({ key: "f", n: fst, title: "First Stand titles", node: <EventMark event="first_stand" size={22} /> });
+  if (ewc) items.push({ key: "e", n: ewc, title: "Esports World Cup titles", node: <EventMark event="ewc" size={22} /> });
   if (dom)
     items.push({
       key: "d",
@@ -430,126 +438,196 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
   const posTotal = CLR_PARTS.reduce((s, p) => s + Math.max(0, c[p.key] ?? 0), 0) || 1;
   const hn = player.high_noon;
   const cl = player.career_lps;
-  const recentHonors = (player.honors ?? []).filter((h) => h.medal === "gold").slice(0, 8);
+  // The back has room for exactly one row of honors; the rest collapse to "+N".
+  const goldHonors = (player.honors ?? []).filter((h) => h.medal === "gold");
+  const recentHonors = goldHonors.slice(0, 6);
+  const moreHonors = goldHonors.length - recentHonors.length;
+
+  const frontRef = useRef<HTMLDivElement>(null);
+  const backRef = useRef<HTMLDivElement>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+
+  const save = useCallback(async () => {
+    const node = (flipped ? backRef : frontRef).current;
+    if (!node || saving) return;
+    setSaving(true);
+    setSaveError(false);
+    try {
+      const url = await toPng(node, {
+        width: W,
+        height: H,
+        pixelRatio: 3,
+        // Leaguepedia's CDN 404s hotlinked images that send a Referer (the
+        // card's <img>s use no-referrer for the same reason).
+        fetchRequestInit: { referrerPolicy: "no-referrer" },
+        // One dead logo/photo shouldn't sink the whole export.
+        imagePlaceholder: BLANK_PIXEL,
+        // Render the face flat and on its own: no flip rotation (the back is
+        // pre-rotated 180deg), no drop shadow (it would be cropped at the
+        // edges), and no animated sheen (it would freeze at a random frame).
+        style: { transform: "none", filter: "none", backfaceVisibility: "visible" },
+        filter: (el) => !(el instanceof HTMLElement && el.dataset.exportSkip !== undefined),
+      });
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${player.slug}-card-${flipped ? "back" : "front"}.png`;
+      a.click();
+    } catch (err) {
+      console.error("Card export failed", err);
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
+  }, [flipped, saving, player.slug]);
 
   return (
-    <div
-      style={{ width: W, height: H, perspective: "1400px" }}
-      className="relative cursor-pointer select-none"
-      onClick={() => setFlipped((f) => !f)}
-      role="button"
-      aria-label={flipped ? "Flip to card front" : "Flip to card back"}
-    >
+    <div className="flex flex-col items-center gap-5">
       <div
-        className="relative h-full w-full"
-        style={{
-          transformStyle: "preserve-3d",
-          transition: "transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)",
-          transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
-        }}
+        style={{ width: W, height: H, perspective: "1400px" }}
+        className="relative cursor-pointer select-none"
+        onClick={() => setFlipped((f) => !f)}
+        role="button"
+        aria-label={flipped ? "Flip to card front" : "Flip to card back"}
       >
-        {/* ========================= FRONT ========================= */}
-        <Face accent={accent} shimmer={shimmer}>
-          <PhotoStage player={player} accent={accent} />
-          <TeamBadge player={player} />
-          <RankPlaque rank={player.rank} />
-          <Nameplate player={player} edition={edition} />
+        <div
+          className="relative h-full w-full"
+          style={{
+            transformStyle: "preserve-3d",
+            transition: "transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)",
+            transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
+          }}
+        >
+          {/* ========================= FRONT ========================= */}
+          <Face ref={frontRef} accent={accent} shimmer={shimmer}>
+            <PhotoStage player={player} accent={accent} />
+            <TeamBadge player={player} />
+            <RankPlaque rank={player.rank} />
+            <Nameplate player={player} edition={edition} />
 
-          <div className="absolute inset-x-[22px] flex gap-2" style={{ top: 414 }}>
-            <StatTile label="CLR" value={fmt(player.clr, 1)} sub={`#${player.rank} all-time`} />
-            <StatTile
-              label="PEAK"
-              value={fmt(cl?.peak_lps, 1)}
-              sub={cl?.peak_year ? `LPS · ${cl.peak_year}` : "LPS"}
+            <div className="absolute inset-x-[22px] flex gap-2" style={{ top: 414 }}>
+              <StatTile label="CLR" value={fmt(player.clr, 1)} sub={`#${player.rank} all-time`} />
+              <StatTile
+                label="PEAK"
+                value={fmt(cl?.peak_lps, 1)}
+                sub={cl?.peak_year ? `LPS · ${cl.peak_year}` : "LPS"}
+              />
+              <StatTile label="WIN %" value={fmtPct(player.win_rate).replace("%", "")} sub={`${fmtInt(player.games)} games`} />
+            </div>
+
+            <div className="absolute inset-x-[22px]" style={{ top: 476 }}>
+              <TrophyShelf player={player} />
+            </div>
+          </Face>
+
+          {/* ========================= BACK ========================= */}
+          <Face ref={backRef} back accent={accent} shimmer={false}>
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `repeating-conic-gradient(from -90deg at 50% 40%, rgba(241,213,143,0.045) 0deg 2deg, transparent 2deg 10deg),
+                  radial-gradient(ellipse 80% 45% at 50% 38%, ${accent}1c, transparent 70%)`,
+              }}
             />
-            <StatTile label="WIN %" value={fmtPct(player.win_rate).replace("%", "")} sub={`${fmtInt(player.games)} games`} />
-          </div>
-
-          <div className="absolute inset-x-[22px]" style={{ top: 476 }}>
-            <TrophyShelf player={player} />
-          </div>
-        </Face>
-
-        {/* ========================= BACK ========================= */}
-        <Face back accent={accent} shimmer={false}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `repeating-conic-gradient(from -90deg at 50% 40%, rgba(241,213,143,0.045) 0deg 2deg, transparent 2deg 10deg),
-                radial-gradient(ellipse 80% 45% at 50% 38%, ${accent}1c, transparent 70%)`,
-            }}
-          />
-          <div className="relative flex h-full flex-col px-[22px] pb-[22px] pt-[20px]">
-            <div className="flex items-center justify-between">
-              <div className="min-w-0">
-                <div className="truncate font-serif text-[17px] font-extrabold tracking-[0.06em] text-metal">
-                  {upper(displayName(player.playername))}
-                </div>
-                <div className="text-[8px] font-semibold uppercase tracking-[0.28em] text-text-dim">
-                  {edition.label} · {laneLabel(player.position)}
-                </div>
-              </div>
-              <span className="font-display text-[26px] font-black leading-none" style={{ color: accent }}>
-                #{player.rank}
-              </span>
-            </div>
-            <div className="deco-rule mt-1.5 text-[7px] font-bold tracking-[0.35em] text-gold">
-              <span>PERCENTILE PROFILE</span>
-            </div>
-
-            <div className="mt-0.5 flex justify-center" onClick={(e) => e.stopPropagation()}>
-              <CardRadar player={player} accentColor={accent} />
-            </div>
-
-            {/* CLR anatomy */}
-            <div className="mt-2">
-              <div className="flex h-2 w-full overflow-hidden bg-black/50" style={{ boxShadow: "inset 0 0 0 1px rgba(201,164,92,0.35)" }}>
-                {CLR_PARTS.map((p) => {
-                  const w = Math.max(0, ((c[p.key] ?? 0) / posTotal) * 100);
-                  return w > 0 ? (
-                    <div key={p.key} style={{ width: `${w}%`, background: p.color, boxShadow: `0 0 6px ${p.color}` }} />
-                  ) : null;
-                })}
-              </div>
-              <div className="mt-1 flex justify-between">
-                {CLR_PARTS.map((p) => (
-                  <div key={p.key} className="text-center">
-                    <div className="text-[7px] font-bold uppercase tracking-[0.18em]" style={{ color: p.color }}>
-                      {p.label}
-                    </div>
-                    <div className="font-mono text-[9px] text-text-muted">{fmt(c[p.key] ?? 0, 1)}</div>
+            <div className="relative flex h-full flex-col px-[22px] pb-[22px] pt-[20px]">
+              <div className="flex items-center justify-between">
+                <div className="min-w-0">
+                  <div className="truncate font-serif text-[17px] font-extrabold tracking-[0.06em] text-metal">
+                    {upper(displayName(player.playername))}
                   </div>
-                ))}
+                  <div className="text-[8px] font-semibold uppercase tracking-[0.28em] text-text-dim">
+                    {edition.label} · {laneLabel(player.position)}
+                  </div>
+                </div>
+                <span className="font-display text-[26px] font-black leading-none" style={{ color: accent }}>
+                  #{player.rank}
+                </span>
               </div>
-            </div>
+              <div className="deco-rule mt-1.5 text-[7px] font-bold tracking-[0.35em] text-gold">
+                <span>PERCENTILE PROFILE</span>
+              </div>
 
-            {/* readouts */}
-            <div className="mt-2 grid grid-cols-3 gap-x-2 gap-y-1.5 border-y border-gold-deep/50 py-2">
-              <Readout label="Career LPS" value={fmtInt(cl?.total_score)} />
-              <Readout label="Seasons" value={`${player.n_years}`} sub={`${player.first_year}–${player.last_year}`} />
-              <Readout label="LPS / game" value={player.rates?.pts_per_game != null ? player.rates.pts_per_game.toFixed(3) : "—"} />
-              <Readout label="Best lane rk" value={hn?.hn_lane_best != null ? `#${hn.hn_lane_best}` : "—"} />
-              <Readout label="Best global rk" value={hn?.hn_global_best != null ? `#${hn.hn_global_best}` : "—"} />
-              <Readout label="Peak years" value={`${cl?.peak_years ?? "—"}`} />
-            </div>
+              <div className="mt-0.5 flex justify-center" onClick={(e) => e.stopPropagation()}>
+                <CardRadar player={player} accentColor={accent} />
+              </div>
 
-            {/* honors ribbon */}
-            <div className="mt-2 flex min-h-[28px] flex-wrap items-center justify-center gap-x-2 gap-y-1">
-              {recentHonors.length ? (
-                recentHonors.map((h, i) => (
-                  <span key={i} className="flex items-center gap-0.5">
-                    <HonorMark honor={h} size={15} />
-                    <span className="font-mono text-[8px] text-text-dim">’{String(h.year).slice(2)}</span>
-                  </span>
-                ))
-              ) : (
-                <span className="text-[8px] uppercase tracking-[0.25em] text-text-dim">No titles yet</span>
-              )}
-            </div>
+              {/* CLR anatomy */}
+              <div className="mt-2">
+                <div className="flex h-2 w-full overflow-hidden bg-black/50" style={{ boxShadow: "inset 0 0 0 1px rgba(201,164,92,0.35)" }}>
+                  {CLR_PARTS.map((p) => {
+                    const w = Math.max(0, ((c[p.key] ?? 0) / posTotal) * 100);
+                    return w > 0 ? (
+                      <div key={p.key} style={{ width: `${w}%`, background: p.color, boxShadow: `0 0 6px ${p.color}` }} />
+                    ) : null;
+                  })}
+                </div>
+                <div className="mt-1 flex justify-between">
+                  {CLR_PARTS.map((p) => (
+                    <div key={p.key} className="text-center">
+                      <div className="text-[7px] font-bold uppercase tracking-[0.18em]" style={{ color: p.color }}>
+                        {p.label}
+                      </div>
+                      <div className="font-mono text-[9px] text-text-muted">{fmt(c[p.key] ?? 0, 1)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-          </div>
-        </Face>
+              {/* readouts */}
+              <div className="mt-2 grid grid-cols-3 gap-x-2 gap-y-1.5 border-y border-gold-deep/50 py-2">
+                <Readout label="Career LPS" value={fmtInt(cl?.total_score)} />
+                <Readout label="Seasons" value={`${player.n_years}`} sub={`${player.first_year}–${player.last_year}`} />
+                <Readout label="LPS / game" value={player.rates?.pts_per_game != null ? player.rates.pts_per_game.toFixed(3) : "—"} />
+                <Readout label="Best lane rk" value={hn?.hn_lane_best != null ? `#${hn.hn_lane_best}` : "—"} />
+                <Readout label="Best global rk" value={hn?.hn_global_best != null ? `#${hn.hn_global_best}` : "—"} />
+                <Readout label="Peak years" value={`${cl?.peak_years ?? "—"}`} />
+              </div>
+
+              {/* honors ribbon */}
+              <div className="mt-2 flex min-h-[28px] flex-nowrap items-center justify-center gap-x-1.5 overflow-hidden">
+                {recentHonors.length ? (
+                  <>
+                    {recentHonors.map((h, i) => (
+                      <span key={i} className="flex shrink-0 items-center gap-0.5">
+                        <HonorMark honor={h} size={15} />
+                        <span className="font-mono text-[8px] text-text-dim">’{String(h.year).slice(2)}</span>
+                      </span>
+                    ))}
+                    {moreHonors > 0 && (
+                      <span
+                        className="shrink-0 font-mono text-[8px] font-bold text-gold"
+                        title={`${moreHonors} more title${moreHonors === 1 ? "" : "s"}`}
+                      >
+                        +{moreHonors}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-[8px] uppercase tracking-[0.25em] text-text-dim">No titles yet</span>
+                )}
+              </div>
+
+            </div>
+          </Face>
+        </div>
       </div>
+
+      <button
+        type="button"
+        onClick={save}
+        disabled={saving}
+        className="flex items-center gap-2 border border-gold/60 bg-black/40 px-4 py-2 font-serif text-[10px] font-bold uppercase tracking-[0.3em] text-gold transition-colors hover:border-gold-bright hover:text-gold-bright disabled:cursor-wait disabled:opacity-60"
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+          <path d="M6 1.5v6.5M3.2 5.4 6 8.2l2.8-2.8M1.5 10.5h9" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        {saving ? "Saving…" : `Save ${flipped ? "back" : "front"} as image`}
+      </button>
+      {saveError && (
+        <p className="-mt-3 text-[10px] uppercase tracking-[0.2em] text-text-dim">
+          Couldn&rsquo;t render the image — try again
+        </p>
+      )}
     </div>
   );
 }

@@ -20,7 +20,7 @@ const SLOTS: [number, number, number, number][] = [
 // Left-to-right reading order of the stage, for the name roll beneath it.
 const STAGE_ORDER = [3, 1, 0, 2, 4];
 
-export function Hero({ rows }: { rows: IndexRow[] }) {
+export function Hero({ rows, asOf = null }: { rows: IndexRow[]; asOf?: number | null }) {
   const top = rows.slice(0, 5);
   const roll = STAGE_ORDER.map((i) => top[i]).filter(Boolean);
 
@@ -52,6 +52,12 @@ export function Hero({ rows }: { rows: IndexRow[] }) {
       <div className="neon-line absolute inset-x-0 bottom-[150px] h-px opacity-60" />
 
       <div className="relative mx-auto max-w-6xl px-4">
+        <Link
+          href="/about"
+          className="absolute right-4 top-3 z-10 font-serif text-[11px] font-bold uppercase tracking-[0.25em] text-text-dim hover:text-gold-bright"
+        >
+          About ▸
+        </Link>
         {/* masthead */}
         <div className="pt-10 text-center">
           <div className="deco-rule mx-auto max-w-md font-serif text-[11px] font-bold uppercase tracking-[0.45em] text-gold">
@@ -63,6 +69,12 @@ export function Hero({ rows }: { rows: IndexRow[] }) {
           </h1>
           <p className="mt-3 font-serif text-[11px] font-semibold uppercase tracking-[0.32em] text-text-muted">
             Career Legend Rating
+            {asOf !== null && (
+              <>
+                {" "}
+                <span className="text-teal">◆</span> <span className="text-gold">as of {asOf}</span>
+              </>
+            )}
           </p>
         </div>
 
