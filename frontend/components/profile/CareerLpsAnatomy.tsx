@@ -4,7 +4,7 @@ import { fmt } from "@/lib/format";
 // Level 3 — CareerLPS anatomy. Three orthogonal partitions of `total_score`:
 //   phase      : reg / playoff / tourn  (WHEN)
 //   components : base / contrib / wbonus (HOW the model built it)
-//   sources    : kills / deaths / assists / damage / fb  (WHERE — sums to contrib)
+//   sources    : kills / deaths / assists / damage  (WHERE — sums to contrib)
 // Plus a per-tournament bar (WLDs / MSI / EWC / …) drawn from `tournaments`.
 
 const PHASE = [
@@ -39,7 +39,6 @@ const SOURCES = [
   { key: "deaths_pts", label: "Deaths", color: "bg-amber-500/70" },
   { key: "assists_pts", label: "Assists", color: "bg-emerald-500/70" },
   { key: "damage_pts", label: "Damage", color: "bg-fuchsia-500/70" },
-  { key: "fb_pts", label: "First Blood", color: "bg-accent-hex/70" },
 ] as const;
 
 export function CareerLpsAnatomy({ player }: { player: PlayerDetail }) {
@@ -87,7 +86,7 @@ export function CareerLpsAnatomy({ player }: { player: PlayerDetail }) {
 
       <PartitionBar
         title="By stat source"
-        subtitle="Kills / Deaths / Assists / Damage / FB — sums to Contribution"
+        subtitle="Kills / Deaths / Assists / Damage — sums to Contribution"
         parts={srcVals}
         signed
       />

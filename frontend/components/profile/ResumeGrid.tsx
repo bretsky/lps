@@ -7,7 +7,7 @@ import { CupDomestic, CupIntl, Laurel, Shield, Star } from "./AchievementIcons";
 
 // The 14 résumé categories exported by backend/src/lps/export_web.py, laid out
 // as a trophy wall: one row per competition, columns = champion / finalist /
-// semifinalist, each tile tinted by its medal.
+// out before the final, each tile tinted by its medal.
 type Medal = "gold" | "silver" | "bronze";
 type Cat = { key: string; label: string; hint: string; medal?: Medal };
 
@@ -16,7 +16,7 @@ type Row = { label: string; icon: React.ReactNode; cats: Cat[] };
 const PLACES = (prefix: string, keys: [string, string, string], hint: string): Cat[] => [
   { key: keys[0], label: "Champion", medal: "gold", hint: `${prefix} champion` },
   { key: keys[1], label: "Finalist", medal: "silver", hint: `${prefix} finalist (runner-up)` },
-  { key: keys[2], label: "Semis", medal: "bronze", hint: `${prefix} ${hint}` },
+  { key: keys[2], label: "Out before final", medal: "bronze", hint: `${prefix}: eliminated before the final (${hint})` },
 ];
 
 function primaryLeague(player: PlayerDetail): string | null {
@@ -39,17 +39,17 @@ export function ResumeGrid({ player }: { player: PlayerDetail }) {
     {
       label: "Worlds",
       icon: <EventMark event="worlds" size={26} />,
-      cats: PLACES("Worlds", ["wlds_title", "wlds_final", "wlds_semi"], "semifinalist or quarterfinalist"),
+      cats: PLACES("Worlds", ["wlds_title", "wlds_final", "wlds_semi"], "semifinal, quarterfinal or group stage"),
     },
     {
       label: "MSI",
       icon: <EventMark event="msi" size={26} />,
-      cats: PLACES("MSI", ["msi_title", "msi_final", "msi_semi"], "semifinalist"),
+      cats: PLACES("MSI", ["msi_title", "msi_final", "msi_semi"], "semifinal, quarterfinal or group stage"),
     },
     {
       label: "Other Intl",
       icon: <CupIntl className="h-6 w-6 text-gold" />,
-      cats: PLACES("IEM / EWC / MSC / First Stand / Rift Rivals", ["othr_intl_champ", "othr_intl_final", "othr_intl_semi"], "semifinalist"),
+      cats: PLACES("IEM / EWC / MSC / First Stand / Rift Rivals", ["othr_intl_champ", "othr_intl_final", "othr_intl_semi"], "semifinal, quarterfinal or group stage"),
     },
     {
       label: "League",

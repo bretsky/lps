@@ -36,7 +36,7 @@ export function RankingsPage({ data, meta, asOf }: { data: BoardData; meta: Meta
         </div>
         <p className="font-serif text-[10px] font-bold uppercase tracking-[0.3em] text-text-dim">
           Build {meta.build_id} · {data.ratedCount} rated players{asOf !== null ? ` as of ${asOf}` : ""} (games ≥{" "}
-          {meta.rated_min_games})
+          {data.ratedMinGames})
         </p>
         <p className="mt-2">
           <Link

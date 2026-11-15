@@ -50,12 +50,17 @@ class WinProbabilityConfig:
         "deaths",
         "assists",
         "damagetochampions",
-        # Note: firstblood features are used for KDA decomposition but not as model features
-        # Instead, we use team-level teamfirstblood feature
+        # Note: firstblood columns are only used for the KDA decomposition (kills_nonfb etc.),
+        # never as model features.
         "firstbloodkill",
         "firstbloodassist",
         "firstbloodvictim",
     )
+
+    # Team-level `teamfirstblood` feature. Off for LPS scoring: it was ~2-4% of per-game
+    # contribution and removing it (credit + retrained model) moved no top-100 career rank by
+    # more than 2 places -- noise, not signal. See analysis/fb_ablation.py.
+    team_firstblood: bool = False
 
     # Model parameters (LogisticRegression)
     C: float = 1.0  # Inverse of regularization strength
@@ -190,16 +195,17 @@ def build_team_features(df: pd.DataFrame, cfg: Optional[WinProbabilityConfig] = 
     team_df = pd.DataFrame(team_data)
     logging.info(f"Created team features: {len(team_df):,} teams, {len(team_df.columns)} columns")
 
-    # Create team-level firstblood feature
+    # Optional team-level firstblood feature (off by default, see cfg.team_firstblood)
     # teamfirstblood = 1 if our team got firstblood, 0 if the enemy got firstblood
     # (canonical polarity, matching win_probability_ensemble.py)
-    logging.info("Creating team-level firstblood feature...")
-    fb_kill_cols = [f"{pos}_firstbloodkill" for pos in cfg.roles]
-    fb_assist_cols = [f"{pos}_firstbloodassist" for pos in cfg.roles]
-    team_df["teamfirstblood"] = (
-        (team_df[fb_kill_cols].sum(axis=1) > 0) |
-        (team_df[fb_assist_cols].sum(axis=1) > 0)
-    ).astype(int)
+    if cfg.team_firstblood:
+        logging.info("Creating team-level firstblood feature...")
+        fb_kill_cols = [f"{pos}_firstbloodkill" for pos in cfg.roles]
+        fb_assist_cols = [f"{pos}_firstbloodassist" for pos in cfg.roles]
+        team_df["teamfirstblood"] = (
+            (team_df[fb_kill_cols].sum(axis=1) > 0) |
+            (team_df[fb_assist_cols].sum(axis=1) > 0)
+        ).astype(int)
 
     # Decompose KDA to remove firstblood correlation
     # kills_nonfb = kills - firstbloodkill (removes deterministic +1 kill from firstblood)
@@ -219,7 +225,7 @@ def build_team_features(df: pd.DataFrame, cfg: Optional[WinProbabilityConfig] = 
             team_df[f"{pos}_deaths_nonfb"] = team_df[f"{pos}_deaths"] - team_df[f"{pos}_firstbloodvictim"].fillna(0)
             team_df = team_df.drop(columns=[f"{pos}_deaths"])
 
-    # Drop position-specific firstblood columns (we use team-level teamfirstblood instead)
+    # Drop position-specific firstblood columns (only needed for the decomposition above)
     logging.info("Dropping position-specific firstblood columns...")
     fb_cols_to_drop = []
     for pos in cfg.roles:

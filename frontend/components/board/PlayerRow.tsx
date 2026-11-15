@@ -41,6 +41,29 @@ function RankMove({ rank, prev, prevYear }: { rank: number; prev: number | null 
   );
 }
 
+/** CLR gained (or lost) since the previous season's board, beside the CLR value. Nothing
+ *  without a previous board, or for a player who hadn't played yet (the rank says NEW). */
+function ClrMove({ clr, prev, prevYear }: { clr: number; prev: number | null | undefined; prevYear: number | null }) {
+  if (prevYear === null || prev === null || prev === undefined) return null;
+  const d = Math.round((clr - prev) * 10) / 10;
+  const title = `CLR ${fmt(prev, 1)} at the end of ${prevYear}`;
+  if (d === 0)
+    return (
+      <span className="font-mono text-[11px] font-bold text-text-dim" title={`${title} (no change)`}>
+        ±0
+      </span>
+    );
+  return (
+    <span
+      className={`font-mono text-[11px] font-bold ${d > 0 ? "text-emerald-400" : "text-rose-400"}`}
+      title={`${title} (${d > 0 ? "+" : "−"}${Math.abs(d).toFixed(1)})`}
+    >
+      {d > 0 ? "+" : "−"}
+      {Math.abs(d).toFixed(1)}
+    </span>
+  );
+}
+
 export function PlayerRow({ row, maxClr, prevYear = null }: { row: IndexRow; maxClr: number; prevYear?: number | null }) {
   const isHol = row.hall_of_legends;
   const tierColor = TIER_COLORS[row.tier];
@@ -108,6 +131,7 @@ export function PlayerRow({ row, maxClr, prevYear = null }: { row: IndexRow; max
       </div>
       <div className="text-right">
         <div className="flex items-baseline justify-end gap-1.5">
+          <ClrMove clr={row.clr} prev={row.clr_prev} prevYear={prevYear} />
           <span className="font-display text-[26px] font-extrabold leading-none text-text">{fmt(row.clr, 1)}</span>
         </div>
         <div className="mt-1 hidden md:block">

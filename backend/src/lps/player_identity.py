@@ -44,6 +44,7 @@ logger = logging.getLogger(__name__)
 _CACHE = DATA_DIR / "cache" / "player_identity.pkl"
 _CACHE_VERSION = 3  # bump when the built dict's schema changes
 ALIASES_CSV = INFO_DIR / "player_id_aliases.csv"
+HANDLE_BRIDGE_CSV = INFO_DIR / "player_handle_bridge.csv"
 _ID_COLS = ("playername", "playerid", "league", "position", "teamname")
 _TEAM_KEY_RE = re.compile(r"[^a-z0-9]+")
 _TEAM_PAREN_RE = re.compile(r"\s*\([^)]*\)")
@@ -198,6 +199,30 @@ def _identity() -> dict:
     return obj
 
 
+@functools.lru_cache(maxsize=1)
+def _handle_bridge() -> dict[str, list[tuple[int, int, frozenset[str], str]]]:
+    """{handle_lower: [(first_year, last_year, team_keys, label), ...]} from the hand-checked
+    `info/player_handle_bridge.csv` (handle,years,teams,label,note; years "2013-2014" or
+    "2013"; teams ";"-separated, matched like `_team_key` -- empty = any team). Teams keep a
+    row from catching a different person with the same handle on another roster that year.
+
+    For Leaguepedia-era handles that can't bridge on their own: a SHARED handle whose
+    pre-Oracle seasons were in a league the person never played in Oracle's era (Piglet:
+    SKT in OGN 2013-14, then only NA LCS in Oracle), so (handle, league) finds nothing.
+    """
+    out: dict[str, list[tuple[int, int, frozenset[str], str]]] = {}
+    if not HANDLE_BRIDGE_CSV.exists():
+        return out
+    for r in pd.read_csv(HANDLE_BRIDGE_CSV, dtype=str).fillna("").to_dict("records"):
+        h, yrs, lab = r.get("handle", "").strip(), r.get("years", "").strip(), r.get("label", "").strip()
+        if not (h and yrs and lab):
+            continue
+        a, _, b = yrs.partition("-")
+        teams = frozenset(k for t in r.get("teams", "").split(";") if (k := _team_key(t.strip())))
+        out.setdefault(h.lower(), []).append((int(a), int(b or a), teams, lab))
+    return out
+
+
 def label_map() -> dict[str, str]:
     """{playerid -> unique display label}."""
     return _identity()["label_by_pid"]
@@ -208,10 +233,15 @@ def resolve_label(
     region: object = None,
     team: object = None,
     year: object = None,
+    *,
+    bridge_team: object = None,
 ) -> object:
     """Map a bare handle to its canonical unique label.
 
     Bridge precedence (each falls through if the preceding key doesn't exist):
+      0. (handle, year[, team]) in the hand-checked `info/player_handle_bridge.csv`; a row
+         with teams only matches when the caller's team (`team`, else `bridge_team`) is
+         one of them, or when no team is known (an international achievement row).
       1. (handle, team, year) -- highest precision, disambiguates colliding handles by
          roster membership (needed for intl-category achievements where `league_full`
          is empty). Team names are matched via a normalized alnum-lowercase key.
@@ -227,13 +257,18 @@ def resolve_label(
     if not hl:
         return handle
     pid = None
-    if team is not None and year is not None:
+    try:
+        y_int = int(year) if year is not None and not (isinstance(year, float) and pd.isna(year)) else None
+    except (TypeError, ValueError):
+        y_int = None
+    if y_int is not None:
+        btk = _team_key(team if team is not None else bridge_team)
+        for a, b, teams, lab in _handle_bridge().get(hl, ()):
+            if a <= y_int <= b and (not teams or not btk or btk in teams):
+                return lab
+    if team is not None and y_int is not None:
         tk = _team_key(team)
-        try:
-            y_int = int(year) if not (isinstance(year, float) and pd.isna(year)) else None
-        except (TypeError, ValueError):
-            y_int = None
-        if tk and y_int is not None:
+        if tk:
             pid = obj.get("pid_by_hty", {}).get((hl, tk, y_int))
     if pid is None and region is not None and not (isinstance(region, float) and pd.isna(region)):
         pid = obj["pid_by_hr"].get((hl, str(region).strip()))

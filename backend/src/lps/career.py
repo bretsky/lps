@@ -131,7 +131,6 @@ _SUM_COLS = [
     "deaths_pts",
     "assists_pts",
     "damage_pts",
-    "fb_pts",
     "reg_pts",
     "playoff_pts",
     "tourn_pts",
@@ -159,7 +158,6 @@ _GW_COLS = [
     "avg_resid",
     "avg_p_model",
     "sched_strength",
-    "fb_rate",
     "region_elo",
 ]
 
@@ -797,7 +795,7 @@ def _career_layout(
         ("title_bonus", "Titles", _PTS, 7),
         ("award_bonus", "Awards", _PTS, 7),
         # Resume breakdown: a count (#) + weighted points (Pt) per category; the Pt columns sum to
-        # Resume. Intl = WldsChmp+WldsFin+WldsSemi+MSIChmp+MSIFin+MSISemi+IntlChmp+IntlFin+IntlSemi;
+        # Resume. Intl = WldsChmp+WldsFin+WldsElim+MSIChmp+MSIFin+MSIElim+IntlChmp+IntlFin+IntlElim;
         # Titles = DomChmp+DomFin+DomCup; Awards = MVP+AllPro.
         # Intl = Worlds/MSI/Other split by placement tier; OthIntl = EWC/First Stand/MSC/LTA/
         # Rift Rivals/ASI/...; DomCup = KeSPA + Demacia cups.
@@ -805,20 +803,20 @@ def _career_layout(
         ("rb_wlds_title_pts", "WldsChmpPt", _PTS, 10),
         ("rb_wlds_final_n", "WldsFin#", _INT, 9),
         ("rb_wlds_final_pts", "WldsFinPt", _PTS, 9),
-        ("rb_wlds_semi_n", "WldsSemi#", _INT, 9),
-        ("rb_wlds_semi_pts", "WldsSemiPt", _PTS, 9),
+        ("rb_wlds_semi_n", "WldsElim#", _INT, 9),
+        ("rb_wlds_semi_pts", "WldsElimPt", _PTS, 9),
         ("rb_msi_title_n", "MSIChmp#", _INT, 8),
         ("rb_msi_title_pts", "MSIChmpPt", _PTS, 9),
         ("rb_msi_final_n", "MSIFin#", _INT, 8),
         ("rb_msi_final_pts", "MSIFinPt", _PTS, 9),
-        ("rb_msi_semi_n", "MSISemi#", _INT, 8),
-        ("rb_msi_semi_pts", "MSISemiPt", _PTS, 9),
+        ("rb_msi_semi_n", "MSIElim#", _INT, 8),
+        ("rb_msi_semi_pts", "MSIElimPt", _PTS, 9),
         ("rb_othr_intl_champ_n", "IntlChmp#", _INT, 9),
         ("rb_othr_intl_champ_pts", "IntlChmpPt", _PTS, 10),
         ("rb_othr_intl_final_n", "IntlFin#", _INT, 8),
         ("rb_othr_intl_final_pts", "IntlFinPt", _PTS, 9),
-        ("rb_othr_intl_semi_n", "IntlSemi#", _INT, 8),
-        ("rb_othr_intl_semi_pts", "IntlSemiPt", _PTS, 9),
+        ("rb_othr_intl_semi_n", "IntlElim#", _INT, 8),
+        ("rb_othr_intl_semi_pts", "IntlElimPt", _PTS, 9),
         ("rb_dom_champ_n", "DomChmp#", _INT, 9),
         ("rb_dom_champ_pts", "DomChmpPt", _PTS, 10),
         ("rb_dom_final_n", "DomFin#", _INT, 8),
@@ -853,7 +851,6 @@ def _career_layout(
         ("deaths_pts", "Deaths", _PTS, 8),
         ("assists_pts", "Assists", _PTS, 8),
         ("damage_pts", "Damage", _PTS, 8),
-        ("fb_pts", "FirstBlood", _PTS, 10),
     ]
     lay += [(c, c.replace("_pts", ""), _PTS, 8) for c in all_tourn]
     lay += [
@@ -1330,7 +1327,7 @@ def _write_yearly_breakdown(allyears: pd.DataFrame, out_dir: Path) -> None:
     import json as _json
 
     comp_cols = [
-        "kills_pts", "deaths_pts", "assists_pts", "damage_pts", "fb_pts",
+        "kills_pts", "deaths_pts", "assists_pts", "damage_pts",
         "reg_pts", "playoff_pts", "tourn_pts",
     ]
     avail = [c for c in comp_cols if c in allyears.columns]

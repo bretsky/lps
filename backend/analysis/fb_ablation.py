@@ -8,26 +8,31 @@ to `net_contribution`. (The lane stats are already FB-free: kills_nonfb / deaths
 assists_nonfb.) The cross-lane remap pools the LOO *excluding* c_fb, so zeroing c_fb after the
 cache load is a clean ablation that needs no retraining.
 
-Runs the full career aggregation twice from the existing caches (no network, no retraining,
-nothing written to the repo): once as-is, once with c_fb zeroed. Then it compares ranks.
+Two variants (`--variant`):
 
-    poetry run python analysis/fb_ablation.py [--out DIR]
+  credit  (default, minutes) -- run the full career aggregation twice from the existing caches
+          (no retraining): once as-is, once with c_fb zeroed. Model 2 still has
+          `teamfirstblood` as a feature, so the lane-stat coefficients stay "conditional on FB".
+  retrain (~1.5 h) -- retrain Model 2 WITHOUT `teamfirstblood` every Oracle year, so the lane
+          stats absorb whatever FB was explaining, and rebuild the cross-lane remap from those
+          frames. Compared against a baseline rebuilt the same way (fresh remap) from a COPY of
+          the real caches, so stale-remap effects don't leak into the diff. Everything lives
+          under --out; data/cache is only read.
 
-Caveat: Model 2 still has `teamfirstblood` as a feature, so the lane-stat coefficients stay
-"conditional on FB". Retraining Model 2 without it (so lane stats absorb FB's correlation)
-would be the stronger variant; this script measures dropping the per-player FB credit only.
+    poetry run python analysis/fb_ablation.py [--variant credit|retrain] [--out DIR]
 """
 
 from __future__ import annotations
 
 import argparse
 import logging
+import shutil
+import time
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
-from lps import career, season
+from lps import career, contribution, season
 from lps.io_oracle import latest_oracle_year
 
 _orig_match_features = season._match_features
@@ -64,6 +69,37 @@ def _run(no_fb: bool, out_dir: Path) -> dict:
         )
     finally:
         season._match_features = _orig_match_features
+    return dict(_captured)
+
+
+_orig_btf_season = season.build_team_features
+_orig_btf_contrib = contribution.build_team_features
+
+
+def _btf_no_fb(*a, **kw):
+    return _orig_btf_season(*a, **kw).drop(columns=["teamfirstblood"], errors="ignore")
+
+
+def _run_retrain(no_fb: bool, cache_dir: Path, out_dir: Path) -> dict:
+    """Full career build with season's caches (match features + lane remap) redirected to
+    cache_dir; with no_fb, Model 2 is trained/applied without the teamfirstblood feature."""
+    _captured.clear()
+    saved = (season._CACHE_DIR, season._REMAP_CACHE)
+    season._CACHE_DIR, season._REMAP_CACHE = cache_dir, cache_dir / "lane_remap.pkl"
+    if no_fb:
+        season.build_team_features = _btf_no_fb
+        contribution.build_team_features = _btf_no_fb
+    try:
+        career.build_and_write(
+            years=tuple(range(2011, latest_oracle_year() + 1)),
+            force_recompute=False,
+            write_yearly=False,
+            out=out_dir / f"career_{'nofb' if no_fb else 'base'}.xlsx",
+        )
+    finally:
+        season._CACHE_DIR, season._REMAP_CACHE = saved
+        season.build_team_features = _orig_btf_season
+        contribution.build_team_features = _orig_btf_contrib
     return dict(_captured)
 
 
@@ -107,16 +143,36 @@ def _summary(c: pd.DataFrame, label: str) -> list[str]:
 def main() -> None:
     logging.basicConfig(level=logging.WARNING, format="%(message)s")
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", type=Path, default=Path("data/fb_ablation"))
+    ap.add_argument("--variant", choices=("credit", "retrain"), default="credit")
+    ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
+    if args.out is None:
+        args.out = Path("data/fb_ablation") / ("" if args.variant == "credit" else "retrain")
     args.out.mkdir(parents=True, exist_ok=True)
 
     career.write_career_workbook = _capture_workbook
     career._write_yearly_breakdown = _capture_yearly
     career._write_asof_snapshots = lambda *a, **k: None
 
-    base = _run(False, args.out)
-    nofb = _run(True, args.out)
+    if args.variant == "credit":
+        base = _run(False, args.out)
+        nofb = _run(True, args.out)
+    else:
+        logging.getLogger().setLevel(logging.INFO)
+        base_cache, nofb_cache = args.out / "cache_base", args.out / "cache_nofb"
+        base_cache.mkdir(exist_ok=True)
+        nofb_cache.mkdir(exist_ok=True)
+        for p in season._CACHE_DIR.glob("match_features_*.pkl"):  # read-only copy
+            if not (base_cache / p.name).exists():
+                shutil.copy2(p, base_cache / p.name)
+        t0 = time.time()
+        base = _run_retrain(False, base_cache, args.out)
+        pd.to_pickle(base, args.out / "frames_base.pkl")
+        print(f"[fb_ablation] baseline done in {(time.time() - t0) / 60:.1f} min", flush=True)
+        t0 = time.time()
+        nofb = _run_retrain(True, nofb_cache, args.out)
+        pd.to_pickle(nofb, args.out / "frames_nofb.pkl")
+        print(f"[fb_ablation] no-FB retrain done in {(time.time() - t0) / 60:.1f} min", flush=True)
 
     lines: list[str] = []
     overall = _compare(base["all"], nofb["all"], ["playername"])

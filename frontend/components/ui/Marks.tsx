@@ -182,10 +182,11 @@ export type PhotoFocus = {
 
 // Avatar framing, as fractions of the circle: the hair starts HEAD_TOP down and hair-to-neck
 // spans HEAD_SPAN (calibrated on photos that looked right at a flat 1.3x zoom). Photos
-// without a measurement keep that flat zoom.
+// without a measurement keep that flat zoom. Close-ups (head filling the frame) zoom out
+// below 1; much further and the photo's edges would show inside the circle.
 const HEAD_TOP = 0.12;
 const HEAD_SPAN = 0.68;
-const ZOOM_MIN = 1;
+const ZOOM_MIN = 0.85;
 const ZOOM_MAX = 1.6;
 const ZOOM_DEFAULT = 1.3;
 const TOP_DEFAULT = 0.09;
@@ -240,9 +241,16 @@ export function Portrait({
         width: size,
         height: size,
         background: `radial-gradient(circle at 50% 30%, ${ring}33, #07101a 72%)`,
-        boxShadow: `inset 0 0 0 1.5px ${ring}, 0 0 0 2px #03070d, 0 0 12px ${ring}40`,
+        boxShadow: `0 0 0 2px #03070d, 0 0 12px ${ring}40`,
       }}
     >
+      {/* The ring sits on its own layer above the photo: an inset shadow on this span would be
+          painted under the <img>, so photos with an opaque background would cover it. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-[1] rounded-full"
+        style={{ boxShadow: `inset 0 0 0 1.5px ${ring}` }}
+      />
       {src ? (
         <img
           src={scaledPhoto(src, w1 * 2)}

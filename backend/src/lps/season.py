@@ -16,8 +16,9 @@ Pieces joined:
   - scoring.py       -> baseline (opponent league's strength) + weights
 
 NOTE: contributions use Model 1's context-aware expected reference by default
-(use_model1=False falls back to the global mean). The team_fb term is not yet credited to
-any player. Baseline uses the OPPONENT league's Elo (domestic: your own league).
+(use_model1=False falls back to the global mean). First blood is not scored (Model 2 has no
+team-level FB feature; see WinProbabilityConfig.team_firstblood). Baseline uses the OPPONENT
+league's Elo (domestic: your own league).
 """
 
 from __future__ import annotations
@@ -91,12 +92,11 @@ _INVARIANT_COLS = [
     "c_deaths",
     "c_assists",
     "c_damage",
-    "c_fb",
     "baseline",
 ]
 # Per-source components of net_contribution (they sum to it): kills/deaths/assists/damage
-# from the lane, plus first blood (credited to the kill-getter / victim).
-_SOURCES = ["c_kills", "c_deaths", "c_assists", "c_damage", "c_fb"]
+# from the lane.
+_SOURCES = ["c_kills", "c_deaths", "c_assists", "c_damage"]
 
 # --- Series credit for partial appearances / substitutes ----------------------------------
 # A Bo3/Bo5 is ONE match but N games, and a player may play only some of them. Each
@@ -155,7 +155,7 @@ _REMAP_CACHE = _CACHE_DIR / "lane_remap.pkl"
 
 
 def _pool_lane_loo() -> dict:
-    """Pool RAW lane leave-one-out contributions (net_contribution - c_fb) across all remap
+    """Pool RAW lane leave-one-out contributions (net_contribution) across all remap
     years, per (source, lane), and build quantile-knot tables that map each source-lane's CDF
     onto a common reference (all Oracle lanes/years pooled). Reads the cached weight-invariant
     frames (building them if missing) -- this is the only step that spans all years."""
@@ -168,12 +168,7 @@ def _pool_lane_loo() -> dict:
     def add(long: pd.DataFrame, source: str) -> None:
         if long.empty:
             return
-        fb = (
-            long["c_fb"].to_numpy(float)
-            if "c_fb" in long.columns
-            else np.zeros(len(long))
-        )
-        loo = long["net_contribution"].to_numpy(float) - fb
+        loo = long["net_contribution"].to_numpy(float)
         pos = long["position"].to_numpy()
         for lane in ROLES:
             v = loo[pos == lane]
@@ -262,9 +257,8 @@ def apply_lane_remap(
     long: pd.DataFrame, source: str, tables: Optional[dict] = None
 ) -> pd.DataFrame:
     """Quantile-normalize each lane's per-game leave-one-out contribution onto the global
-    reference distribution (so the Nth-percentile game is worth the same in every role), then
-    re-add the role-neutral first-blood term. Stat components are rescaled to still sum to the
-    normalized contribution. Mutates and returns `long`; no-op when _LANE_NORMALIZE is False.
+    reference distribution (so the Nth-percentile game is worth the same in every role). Stat
+    components are rescaled to still sum to the normalized contribution. Mutates and returns `long`; no-op when _LANE_NORMALIZE is False.
 
     `source` selects which per-lane CDF to invert ('oracle' or 'lp')."""
     if not _LANE_NORMALIZE or long.empty:
@@ -274,8 +268,7 @@ def apply_lane_remap(
     q_grid, ref_q = tables["q_grid"], tables["ref_q"]
     comp = [c for c in _LANE_COMPONENTS if c in long.columns]
 
-    fb = long["c_fb"].to_numpy(float) if "c_fb" in long.columns else np.zeros(len(long))
-    loo = long["net_contribution"].to_numpy(float) - fb
+    loo = long["net_contribution"].to_numpy(float)
     new_loo = loo.copy()
     pos = long["position"].to_numpy()
     for lane in ROLES:
@@ -299,7 +292,7 @@ def apply_lane_remap(
         if zero.any():
             newC[zero] = (new_loo[zero] / len(comp))[:, None]
         long[comp] = newC
-    long["net_contribution"] = new_loo + fb
+    long["net_contribution"] = new_loo
     return long
 
 
@@ -449,7 +442,7 @@ def _remap_league_aliases(df: pd.DataFrame, rated: set[str]) -> pd.DataFrame:
 
 
 def _player_lane_table(df: pd.DataFrame) -> pd.DataFrame:
-    """One row per (gameid, side, position): player, team, and first-blood roles.
+    """One row per (gameid, side, position): player and team.
 
     `playername` is replaced by the disambiguated identity label (see player_identity) so
     that same-handle-different-person cases (e.g. the LPL/VCS/NA "Knight"s) stay separate
@@ -462,8 +455,6 @@ def _player_lane_table(df: pd.DataFrame) -> pd.DataFrame:
         "playername",
         "playerid",
         "teamname",
-        "firstbloodkill",
-        "firstbloodvictim",
     ]
     d = df[[c for c in cols if c in df.columns]].copy()
     d["position"] = (
@@ -476,10 +467,6 @@ def _player_lane_table(df: pd.DataFrame) -> pd.DataFrame:
     agg = dict(playername=("playername", "first"), teamname=("teamname", "first"))
     if "playerid" in d.columns:
         agg["playerid"] = ("playerid", "first")
-    if "firstbloodkill" in d.columns:
-        agg["firstbloodkill"] = ("firstbloodkill", "first")
-    if "firstbloodvictim" in d.columns:
-        agg["firstbloodvictim"] = ("firstbloodvictim", "first")
     out = d.groupby(["gameid", "side", "position"], as_index=False).agg(**agg)
     if "playerid" in out.columns:
         labels = out["playerid"].astype(str).str.strip().map(player_label_map())
@@ -514,7 +501,11 @@ def _match_features(
     met = f"_{_CONTRIB_METRIC}"  # bust the cache when the contribution scale changes
     path = _CACHE_DIR / f"match_features_{year}_m1{int(use_model1)}{met}{tag}.pkl"
     if path.exists() and not force_recompute:
-        return pd.read_pickle(path)
+        cached = pd.read_pickle(path)
+        if "c_fb" not in cached.columns:
+            return cached
+        # Pre-removal cache: its net_contribution still carries the first-blood credit.
+        logging.info(f"[features] {path.name} predates first-blood removal; rebuilding")
 
     cfg = WinProbabilityConfig(years=(year,))
     df = load_oracle_years(cfg.years)
@@ -534,18 +525,17 @@ def _match_features(
     if _CONTRIB_METRIC == "z" and _CONTRIB_Z_RESCALE != 1.0:
         # Linear rescale onto a pp-comparable scale (state-independence preserved). The dz_*
         # per-feature columns are left RAW -- they only feed the ratio-based source split
-        # (frac = Dz/dz_sum), where any constant factor cancels; the lane totals and team_fb
-        # carry the rescaled scale that flows into net_contribution downstream.
+        # (frac = Dz/dz_sum), where any constant factor cancels; the lane totals carry the
+        # rescaled scale that flows into net_contribution downstream.
         for role in ROLES:
             contrib[role] = contrib[role] * _CONTRIB_Z_RESCALE
-        contrib["team_fb"] = contrib["team_fb"] * _CONTRIB_Z_RESCALE
 
     # Long form: one row per (team-game, lane). net_contribution is that lane's per-lane
     # LOO (unchanged). We SPLIT it across its four stats by each stat's log-odds share --
     # pure interpretability, so c_kills+c_deaths+c_assists+c_damage == net_contribution.
     frames = []
     for role in ROLES:
-        sub = contrib[["gameid", "side", "result", "p_model", "team_fb"]].copy()
+        sub = contrib[["gameid", "side", "result", "p_model"]].copy()
         sub["position"] = role
         net = contrib[role].to_numpy()
         sub["net_contribution"] = net
@@ -564,26 +554,11 @@ def _match_features(
         frames.append(sub)
     long = pd.concat(frames, ignore_index=True)
 
-    # Attach player names, team, and first-blood roles.
+    # Attach player names and team.
     long = long.merge(
         _player_lane_table(df), on=["gameid", "side", "position"], how="left"
     )
 
-    # First blood, folded into net_contribution: the team's FB term is credited to the
-    # player who got the first-blood kill (+) or was the victim (-). LPL lacks
-    # firstbloodvictim, so its non-FB side's debit is left unattributed.
-    fbk = (
-        long["firstbloodkill"].fillna(0).to_numpy()
-        if "firstbloodkill" in long.columns
-        else np.zeros(len(long))
-    )
-    fbv = (
-        long["firstbloodvictim"].fillna(0).to_numpy()
-        if "firstbloodvictim" in long.columns
-        else np.zeros(len(long))
-    )
-    long["c_fb"] = np.where((fbk == 1) | (fbv == 1), long["team_fb"].to_numpy(), 0.0)
-    long["net_contribution"] = long["net_contribution"] + long["c_fb"]
     # Resolve home leagues preferring RATED leagues, so teams that span an unrated + rated
     # league (e.g. Fukuoka SoftBank HAWKS: LJL + PCS) are scored on their rated + international
     # games instead of being dropped for having an unrated home league. A caller-supplied map
@@ -1045,7 +1020,7 @@ def build_player_ratings(
     }
     rename.update(
         {f"{s}_term": f"{s[2:]}_pts" for s in _SOURCES}
-    )  # c_kills_term -> kills_pts, c_fb_term -> fb_pts
+    )  # c_kills_term -> kills_pts, ...
     src = (
         reg_c.add(plf_c, fill_value=0.0)
         .add(tourn_c, fill_value=0.0)
@@ -1097,7 +1072,7 @@ def build_player_ratings(
         logging.warning(f"[ratings] {year}: per-game credit off total_score by {_gap:.2e}")
 
     # Phase totals sum only the real score components (baseline/contrib/win_bonus) -- NOT
-    # the source-decomposition terms (which decompose contribution) or the fb diagnostic.
+    # the source-decomposition terms (which decompose contribution).
     score_comps = ["baseline_term", "contribution_term", "win_bonus"]
     phase_tot = pd.DataFrame(
         {
@@ -1307,11 +1282,6 @@ def explain_upsets(
                 f"{row.get(f'{role}_deaths_nonfb', 0):>3.0f} {row.get(f'{role}_assists_nonfb', 0):>3.0f} "
                 f"{row.get(f'{role}_damagetochampions', 0):>6.0f}  {ex['lane_logodds'][role]:>+8.2f}"
             )
-        fb = int(row.get("teamfirstblood", 0))
-        logging.info(
-            f"    firstblood: {'got' if fb == 1 else 'lost'}    team-feature log-odds "
-            f"{sum(ex['team_logodds'].values()):+.2f}"
-        )
 
 
 def _demo(year: int = 2024, per_lane: int = 20) -> None:
@@ -1355,24 +1325,6 @@ def _demo(year: int = 2024, per_lane: int = 20) -> None:
                 f"{r['reg_pts']:>6.1f} {r['playoff_pts']:>6.1f}{tvals} "
                 f"{r['total_score']:>7.2f} {r['win_rate']:>4.0%}"
             )
-
-    # First blood (now folded into the score, part of contrib): impact + top beneficiaries.
-    fbd = matches[matches["c_fb"] != 0]
-    got = fbd.loc[fbd["c_fb"] > 0, "c_fb"]
-    lost = fbd.loc[fbd["c_fb"] < 0, "c_fb"]
-    logging.info("\n\n=== First blood (folded into contrib) ===")
-    logging.info(
-        f"  Win-prob impact per game: getting first blood {got.mean() * 100:+.2f}pp (killer), "
-        f"being the victim {lost.mean() * 100:+.2f}pp."
-    )
-    logging.info(
-        "  Top 10 by cumulative first-blood points (fb_pts, part of contrib/total):"
-    )
-    for name, r in ratings.sort_values("fb_pts", ascending=False).head(10).iterrows():
-        logging.info(
-            f"    {name:<13} {str(r['team'])[:16]:<16} {r['position']:<4} "
-            f"fb_pts={r['fb_pts']:+5.2f}   (total={r['total_score']:.1f})"
-        )
 
     logging.info("\n\n=== Single-game outliers: OVERALL (all scored games) ===")
     _print_outliers(matches)

@@ -55,6 +55,7 @@ export interface BoardData {
   tiers: TierMeta[];
   ratedCount: number;
   prevYear: number | null;                     // season each row's `rank_prev` refers to
+  ratedMinGames: number;                       // this board's career-games floor
 }
 
 interface FullBoard {
@@ -62,6 +63,7 @@ interface FullBoard {
   tiers: TierMeta[];
   ratedCount: number;
   prevYear: number | null;
+  ratedMinGames: number;
 }
 
 const byClr = (rows: IndexRow[]) => [...rows].sort((a, b) => b.clr - a.clr);
@@ -75,7 +77,8 @@ async function loadTodayFull(): Promise<FullBoard> {
   ]);
   const views = { all: byClr(rows) } as Record<BoardView, IndexRow[]>;
   LANES.forEach((l, i) => (views[l] = byClr(laneArrays[i])));
-  return { views, tiers: tiers.tiers, ratedCount: tiers.rated_count, prevYear: tiers.prev_year ?? null };
+  return { views, tiers: tiers.tiers, ratedCount: tiers.rated_count, prevYear: tiers.prev_year ?? null,
+    ratedMinGames: tiers.rated_min_games };
 }
 
 /** The board frozen at the end of `year`. Snapshot rows carry the numbers as they stood
@@ -94,7 +97,8 @@ async function loadAsOfFull(year: number): Promise<FullBoard> {
     );
   const views = { all: join(snap.all) } as Record<BoardView, IndexRow[]>;
   for (const l of LANES) views[l] = join(snap.lanes[l]);
-  return { views, tiers: snap.tiers, ratedCount: snap.rated_count, prevYear: snap.prev_year ?? null };
+  return { views, tiers: snap.tiers, ratedCount: snap.rated_count, prevYear: snap.prev_year ?? null,
+    ratedMinGames: snap.rated_min_games };
 }
 
 const loadFull = (asOf: number | null) => (asOf === null ? loadTodayFull() : loadAsOfFull(asOf));
@@ -124,6 +128,7 @@ export async function loadBoardPage(asOf: number | null): Promise<BoardData> {
     tiers: full.tiers,
     ratedCount: full.ratedCount,
     prevYear: full.prevYear,
+    ratedMinGames: full.ratedMinGames,
   };
 }
 

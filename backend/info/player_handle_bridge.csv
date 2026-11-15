@@ -1,0 +1,27 @@
+handle,years,teams,label,note
+Piglet,2013-2014,SK Telecom T1;SK Telecom T1 2;SK Telecom T1 K,Piglet (NA LCS),Chae Gwang-jin: SKT T1 (OGN) before Team Liquid; Oracle only has his NA years
+Lustboy,2012-2014,MiG Blaze;Azubu Blaze;CJ Entus Blaze,Lustboy (NA LCS),Ham Jang-sik: MiG / Azubu / CJ Entus Blaze (OGN) before TSM; Oracle only has his NA years
+Adrian,2018,Echo Fox;Echo Fox Academy,Adrian (NA LCS),Leaguepedia page 'Adrian (Adrian Ma)' (same person as Adrian (NA LCS))
+Alex,2017,J Team,Alex (LMS),Leaguepedia page 'Alex (Chen Yu-Ming)' (same person as Alex (LMS))
+Blank,2015,Energy Pacemaker.Carries;Star Horn Royal Club,Blank,Leaguepedia page 'Blank (Kang Sun-gu)'; his two Oracle ids are merged in player_id_aliases.csv so his label is plain 'Blank'
+Emperor,2014,CJ Entus;CJ Entus Blaze,Emperor (EU LCS),Leaguepedia page 'Emperor (Kim Jin-hyun)' (same person as Emperor (EU LCS))
+Heart,2014-2015,Samsung Blue;Samsung Galaxy;Unlimited Potential;Vici Potential Gaming,Heart (WLDs),Leaguepedia page 'Heart' (same person as Heart (WLDs))
+Levi,2018,100 Thieves;100 Thieves Academy,Levi (VCS),Leaguepedia page 'Levi' (same person as Levi (VCS))
+Lilac,2012,Incredible Miracle,Lilac (OGN),Leaguepedia page 'Lilac (Jeon Ho-jin)' (same person as Lilac (OGN))
+May,2012,Team OP;Xenics Storm,May (LMS),Leaguepedia page 'May (Kang Han-wool)' (same person as May (LMS))
+Moopz,2012,Team Sypher;pah,Moopz (LFL),Leaguepedia page 'Moopz' (same person as Moopz (LFL))
+Nexus,2015-2017,Dark Horse HK;Wayi Spider;eXtreme Gamers,Nexus (LMS),Leaguepedia page 'Nexus (Tung Tung)' (same person as Nexus (LMS)); not Nexus (Lee Jun-woo)
+NoName,2013,LMQ,NONAME (NA LCS),Leaguepedia page 'NoName (Zhou Qi-Lin)' (same person as NONAME (NA LCS))
+Only,2018,Avant Gaming;Legacy Esports;Team NSW,Only (OPL),Leaguepedia page 'Only (Jordan Middleton)' (same person as Only (OPL))
+Paragon,2012,Incredible Miracle;Team OP,Paragon (NA LCS),Leaguepedia page 'Paragon' (same person as Paragon (NA LCS))
+Penguin,2019,Oh My God,Penguin (LPL),Leaguepedia page 'Penguin (Zhao Shuai)' (same person as Penguin (LPL)); not Penguin (Stephen Downhower)
+Rich,2018,Ascension Gaming,Rich (GPL),Leaguepedia page 'Rich (Warich Kittiwattanawong)' (same person as Rich (GPL))
+Road,2016-2019,Bilibili Gaming;Brion Blade;EDward Esports;I May;Victory Five,Road (CK),Leaguepedia page 'Road (Yun Han-gil)' (same person as Road (CK)); not Road (Roberto Freitas)
+Ruby,2019-2020,Rogue Warriors;VSG (Korean Team),Ruby (CK),Leaguepedia page 'Ruby (Lee Sol-min)' (same person as Ruby (CK)); not Ruby (Juan Ramos)
+Rush,2015,Cloud9;Team Impulse,Rush (NA LCS),Leaguepedia page 'Rush' (same person as Rush (NA LCS))
+San,2013-2015,Oh My God,san (WLDs),Leaguepedia page 'san (Guo Jun-Liang)' (same person as san (WLDs))
+Save,2013-2014,NaJin Shield;NaJin White Shield;NaJin e-mFire,Save (WLDs),Leaguepedia page 'Save' (same person as Save (WLDs))
+Shy,2012,Azubu Blaze;Azubu Frost,Shy (OGN),Leaguepedia page 'Shy' (same person as Shy (OGN))
+Violet,2012-2014,Full Louis;Saigon Jokers,Violet (VCS),Leaguepedia page 'Violet (Ngô Mạnh Quyền)' (same person as Violet (VCS)); not Violet (Lim Doo-sung)
+Zero,2013,KT Rolster A,zero (LPL),Leaguepedia page 'Zero (Yoon Kyung-sup)' (same person as zero (LPL))
+Bebe,2012-2013,Taipei Assassins,BeBe (LMS),Leaguepedia page 'Bebe (Chang Bo-Wei)' (same person as BeBe (LMS)); TPA's Season 2 world champion

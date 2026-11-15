@@ -11,7 +11,7 @@ so the aggregation and workbook code run unchanged.
 Differences from the full model:
   - features are per-position kills/deaths/assists/CS (no damage, no first blood, no @15);
   - expected reference is the global mean (no Model 1 conditional expectation);
-  - CS occupies the "c_damage" source slot and c_fb is 0 (so the schema matches);
+  - CS occupies the "c_damage" source slot (so the schema matches);
   - no reg/playoff flag in the source, so domestic games are all "regular".
 
 Only the leagues Oracle DOESN'T cover that year are scored here (see GAP_LEAGUES), so nothing
@@ -277,7 +277,6 @@ def _contributions(train_df: pd.DataFrame, rstats: tuple[str, ...]) -> pd.DataFr
         for col in _ALL_STAT_COLS:  # slots absent from rstats (e.g. CS in KDA-only) = 0
             if col not in sub.columns:
                 sub[col] = 0.0
-        sub["c_fb"] = 0.0
         long_parts.append(sub)
     return pd.concat(long_parts, ignore_index=True)
 
@@ -369,7 +368,8 @@ def _lp_features(
     # gap-year rows share an identity with the same player's Oracle years and same-handle
     # collisions stay separate; unbridged (Leaguepedia-only) handles keep their raw name.
     long["playername"] = [
-        resolve_label(h, r) for h, r in zip(long["playername"], long["own_league"])
+        resolve_label(h, r, year=year, bridge_team=t)
+        for h, r, t in zip(long["playername"], long["own_league"], long["teamname"])
     ]
     long = long.dropna(subset=["baseline", "playername"])
     inv = long[[c for c in _INVARIANT_COLS if c in long.columns]].reset_index(drop=True)

@@ -11,8 +11,9 @@ scoring beta):
 
     z = sum_j  w_j * (x_j - mu_j) / sigma_j        p_model = sigmoid(z)
 
-Each lane owns 4 features (kills_nonfb, deaths_nonfb, assists_nonfb, damagetochampions);
-`teamfirstblood` is a team-level feature. A player's contribution is the
+Each lane owns 4 features (kills_nonfb, deaths_nonfb, assists_nonfb, damagetochampions).
+Any non-lane feature is a "team feature" (none by default: the old `teamfirstblood` flag is off,
+see WinProbabilityConfig.team_firstblood). A player's contribution is the
 leave-one-out (LOO) probability delta from swapping their stats to expected:
 
     delta_z_i        = sum_{j in lane(i)} w_j * (actual_j - expected_j) / sigma_j
@@ -27,9 +28,9 @@ The EXPECTED reference is pluggable (`expected` / `expected_df`):
     expected_stats.py) -- the more correct reference (a tank isn't penalized for low
     kills). Passed as a per-team-game `expected_df` to contributions_for_frame.
 
-`teamfirstblood` is team-level, so its LOO delta is returned as a separate 'team_fb'
-term (to be credited to the first-blood participant once Model 1's per-player firstblood
-probabilities are available).
+Team features (if any) are not a player's, so their LOO delta is returned as a separate
+'team_fb' diagnostic term (all zeros when there are no team features). It is not credited
+to any player.
 """
 
 from __future__ import annotations
@@ -67,7 +68,7 @@ class WinProbBundle:
     mu: dict[str, float]      # scaler mean per feature
     sigma: dict[str, float]   # scaler scale (std) per feature
     lane_features: dict[str, list[str]]  # role -> its feature columns
-    team_features: list[str]             # non-lane features (e.g. teamfirstblood)
+    team_features: list[str]             # non-lane features (empty by default)
 
     def z(self, row: pd.Series, expected: Optional[dict[str, float]] = None) -> float:
         """Total log-odds for a team-game row (no intercept)."""
@@ -123,7 +124,7 @@ def contributions_for_row(
     metric: str = "pp",
 ) -> dict[str, float]:
     """
-    Per-player (and team-firstblood) net contributions for one team-game.
+    Per-player (and team-feature) net contributions for one team-game.
 
     Args:
         row: a team-game row (columns = bundle.feature_cols, as from build_team_features).
@@ -179,7 +180,7 @@ def contributions_for_frame(
 
     Also emits, for pure interpretability, the per-feature log-odds deviations (dz_{feature})
     -- unchanged by `metric` -- so a lane's contribution can be split by source, and team_fb
-    (the first-blood LOO on the same scale), reported as a diagnostic.
+    (the team-feature LOO on the same scale, zero without team features), as a diagnostic.
 
     Args:
         team_df: team-game rows (columns = bundle.feature_cols) from build_team_features.

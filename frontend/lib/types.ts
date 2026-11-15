@@ -53,6 +53,7 @@ export interface IndexRow {
   titles?: TitleTally | null;            // champion counts for the trophy pills
   real_name?: string | null;             // Leaguepedia Players.Name
   rank_prev?: number | null;             // rank on the previous season's board, same view (null = unrated then)
+  clr_prev?: number | null;              // CLR at the end of the previous season, same view (null = no seasons yet)
 }
 
 export interface TitleTally {
@@ -99,6 +100,7 @@ export interface AsOfJson {
   year: number;
   prev_year: number | null;              // board `rank_prev` refers to (null = first board)
   rated_count: number;
+  rated_min_games: number;               // this board's games floor (lower while seasons were short)
   tiers: TierMeta[];
   all: AsOfRow[];
   lanes: Partial<Record<Lane, AsOfRow[]>>;
@@ -184,7 +186,7 @@ export interface PlayerDetail {
   phase: Partial<Record<"reg_pts" | "playoff_pts" | "tourn_pts", number>>;
   components: Partial<Record<"base_pts" | "contrib_pts" | "wbonus_pts", number>>;
   sources: Partial<
-    Record<"kills_pts" | "deaths_pts" | "assists_pts" | "damage_pts" | "fb_pts", number>
+    Record<"kills_pts" | "deaths_pts" | "assists_pts" | "damage_pts", number>
   >;
   rates: Partial<{
     pts_per_game: number;
@@ -212,7 +214,7 @@ export interface PlayerDetail {
   trajectory: Record<string, number>;
   trajectory_breakdown: Record<string, {
     kills_pts?: number; deaths_pts?: number; assists_pts?: number;
-    damage_pts?: number; fb_pts?: number;
+    damage_pts?: number;
     reg_pts?: number; playoff_pts?: number; tourn_pts?: number;
   }>;
   splits: Partial<{
@@ -254,6 +256,42 @@ export interface CareerStats extends BoxLine {
   n_champions: number;
 }
 
+export interface ResumeRound {
+  key: "champion" | "finalist" | "semifinalist" | "quarterfinalist" | "group";
+  label: string;
+  /** Share of the champion's points this round earns (champion = 1). */
+  share: number;
+}
+
+/** The résumé point tables (backend export_web._resume_scoring); every value is in CLR points. */
+export interface ResumeScoring {
+  /** The résumé's CLR weight, already applied to every point value here. */
+  weight: number;
+  /** Each repeat of the same achievement is worth this × the one before. */
+  repeat_decay: number;
+  rounds: ResumeRound[];
+  champ_per_weight: number;
+  events: {
+    code: string;
+    name: string;
+    kind: "intl" | "cup";
+    tournament_weight: number;
+    /** Worlds / MSI: title value set directly rather than from the tournament weight. */
+    anchored: boolean;
+    points: Record<ResumeRound["key"], number>;
+  }[];
+  domestic: {
+    year: number;
+    champion: number;
+    finalist: number;
+    leagues: { league: string; strength: number; champion: number; finalist: number }[];
+  };
+  awards: { key: string; label: string; points: number; scaled: boolean }[];
+  example: { label: string; steps: number[]; total: number };
+}
+
 export interface GlossaryJson {
-  entries: { term: string; definition: string }[];
+  /** term = the workbook column code (stable anchor id); label = the readable name. */
+  entries: { term: string; label?: string; definition: string }[];
+  resume_scoring?: ResumeScoring;
 }

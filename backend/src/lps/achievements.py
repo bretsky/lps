@@ -76,8 +76,9 @@ class BonusConfig:
     # tournament weight (season._viewership_weights, Worlds=1.0) so the resume's event coverage +
     # importance stays locked to the on-rift scoring. champion_pts(label) = anchor if the event has
     # one, else champ_per_weight * LPS_weight[label]; then scaled down the bracket by intl_bucket.
-    # Anchors keep Worlds/MSI at their tuned prestige premium; champ_per_weight=4.6 puts EWC/First
-    # Stand ~2.0 (below MSI), MSC ~1.4, KeSPA ~0.6, Demacia ~0.4 -- matching their LPS weights.
+    # Anchors keep Worlds/MSI at their tuned prestige premium; champ_per_weight=3.5 puts EWC/First
+    # Stand ~1.5 (half of MSI), MSC ~1.0, KeSPA ~0.46, Demacia ~0.34 -- matching their LPS weights.
+    # (All raw points here; CLR gets them x w_bonus.)
     intl_champion_anchors: dict[str, float] = field(
         default_factory=lambda: {"WLDs": 6.0, "MSI": 3.0}
     )
@@ -126,15 +127,15 @@ class BonusConfig:
     # rather than swamping it (raw bonus points for the most-decorated players rival the entire
     # base CLR); also, team achievements credit every player on a winning roster equally, so a
     # heavy weight would over-reward dynasty role-players. Prime calibration target. Tuned to the
-    # per-lane consensus GOAT lists: the résumé tracks consensus strongly, so 1.0 (balanced) --
-    # titles/placements matter, but on-rift value (CareerVal+PaceVal+PeakVal) still leads CLR.
+    # per-lane consensus GOAT lists: 0.5 -- titles/placements matter, but on-rift value
+    # (CareerVal+PaceVal+PeakVal) still leads CLR.
     w_bonus: float = 0.5
     # DIMINISHING RETURNS on winning the SAME kind of thing repeatedly. Within each player, like
     # achievements are grouped (intl by event+bucket, domestic by bucket, awards by token), ordered
     # by value (best kept whole), and the k-th (1-indexed) is scaled by repeat_decay**(k-1). So a
     # 6-time Worlds winner's titles are worth 1 + d + d^2 + ... rather than 6x. 1.0 = OFF (every
     # win full). Rewards breadth of résumé over farming one dynasty. Tuned to the consensus
-    # surveys: 0.6 (a moderate taper -- repeats still count, just noticeably less each time).
+    # surveys: 0.8 (a moderate taper -- repeats still count, just noticeably less each time).
     repeat_decay: float = 0.8
 
 
@@ -160,13 +161,13 @@ FLAT_AWARDS = {
 _RB_CATS = [
     "wlds_title",       # Worlds champion
     "wlds_final",       # Worlds finalist
-    "wlds_semi",        # Worlds semifinalist or quarterfinalist
+    "wlds_semi",        # Worlds, out before the final (semis, quarters, groups); WldsElim in the workbook
     "msi_title",        # MSI champion
     "msi_final",        # MSI finalist
-    "msi_semi",         # MSI semifinalist
+    "msi_semi",         # MSI, out before the final (semis, quarters, groups)
     "othr_intl_champ",  # Other intl champion (IEM, EWC, MSC, Rift Rivals…)
     "othr_intl_final",  # Other intl finalist
-    "othr_intl_semi",   # Other intl semifinalist or quarterfinalist
+    "othr_intl_semi",   # Other intl, out before the final (semis, quarters, groups)
     "dom_champ",
     "dom_final",
     "dom_cup",
@@ -215,19 +216,19 @@ def _ach_category(category: str, event: str, bucket: str) -> str:
                 return "wlds_title"
             if bucket == "finalist":
                 return "wlds_final"
-            return "wlds_semi"  # semifinalist, quarterfinalist
+            return "wlds_semi"  # semifinalist, quarterfinalist, group stage
         if event == "MSI":
             if bucket == "champion":
                 return "msi_title"
             if bucket == "finalist":
                 return "msi_final"
-            return "msi_semi"  # semifinalist
+            return "msi_semi"  # semifinalist, quarterfinalist, group stage
         # Other international events (EWC, First Stand, MSC, LTA, Rift Rivals, ASI, …)
         if bucket == "champion":
             return "othr_intl_champ"
         if bucket == "finalist":
             return "othr_intl_final"
-        return "othr_intl_semi"  # semifinalist, quarterfinalist
+        return "othr_intl_semi"  # semifinalist, quarterfinalist, group stage
     return "dom_champ" if bucket == "champion" else "dom_final"
 
 
@@ -410,7 +411,9 @@ def score_bonuses(roster: pd.DataFrame, cfg: BonusConfig | None = None) -> pd.Da
             else pd.Series([None] * len(aw), index=aw.index)
         )
         # Bridge each award's Leaguepedia handle to its canonical identity label (by region).
-        aw["_nlc"] = [resolve_label(h, r) for h, r in zip(aw["playername"], code)]
+        aw["_nlc"] = [
+            resolve_label(h, r, year=y) for h, r, y in zip(aw["playername"], code, aw["year"])
+        ]
         aw["_nlc"] = aw["_nlc"].astype(str).str.lower()
         sc = np.array(
             [

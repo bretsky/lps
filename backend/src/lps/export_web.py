@@ -76,12 +76,15 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-RATED_MIN_GAMES = 100  # inclusion floor for the public board (see plan §11.1)
-# Past-year boards: early on nobody COULD have 100 career games yet (end of 2013 the 99th
-# percentile had 132), so a snapshot's floor is this share of its p99 career games, clamped
-# to [ASOF_MIN_GAMES_LOW, rated_min_games]. Binds through 2015; 2016 on is the full floor.
-ASOF_MIN_GAMES_FRAC = 0.35
-ASOF_MIN_GAMES_LOW = 20
+# Inclusion floor for the public board: career games. ~One full season for a starter in any
+# league (full-time rookies mostly log 35-75), so a rookie who starts a whole year is rated
+# after it. Past-year boards keep it too, except while seasons were short (2011-12, when even
+# the busiest 10% of players logged 12 / 39 games): there it's ASOF_SEASON_FRAC of the busiest
+# season so far (90th-percentile games in one season), never below ASOF_MIN_GAMES_LOW.
+RATED_MIN_GAMES = 30
+ASOF_SEASON_FRAC = 0.5
+ASOF_MIN_GAMES_LOW = 10
+ASOF_MIN_BOARD = 20  # skip a past-year board with fewer rated players than this
 
 # Tier ladder (top -> bottom).  Cutoffs are absolute CLR floors -- round
 # numbers so the meaning of "Legend" (CLR >= 30) is stable across reruns
@@ -121,6 +124,7 @@ _INDEX_FIELDS: list[str] = [
     "hall_of_legends", "hol_year", "is_retired", "is_active",
     "photo", "photo_cx", "photo_ar", "photo_top", "photo_neck", "real_name", "titles",
     "rank_prev",  # rank on the previous season's board in the same view (null = unrated then)
+    "clr_prev",   # CLR at the end of the previous season, same view (null = hadn't played yet)
 ]
 
 # Round most floats to this many decimals when writing.
@@ -134,7 +138,21 @@ def _display_to_raw_map(all_tourn: list[str], years: tuple[int, ...], include_la
     """Invert the `_career_layout` (raw, display, fmt, width) tuples into a
     display-header -> raw-column map."""
     lay = _career_layout(all_tourn, years, include_lane)
-    return {display: raw for (raw, display, _fmt, _w) in lay}
+    out = {display: raw for (raw, display, _fmt, _w) in lay}
+    # Headers renamed since older workbooks were written (old header -> new header).
+    for old, new in _LEGACY_HEADERS.items():
+        if new in out:
+            out.setdefault(old, out[new])
+    return out
+
+
+# The "...Semi" resume columns were renamed "...Elim" (they also hold quarterfinal and
+# group-stage exits); map the old headers so workbooks built before the rename still load.
+_LEGACY_HEADERS = {
+    f"{pre}Semi{suf}": f"{pre}Elim{suf}"
+    for pre in ("Wlds", "MSI", "Intl")
+    for suf in ("#", "Pt")
+}
 
 
 def _load_workbook(path: Path) -> tuple[pd.DataFrame, dict[str, pd.DataFrame], tuple[int, ...], list[str], pd.DataFrame]:
@@ -735,7 +753,7 @@ _DETAIL_CAREER_LPS = ["total_score", "lps_per_year", "peak_year", "peak_lps",
                       "peak_years", "peak_band_avg"]
 _DETAIL_PHASE = ["reg_pts", "playoff_pts", "tourn_pts"]
 _DETAIL_COMPONENT = ["base_pts", "contrib_pts", "wbonus_pts"]
-_DETAIL_SOURCES = ["kills_pts", "deaths_pts", "assists_pts", "damage_pts", "fb_pts"]
+_DETAIL_SOURCES = ["kills_pts", "deaths_pts", "assists_pts", "damage_pts"]
 _DETAIL_RATES = ["pts_per_game", "pts_per_game_w", "clutch_gap", "avg_contrib",
                  "avg_resid", "avg_p_model", "sched_strength"]
 _DETAIL_HIGH_NOON = ["hn_lane_best", "hn_lane", "hn_lane_yrs",
@@ -804,180 +822,613 @@ def _about_to_meta(about: pd.DataFrame) -> dict:
 # ---------------------------------------------------------------------------
 # Glossary -> glossary.json (the site's /about page)
 # ---------------------------------------------------------------------------
-# export_excel._GLOSSARY is written for the workbook (sheets, columns, CLI flags, file
-# paths). These are the site's wordings for the entries that need one, keyed by the same
-# term; terms not listed here go out unchanged. Keep the terms identical to _GLOSSARY's:
-# the site derives each entry's anchor (/about#clr) from the term.
-_WEB_GLOSSARY: dict[str, str] = {
-    "Rank": (
-        "A player's place on the all-time board by CLR. The overall board ranks every lane "
-        "together; each lane tab ranks players within that position."
-    ),
-    "Teams / Leagues / Lanes (by CLR)": (
-        "Where a career's value was earned: every team, league and lane the player logged, "
-        "each with the CLR earned there, highest first (e.g. T1 245.3, DAMWON Gaming 30.1). "
-        "Each season's CLR is split in proportion to that season's LPS, plus the résumé points "
-        "that season earned, so the pieces add up to the player's CLR. A player who changed "
-        "teams mid-season has that whole season booked to their main team for the year, so "
-        "the team split isn't exact for mid-season moves yet."
-    ),
-    "CLR": (
-        "Career Legend Rating, the site's headline ranking: CLR = w_career × CareerVal + "
-        "w_pace × PaceVal + w_peak × PeakVal + w_bonus × Résumé. Inspired by baseball's JAWS "
-        "and hockey's PPS, it puts career bulk, per-season pace, peak and hardware (titles, "
-        "placements, awards) on one scale, so longevity, rate, dominance and trophies all "
-        "count. The current weights are shown at the top of this page."
-    ),
-    "Resume": (
-        "The résumé bonus in CLR: w_bonus × (Intl + Titles + Awards). It rewards big-stage "
-        "results the box score can't see. It's shown already weighted, as are Intl, Titles "
-        "and Awards, so CareerVal + PaceVal + PeakVal + Résumé = CLR."
-    ),
-    "Intl": (
-        "Placement points from every cross-region event LPS scores: Worlds, MSI, EWC, First "
-        "Stand, MSC, LTA, Rift Rivals, ASI, IWCI, IEM, IPL, MLG, DreamHack and OGN 2012. "
-        "Points are set per event and round (champion, finalist, semifinalist, "
-        "quarterfinalist, group stage). A title's points follow the event's weight in LPS, "
-        "anchored on Worlds and MSI, so it counts as much as the event mattered. Credited "
-        "from the player's team's finish that year."
-    ),
-    "Titles": (
-        "Domestic split-playoff titles and finals, each scaled by the strength of that "
-        "region that year (an LCK or LPL title outweighs one from a weaker region), plus "
-        "domestic cups (KeSPA Cup, Demacia Cup)."
-    ),
-    "Awards": (
-        "Individual awards, a small tiebreaker pulled from Leaguepedia: regional and season "
-        "MVP, All-Pro 1st/2nd/3rd team, domestic Finals MVP, and at Worlds and MSI the Finals "
-        "MVP, tournament MVP and All-Pro team. Domestic awards are scaled by region strength; "
-        "Worlds and MSI honors are flat."
-    ),
-    "Resume breakdown (# / Pt columns)": (
-        "The résumé split into 14 categories, each with a count (#, how many the player "
-        "earned across their career) and its weighted points (Pt). The points add up exactly "
-        "to Résumé: the nine Worlds, MSI and other-international categories make Intl; "
-        "domestic titles, finals and cups make Titles; MVP and All-Pro make Awards. Only "
-        "achievements that score are counted (a title in an unrated region is worth 0, so it "
-        "isn't listed), and points scale with region strength wherever the parent bonus does, "
-        "so two titles can be worth different amounts."
-    ),
-    "CareerVal": (
-        "CLR's bulk term: w_career × (career LPS ÷ D), where D is a typical career length in "
-        "years. Careers longer than D keep a proportional edge; shorter ones scale down. "
-        "Shown already weighted, so the four CLR parts add up to CLR."
-    ),
-    "PaceVal": (
-        "CLR's rate term: w_pace × LPS per active season, pulled toward the average player "
-        "in proportion to how few games the player has (empirical-Bayes shrinkage). "
-        "Brilliant short careers score well, but tiny, noisy samples can't top the board. "
-        "It balances CareerVal, which rewards length. Shown already weighted."
-    ),
-    "PeakVal": (
-        "CLR's peak term: w_peak × (the average of the player's peak years + a length "
-        "bonus). The peak years are the player's best k seasons, with k chosen to maximize "
-        "mean(top k) + bonus × (k-th best season) × (k − 1). A one-year peak scores exactly its "
-        "best season; a long plateau scores its average plus a reward for length, and a "
-        "season only joins the peak if it is close to the rest. A better season can never "
-        "lower PeakVal."
-    ),
-    "PeakYrs": (
-        "How many seasons make up the player's peak, i.e. how wide the peak is. Always at "
-        "least 1, since the best season always counts."
-    ),
-    "BestRkLane / BestRkGlob": (
-        "High Noon peer rank: the player's best single-season standing, ranking that year's "
-        "rated players by LPS (adjusted for schedule length), where 1 = best that year. Lane "
-        "ranks within the player's position; Glob ranks across everyone. A companion metric, "
-        "not part of CLR. Lower is better."
-    ),
-    "HN3Lane / HN3Glob": (
-        "High Noon (3-year): the average peer rank across the player's three best-ranked "
-        "seasons, wherever in the career they fall (not necessarily back to back), within "
-        "the lane or across everyone. Measures dominance across a player's strongest "
-        "seasons: about 1.0 means a clear #1 three times over. Lower is better; a companion "
-        "metric, not part of CLR."
-    ),
-    "LPS": (
-        "League Performance Score for a season: Baseline + Contribution + WinBonus, summed "
-        "across regular season, playoffs and tournaments, so playing more games helps. "
-        "Adjusted for schedule length, so a full season is worth the same in every year and "
-        "the seasons add up to career LPS."
-    ),
-    "LPS/Gm": (
-        "Average score per game (contribution + win bonus + baseline, where baseline only "
-        "counts on series wins), with every game weighted equally. Unaffected by schedule "
-        "length."
-    ),
-    "LPS/Gm·wt": (
-        "Stakes-weighted average score per game: playoff and tournament games count more, "
-        "but it divides by the total weight, so it stays comparable across leagues. Higher "
-        "than LPS/Gm means the player raised their game when more was on the line."
-    ),
-    "Con/Gm": (
-        "The contribution part of LPS per game (every game equal, on the LPS scale): how "
-        "much of a player's per-game value comes from their win-probability contribution. "
-        "Unaffected by schedule length."
-    ),
-    "Con/Gm·wt": (
-        "Stakes-weighted contribution per game, weighted the same way as LPS/Gm·wt. Higher "
-        "than Con/Gm means the player contributed more in bigger games."
-    ),
-    "Clutch": (
-        "Individual clutch: contribution per game in high-stakes matches minus contribution "
-        "per game in the regular season, before the per-lane adjustment. High stakes means "
-        "domestic playoffs and international events; international games count double, "
-        "with extra weight by bracket stage (final 3×, semifinal 2×, quarterfinal 1.5×, "
-        "group stage 1×). Small samples are pulled toward the typical player (Bayesian "
-        "shrinkage worth 20 games) so a handful of games can't dominate. Positive = raised "
-        "their game in big moments; negative = faded. Unlike Intangibles, this is the "
-        "player's own number."
-    ),
-    "Baseline": (
-        "Points for the strength of the opponent's league, so wins over stronger regions "
-        "count for more."
-    ),
-    "Contribution": (
-        "Win probability the player added compared with an expected player at their "
-        "position: how far the player's actual game stats moved the win-probability model, "
-        "summed over games. Contribution is put on a common scale per lane across all years, "
-        "so a 90th-percentile game, and the best season ever, are worth the same in every "
-        "role. That removes the box-score bias against supports and junglers, so cross-lane "
-        "and same-team comparisons are fair, while keeping real differences between lanes "
-        "within a year."
-    ),
-    "WinBonus": (
-        "Credit for actually winning compared with what the model expected: beta × (result − "
-        "predicted win chance). Positive = won games the model rated as losses; negative = "
-        "lost games it rated as wins."
-    ),
-    "Intangibles": (
-        "A team-level number: how much more the team wins than its box score (KDA, damage, "
-        "first blood) predicts, per game, which captures macro, shotcalling and closing out "
-        "games. It's the same for all five teammates, so it says nothing about any one "
-        "player."
-    ),
-    "RegElo": (
-        "The strength of the player's home region that season (its league's year-end Elo, "
-        "from international results). Higher = stronger region."
-    ),
-    "<Tournament>": (
-        "LPS earned at one specific tournament (WLDs = Worlds, EWC = Esports World Cup, "
-        "KeSPA and DCup = the Korean and Chinese domestic cups). Together they add up to "
-        "Tourneys."
-    ),
-}
+# export_excel._GLOSSARY is written for the workbook (column codes, CLI flags, file paths). The
+# site gets its own version written for a reader with no background in the project: each
+# workbook term (kept as the key, since the site derives each entry's anchor from it, e.g.
+# /about#clr) maps to a readable label and a plain-English definition. The numbers quoted come
+# from the run's About sheet where it records them (weights, decay, scoring knobs) and from the
+# config defaults otherwise, so the page quotes the values that built the board. Terms missing
+# here go out with the workbook wording (and a warning).
+
+# Résumé events in display order: (event code in achievements.csv, site name).
+_RESUME_EVENTS: list[tuple[str, str]] = [
+    ("WLDs", "World Championship"),
+    ("MSI", "Mid-Season Invitational"),
+    ("FST", "First Stand"),
+    ("EWC", "Esports World Cup"),
+    ("OGN", "OGN Champions (2012)"),
+    ("MSC", "Mid-Season Cup (2020)"),
+    ("LTA", "LTA Championship"),
+    ("RR", "Rift Rivals"),
+    ("IPL", "IGN Pro League"),
+    ("IEM", "Intel Extreme Masters"),
+    ("ASI", "Asia Invitational"),
+    ("IWCI", "International Wildcard Invitational"),
+    ("MLG", "MLG Pro Circuit"),
+    ("DH", "DreamHack"),
+    ("KeSPA", "KeSPA Cup (Korea)"),
+    ("DCup", "Demacia Cup (China)"),
+]
+_RESUME_CUPS = {"KeSPA", "DCup"}
+_RESUME_ROUNDS: list[tuple[str, str]] = [
+    ("champion", "Champion"),
+    ("finalist", "Runner-up"),
+    ("semifinalist", "Semifinal"),
+    ("quarterfinalist", "Quarterfinal"),
+    ("group", "Group stage"),
+]
+_AWARD_LABELS: list[tuple[str, str]] = [
+    ("worlds_finals_mvp", "Worlds Finals MVP"),
+    ("worlds_mvp", "Worlds tournament MVP"),
+    ("worlds_all_pro", "Worlds All-Pro team"),
+    ("msi_finals_mvp", "MSI Finals MVP"),
+    ("msi_mvp", "MSI tournament MVP"),
+    ("msi_all_pro", "MSI All-Pro team"),
+    ("intl_finals_mvp", "Finals MVP, other international event"),
+    ("intl_mvp", "Tournament MVP, other international event"),
+    ("intl_all_pro", "All-Pro team, other international event"),
+    ("regional_mvp", "Domestic season MVP"),
+    ("domestic_finals_mvp", "Domestic Finals MVP"),
+    ("all_pro_1", "Domestic All-Pro 1st team"),
+    ("all_pro_2", "Domestic All-Pro 2nd team"),
+    ("all_pro_3", "Domestic All-Pro 3rd team"),
+]
 
 
-def web_glossary() -> dict:
-    """glossary.json: the workbook glossary with the site's wordings swapped in."""
-    terms = {k for k, _ in _GLOSSARY}
-    stale = sorted(set(_WEB_GLOSSARY) - terms)
+def _about_nums(about: dict, key: str) -> list[float]:
+    """Every number in an About-sheet value, ignoring a trailing '(note)' ('1.3, 0.8  (x)')."""
+    raw = about.get(key)
+    if isinstance(raw, (int, float)) and not isinstance(raw, bool):
+        return [float(raw)]
+    text = str(raw or "").split("(")[0]
+    return [float(x) for x in re.findall(r"-?\d+(?:\.\d+)?", text)]
+
+
+def _about_num(about: dict, key: str, default: float, idx: int = 0) -> float:
+    nums = _about_nums(about, key)
+    return nums[idx] if len(nums) > idx else float(default)
+
+
+def _glossary_params(about: dict) -> dict:
+    """The scoring settings the glossary quotes: the run's About sheet, else config defaults."""
+    from .achievements import BonusConfig
+    from .scoring import ScoreWeights
+
+    clr, bonus, sw = CLRConfig(), BonusConfig(), ScoreWeights()
+    wkey = "Weights (w_career, w_pace, w_peak, w_bonus)"
+    p = {
+        "w_career": _about_num(about, wkey, clr.w_career, 0),
+        "w_pace": _about_num(about, wkey, clr.w_pace, 1),
+        "w_peak": _about_num(about, wkey, clr.w_peak, 2),
+        "w_bonus": _about_num(about, wkey, bonus.w_bonus, 3),
+        "decay": _about_num(about, "repeat_decay", bonus.repeat_decay),
+        "alpha": _about_num(about, "alpha (baseline)", sw.alpha),
+        "beta": _about_num(about, "beta (win bonus)", sw.beta),
+        "region_exp": _about_num(about, "region_exp (region scaling)", sw.region_exp),
+        "w_playoff": _about_num(about, "w_playoff (playoff mult)", sw.w_playoff),
+        "intl_weight": _about_num(about, "intl_weight", 2.0),
+        "divisor": clr.career_divisor,
+        "pace_prior": clr.pace_prior_games,
+        "peak_bonus": clr.peak_len_bonus,
+        "era": tuple(clr.era_mults),
+    }
+    m = re.search(r"x\s*\(([^)]*)\)", str(about.get("Era adjustment (3 eras)", "")))
+    if m:
+        era = [float(x) for x in re.findall(r"\d+(?:\.\d+)?", m.group(1))]
+        if len(era) == 3:
+            p["era"] = tuple(era)
+    return p
+
+
+def _fmt(x: float, nd: int = 3) -> str:
+    """Compact number for prose: 3.0 -> '3', 0.375 -> '0.375', 0.1 -> '0.1'."""
+    return f"{round(x, nd):g}"
+
+
+def _resume_scoring(p: dict, year: int) -> dict:
+    """The résumé point tables shown on /about, in CLR points (already x w_bonus).
+
+    Mirrors achievements.score_bonuses: tournament champion = anchor (Worlds/MSI) else
+    champ_per_weight x the event's LPS tournament weight, scaled down the bracket by
+    intl_bucket; domestic split titles = base x (league Elo / top Elo); awards = base x
+    award_weight (x league strength for domestic awards)."""
+    from .achievements import FLAT_AWARDS, BonusConfig
+    from .scoring import load_league_elos
+    from .season import _viewership_weights
+
+    cfg, wb = BonusConfig(), p["w_bonus"]
+    tw = _viewership_weights()
+    events = []
+    for code, name in _RESUME_EVENTS:
+        anchored = code in cfg.intl_champion_anchors
+        champ = cfg.intl_champion_anchors.get(code, cfg.champ_per_weight * tw.get(code, 0.0))
+        events.append(
+            {
+                "code": code,
+                "name": name,
+                "kind": "cup" if code in _RESUME_CUPS else "intl",
+                "tournament_weight": round(float(tw.get(code, 0.0)), 3),
+                "anchored": anchored,
+                "points": {
+                    r: round(champ * cfg.intl_bucket.get(r, 0.0) * wb, 3) for r, _ in _RESUME_ROUNDS
+                },
+            }
+        )
+
+    elos = load_league_elos(year) or {}
+    top = max(elos.values()) if elos else 0.0
+    leagues = [
+        {
+            "league": lg,
+            "strength": round(e / top, 3),
+            "champion": round(cfg.domestic_champion * wb * e / top, 3),
+            "finalist": round(cfg.domestic_finalist * wb * e / top, 3),
+        }
+        for lg, e in sorted(elos.items(), key=lambda kv: -kv[1])
+        if top
+    ]
+
+    awards = [
+        {
+            "key": k,
+            "label": lbl,
+            "points": round(cfg.award_points.get(k, 0.0) * cfg.award_weight * wb, 3),
+            "scaled": k not in FLAT_AWARDS,
+        }
+        for k, lbl in _AWARD_LABELS
+    ]
+
+    d = p["decay"]
+    wlds = cfg.intl_champion_anchors.get("WLDs", 6.0) * wb
+    steps = [round(wlds * d**i, 3) for i in range(6)]
+    return {
+        "weight": wb,
+        "repeat_decay": d,
+        "rounds": [
+            {"key": r, "label": lbl, "share": cfg.intl_bucket.get(r, 0.0)} for r, lbl in _RESUME_ROUNDS
+        ],
+        "champ_per_weight": cfg.champ_per_weight,
+        "events": events,
+        "domestic": {
+            "year": int(year),
+            "champion": round(cfg.domestic_champion * wb, 3),
+            "finalist": round(cfg.domestic_finalist * wb, 3),
+            "leagues": leagues,
+        },
+        "awards": awards,
+        "example": {"label": "Six Worlds titles", "steps": steps, "total": round(sum(steps), 3)},
+    }
+
+
+def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
+    """term -> (site label, plain-English definition). See the block comment above."""
+    f = _fmt
+    wc, wp, wk, wb, d = p["w_career"], p["w_pace"], p["w_peak"], p["w_bonus"], p["decay"]
+    e1, e2, e3 = p["era"]
+    pb = p["peak_bonus"]
+    ev = {e["code"]: e for e in rs["events"]}
+
+    def pts(code: str, rnd: str) -> str:
+        return f(ev[code]["points"][rnd], 3)
+
+    others = [e for e in rs["events"] if e["kind"] == "intl" and not e["anchored"]]
+    o_lo = min(e["points"]["champion"] for e in others)
+    o_hi = max(e["points"]["champion"] for e in others)
+    aw = {a["key"]: a["points"] for a in rs["awards"]}
+    dom = rs["domestic"]
+    yr = dom["year"]
+    lg = dom["leagues"][:4]
+    dom_eg = ", ".join(f"{x['league']} {f(x['champion'], 2)}" for x in lg)
+    steps = rs["example"]["steps"]
+    step_txt = ", ".join(f(s) for s in steps[:4])
+
+    # Region factor examples for the latest year (strongest league, then a few others).
+    rexp = p["region_exp"]
+    rf = []
+    if lg:
+        top_strength = 0.5 ** rexp
+        rf.append(f"facing the strongest league gives {f(top_strength, 2)}")
+        from .scoring import load_league_elos
+
+        elos = load_league_elos(yr) or {}
+        peak = max(elos.values()) if elos else 0.0
+        for x in dom["leagues"][2:4]:
+            e = elos.get(x["league"])
+            if e is None:
+                continue
+            base = 1.0 / (1.0 + 10 ** ((peak - e) / 400.0))
+            rf.append(f"facing the {x['league']} gives {f(base ** rexp, 2)}")
+    rf_txt = f" (in {yr}, " + ", ".join(rf) + ")" if rf else ""
+
+    return {
+        "Rank": (
+            "Rank",
+            "A player's place on the all-time board, ordered by Career Legend Rating (CLR). The "
+            "overall board ranks every lane together; each lane tab ranks players only against "
+            "others in that position. The arrows show how far a player has moved since the board "
+            "as it stood at the end of the previous season.",
+        ),
+        "Teams / Leagues / Lanes (by CLR)": (
+            "Where the value came from",
+            "The teams, leagues and lanes a player's CLR was earned with, largest first (for "
+            "example T1 245.3, DAMWON Gaming 30.1). The performance part of CLR (everything "
+            "except the résumé) is shared out across the player's seasons in proportion to each "
+            "season's LPS, and each season's résumé points go to the season that earned them. "
+            "Each season is then credited to the team, league and lane the player played that "
+            "year, so the pieces add up exactly to the player's CLR. A player who changed teams "
+            "mid-season has that whole season credited to their main team for the year.",
+        ),
+        "CLR": (
+            "Career Legend Rating (CLR)",
+            f"The headline number the all-time board is ranked by. It adds up four weighted "
+            f"parts: CLR = {f(wc)} × Career value + {f(wp)} × Pace value + {f(wk)} × Peak value + "
+            f"{f(wb)} × Résumé. The first three are built from LPS, the season performance score "
+            f"described below, and each is on the scale of roughly one season of LPS, so the "
+            f"weights compare directly. Career value rewards longevity, pace value rewards how "
+            f"much a player produced per season, peak value rewards how high their best seasons "
+            f"were, and the résumé rewards trophies, deep international runs and awards. The "
+            f"idea is borrowed from JAWS, baseball's Hall of Fame yardstick, which blends career "
+            f"totals with peak. Profiles show each part already multiplied by its weight, so the "
+            f"four numbers add straight up to CLR.",
+        ),
+        "CareerVal": (
+            "Career value",
+            f"Total career production, scaled to a typical career. Career LPS (every season's "
+            f"LPS added together) is divided by {f(p['divisor'])}, the average career length in "
+            f"years of the top 100 retired players. Longer careers keep a proportional edge; "
+            f"shorter ones score less. Before the seasons are added up, each is multiplied by an "
+            f"era factor, because early seasons had fewer events to earn points in: ×{f(e1, 3)} "
+            f"for 2014 and earlier, ×{f(e2, 3)} for 2015–2017 and ×{f(e3, 3)} from 2018 on. Shown "
+            f"multiplied by its CLR weight ({f(wc)}).",
+        ),
+        "PaceVal": (
+            "Pace value",
+            f"How much a player produced per season: career LPS divided by the number of "
+            f"seasons played. Short careers are noisy, so this is blended with the average "
+            f"player's figure, trusting the player's own number more the more they have played "
+            f"(their share is games ÷ (games + {f(p['pace_prior'])}), counting games adjusted for "
+            f"schedule length and stakes). A brilliant short career still scores well, but a "
+            f"handful of lucky games can't top the board. It balances career value, which "
+            f"rewards length. Shown multiplied by its CLR weight ({f(wp)}).",
+        ),
+        "PeakVal": (
+            "Peak value",
+            f"How high a player's best stretch of seasons was. Sort the player's seasons from "
+            f"best to worst by LPS (era-adjusted, as in career value). For each number of "
+            f"seasons k, take the average of the best k and add a length bonus of {f(pb)} × (the "
+            f"k-th best season) × (k − 1); peak value is the largest of these. A one-season peak "
+            f"scores exactly that season, while k equally good seasons of S score S × (1 + "
+            f"{f(pb)} × (k − 1)): three seasons of 10 score {f(10 * (1 + pb * 2))}. A weaker "
+            f"season only joins the peak if it is close to the others (about three-quarters of "
+            f"the best or better). Improving any season can never lower peak value. Shown "
+            f"multiplied by its CLR weight ({f(wk)}).",
+        ),
+        "PeakYrs": (
+            "Peak years",
+            "How many seasons make up the player's peak: the k that gives the highest peak "
+            "value. Always at least 1, since the best season always counts.",
+        ),
+        "PeakAvg": (
+            "Peak average",
+            "The average LPS of the player's peak seasons, before the length bonus. Peak value "
+            "is this plus the bonus for each extra peak season.",
+        ),
+        "Resume": (
+            "Résumé",
+            f"Points for trophies, deep international runs and individual awards: big-stage "
+            f"results that a box score can't see. It isn't a model; every achievement has a "
+            f"fixed point value, listed in full in the tables below. A Worlds title is worth "
+            f"{pts('WLDs', 'champion')} CLR, an MSI title {pts('MSI', 'champion')}, a domestic "
+            f"league title up to {f(dom['champion'])}, and a domestic season MVP up to "
+            f"{f(aw['regional_mvp'])}. Team results are credited in full to every player on the "
+            f"roster (not split between them), and each lands in the season and lane the player "
+            f"played that year. Winning the same thing again is worth less each time: the best "
+            f"one counts in full and each repeat is worth {f(d)}× the one before, so six Worlds "
+            f"titles add {step_txt}, … = {f(rs['example']['total'])} rather than "
+            f"{f(6 * steps[0])}. Résumé points are not adjusted for era or schedule. The values "
+            f"above are after the résumé's CLR weight ({f(wb)}); profiles show the résumé the "
+            f"same way, so career + pace + peak + résumé = CLR.",
+        ),
+        "Intl": (
+            "International results",
+            f"Points for how far a player's team went at events between regions: Worlds, MSI, "
+            f"First Stand, the Esports World Cup, the Mid-Season Cup, the LTA Championship, Rift "
+            f"Rivals, IEM, IPL, MLG, DreamHack, the Asia Invitational, the International Wildcard "
+            f"Invitational and the 2012 OGN Champions. A Worlds title is worth "
+            f"{pts('WLDs', 'champion')} CLR and an MSI title {pts('MSI', 'champion')}. Every "
+            f"other event's title is worth {f(rs['champ_per_weight'] * wb, 3)} × its tournament "
+            f"weight, the same importance weight LPS gives that event's games (based on its "
+            f"viewership next to Worlds, or set by hand for old or small events), which puts "
+            f"them between {f(o_lo)} and {f(o_hi)}. Lower finishes earn a fixed share of the "
+            f"title value: runner-up ½, semifinal ¼, quarterfinal ⅛, group stage 4%. So Worlds "
+            f"pays {pts('WLDs', 'finalist')} for a lost final, {pts('WLDs', 'semifinalist')} "
+            f"for a semifinal, {pts('WLDs', 'quarterfinalist')} for a quarterfinal and "
+            f"{pts('WLDs', 'group')} for a group-stage exit.",
+        ),
+        "Titles": (
+            "Domestic titles and cups",
+            f"Points for domestic league playoffs and cups. Winning a split's playoffs is worth "
+            f"{f(dom['champion'])} CLR and losing the final {f(dom['finalist'])}, each multiplied "
+            f"by the league's strength that year: its regional Elo rating divided by the "
+            f"strongest league's. In {yr} a title is worth {dom_eg}. A league with no rating that "
+            f"year (one that sent no team to international events) scores 0. The KeSPA Cup "
+            f"(Korea) and Demacia Cup (China) are scored like international events, by their "
+            f"tournament weight: a KeSPA Cup win is worth {pts('KeSPA', 'champion')}.",
+        ),
+        "Awards": (
+            "Individual awards",
+            f"Points for MVP awards and All-Pro selections, pulled from Leaguepedia. Honors at "
+            f"Worlds, MSI and other international events are flat; domestic ones are multiplied "
+            f"by league strength, like titles. A Worlds Finals MVP or tournament MVP is worth "
+            f"{f(aw['worlds_finals_mvp'])} CLR, a domestic season MVP up to "
+            f"{f(aw['regional_mvp'])} and a domestic All-Pro 1st-team pick up to "
+            f"{f(aw['all_pro_1'])}. Awards are deliberately small next to team results; they "
+            f"mostly separate teammates who shared the same trophies.",
+        ),
+        "Resume breakdown (# / Pt columns)": (
+            "Résumé breakdown",
+            "Profiles split the résumé into 14 categories, each showing how many the player "
+            "earned and the CLR points they're worth after repeats are discounted. The "
+            "categories add up exactly to the résumé: Worlds (title, runner-up, semifinal or "
+            "earlier), MSI (the same three), other international events (the same three), "
+            "domestic league titles, domestic runner-ups, domestic cups, MVP awards and All-Pro "
+            "selections. Only achievements worth points are counted, so a title in a league "
+            "with no rating that year doesn't appear. Two entries in one category can be worth "
+            "different amounts, because of league strength and the repeat discount.",
+        ),
+        "WldsChmp# / WldsChmpPt": (
+            "Worlds titles",
+            f"World Championships won. The first is worth {pts('WLDs', 'champion')}; each "
+            f"further title is worth {f(d)}× the one before ({step_txt}, …).",
+        ),
+        "WldsFin# / WldsFinPt": (
+            "Worlds runner-up",
+            f"Worlds finals lost: {pts('WLDs', 'finalist')} for the first, discounted for repeats.",
+        ),
+        "WldsElim# / WldsElimPt": (
+            "Worlds, out before the final",
+            f"Every Worlds that ended before the final: semifinals ({pts('WLDs', 'semifinalist')}), quarterfinals "
+            f"({pts('WLDs', 'quarterfinalist')}) and group-stage exits "
+            f"({pts('WLDs', 'group')}). Each round is discounted for repeats on its own.",
+        ),
+        "MSIChmp# / MSIChmpPt": (
+            "MSI titles",
+            f"Mid-Season Invitationals won: {pts('MSI', 'champion')} for the first, discounted "
+            f"for repeats.",
+        ),
+        "MSIFin# / MSIFinPt": (
+            "MSI runner-up",
+            f"MSI finals lost: {pts('MSI', 'finalist')} for the first, discounted for repeats.",
+        ),
+        "MSIElim# / MSIElimPt": (
+            "MSI, out before the final",
+            f"Every MSI that ended before the final: semifinals ({pts('MSI', 'semifinalist')}), quarterfinals "
+            f"({pts('MSI', 'quarterfinalist')}) and group-stage exits "
+            f"({pts('MSI', 'group')}).",
+        ),
+        "IntlChmp# / IntlChmpPt": (
+            "Other international titles",
+            f"Titles at every other event between regions (First Stand, the Esports World Cup, "
+            f"Rift Rivals, IEM and the rest), worth {f(o_lo)} to {f(o_hi)} depending on the "
+            f"event's weight (see the table above).",
+        ),
+        "IntlFin# / IntlFinPt": (
+            "Other international runner-up",
+            "Finals lost at those events: half the event's title value.",
+        ),
+        "IntlElim# / IntlElimPt": (
+            "Other international, out before the final",
+            "Runs at those events that ended before the final, in the semifinal, quarterfinal or group stage: ¼, ⅛ and 4% of "
+            "the event's title value.",
+        ),
+        "DomChmp# / DomChmpPt": (
+            "Domestic league titles",
+            f"Domestic split-playoff wins, up to {f(dom['champion'])} each, scaled by league "
+            f"strength. All of a player's league titles share one repeat discount, whichever "
+            f"league they came from.",
+        ),
+        "DomFin# / DomFinPt": (
+            "Domestic runner-up",
+            f"Domestic playoff finals lost, up to {f(dom['finalist'])} each, scaled by league "
+            f"strength and discounted for repeats.",
+        ),
+        "DomCup# / DomCupPt": (
+            "Domestic cups",
+            f"KeSPA Cup and Demacia Cup finishes at every round, scored by the cup's tournament "
+            f"weight (a KeSPA Cup win is {pts('KeSPA', 'champion')}, a Demacia Cup win "
+            f"{pts('DCup', 'champion')}).",
+        ),
+        "MVP# / MVPPt": (
+            "MVP awards",
+            "Domestic season MVP and Finals MVP, plus Finals MVP and tournament MVP at Worlds, "
+            "MSI and other international events.",
+        ),
+        "AllPro# / AllProPt": (
+            "All-Pro selections",
+            "Domestic All-Pro 1st, 2nd and 3rd teams, plus the All-Pro teams at Worlds, MSI and "
+            "other international events.",
+        ),
+        "LPS": (
+            "League Performance Score (LPS)",
+            f"A player's score for one season, built game by game. Every game earns three "
+            f"things: a win credit of {f(p['alpha'])} if the team won the series; the player's "
+            f"contribution, meaning how much their play moved the team's chance of winning "
+            f"compared with an average player in the same spot; and a win bonus for beating the "
+            f"odds. That total is multiplied by a region factor for the strength of the "
+            f"opposition, so the same performance is worth more against stronger leagues. The "
+            f"games of a best-of series are averaged into one match score. Matches are then "
+            f"added up across the season: a full regular season is worth the same in every "
+            f"league however long its schedule, a full playoff run is worth {f(p['w_playoff'])}× "
+            f"that, and international events count by importance (Worlds 1, MSI "
+            f"{f(ev['MSI']['tournament_weight'])}, and so on). Last, each season is rescaled to a "
+            f"common schedule length, so seasons from different years are worth the same and "
+            f"add up to career LPS. Playing more, going deeper and winning bigger events all "
+            f"raise LPS.",
+        ),
+        "LPS/Gm": (
+            "LPS per game",
+            "The average score per game (win credit + contribution + win bonus, times the "
+            "region factor), with every game counted equally. Unlike season LPS it doesn't grow "
+            "with more games, so it measures quality rather than volume.",
+        ),
+        "LPS/Gm·wt": (
+            "LPS per game, stakes-weighted",
+            "The average score per game, with each game weighted the way season LPS weights it, "
+            "so playoff and international games count for more. Higher than plain LPS per game "
+            "means the player raised their level when more was on the line.",
+        ),
+        "Con/Gm": (
+            "Contribution per game",
+            "Just the contribution part of the per-game score (including the region factor), "
+            "with every game counted equally.",
+        ),
+        "Con/Gm·wt": (
+            "Contribution per game, stakes-weighted",
+            "Contribution per game, weighted the same way as stakes-weighted LPS per game. "
+            "Higher than plain contribution per game means the player contributed more in "
+            "bigger games.",
+        ),
+        "Baseline": (
+            "Win credit (baseline)",
+            f"The flat part of each game's score: {f(p['alpha'])} points times the region "
+            f"factor, paid only when the player's team wins the series. The region factor is "
+            f"the chance the opponent's league would beat that year's strongest league (from "
+            f"regional Elo ratings), raised to the power {f(rexp)}{rf_txt}. The factor "
+            f"multiplies the whole game score, not just this part, which is how LPS rewards "
+            f"competing against strong opposition.",
+        ),
+        "Contribution": (
+            "Contribution",
+            "The heart of LPS: how much the player's own play moved their team's chance of "
+            "winning. Two models are trained on pro games every season. The first predicts the "
+            "stat line (kills, deaths, assists, damage) an average player would "
+            "produce in the same position and game situation. The second predicts a team's "
+            "chance of winning from what its players actually produced. A player's contribution "
+            "in a game is how much the predicted win chance changes when their expected stat "
+            "line is swapped for their real one. Box scores under-credit supports and junglers, "
+            "so each lane's per-game contributions are then mapped onto one shared scale across "
+            "all years: a 90th-percentile game is worth the same in every role.",
+        ),
+        "WinBonus": (
+            "Win bonus",
+            f"Credit for winning when the stats said you shouldn't: {f(p['beta'])} × (result − "
+            f"predicted chance of winning), where result is 1 for a win and 0 for a loss, times "
+            f"the region factor. Winning a game the model gave a 30% chance adds "
+            f"{f(p['beta'] * 0.7, 3)} before the region factor; losing one it gave 80% takes "
+            f"away {f(p['beta'] * 0.8, 3)}.",
+        ),
+        "Kills/Deaths/Assists/Damage": (
+            "Contribution by stat",
+            "Contribution split by the stat that produced it; the four add up to contribution.",
+        ),
+        "AvgContrib": (
+            "Average contribution",
+            "Contribution per game on the shared cross-lane scale, before the region factor and "
+            "season weighting. Comparable across roles.",
+        ),
+        "Intangibles": (
+            "Intangibles",
+            "A team number, not a player one: how much more the team won than its box scores "
+            "predicted, per game (result − predicted chance of winning). It picks up what stats "
+            "miss, like macro play, shotcalling and closing out games. It's identical for all "
+            "five teammates, so it says nothing about any one player.",
+        ),
+        "Clutch": (
+            "Clutch",
+            "Contribution per game in high-stakes matches minus contribution per game in the "
+            "regular season. High stakes means domestic playoffs and international events; "
+            "international games count double, with extra weight by round (final 3×, semifinal "
+            "2×, quarterfinal 1.5×, group stage 1×). Small samples are pulled toward the typical "
+            "player, as if everyone had 20 extra average games, so a handful of games can't "
+            "dominate. Positive means the player raised their game in big moments; negative "
+            "means they faded. Unlike intangibles, this is the player's own number.",
+        ),
+        "Regular / Playoffs / Tourneys": (
+            "Regular season, playoffs, tournaments",
+            f"Season LPS split by phase. A full regular season is worth the same in every league; "
+            f"a full playoff run is worth {f(p['w_playoff'])}× that. International events and "
+            f"domestic cups are weighted by importance (Worlds 1, MSI "
+            f"{f(ev['MSI']['tournament_weight'])}, First Stand {f(ev['FST']['tournament_weight'])}, "
+            f"KeSPA Cup {f(ev['KeSPA']['tournament_weight'])}), a champion's full run is worth the "
+            f"event's weight however many matches the bracket has, and the year's deepest "
+            f"international run is worth {f(p['intl_weight'])}× a full regular season. The three "
+            f"phases add up to LPS.",
+        ),
+        "AvgWinProb": (
+            "Average win probability",
+            "The model's average predicted chance of winning for the player's team across their "
+            "games: a measure of how strong their team was.",
+        ),
+        "SoS": (
+            "Strength of schedule",
+            "How strong the opponents' leagues were on average, as the chance each would beat "
+            "that year's strongest league (0.5 = the strongest league itself). Higher means "
+            "tougher opposition.",
+        ),
+        "BestGame / WorstGame": (
+            "Best and worst game",
+            "The player's highest and lowest single-game contribution, in win probability.",
+        ),
+        "#Trn": (
+            "Tournaments played",
+            "How many different international events and domestic cups the player appeared in.",
+        ),
+        "RegElo": (
+            "Region Elo",
+            "The strength of the player's home league that season: its year-end Elo rating, "
+            "computed from each region's results against other regions at international "
+            "events. Higher means a stronger region.",
+        ),
+        "<Tournament>": (
+            "LPS by tournament",
+            "LPS earned at one specific event (WLDs = Worlds, MSI = Mid-Season Invitational, EWC "
+            "= Esports World Cup, FST = First Stand, KeSPA and DCup = the Korean and Chinese "
+            "domestic cups). Together they add up to the tournaments phase.",
+        ),
+        "BestRkLane / BestRkGlob": (
+            "Best season rank",
+            "The player's best single-season finish: each year, rated players are ranked by "
+            "that season's LPS (1 = best that year), within their lane and across everyone. A "
+            "companion number, not part of CLR. Lower is better.",
+        ),
+        "HN3Lane / HN3Glob": (
+            "High Noon (3-season rank)",
+            "The average of the player's three best season ranks, wherever in the career they "
+            "fall (not necessarily back to back), within their lane and across everyone. About "
+            "1.0 means a clear #1 three times over. Lower is better; a companion number, not "
+            "part of CLR.",
+        ),
+        "HN3LaneYrs / HN3GlobYrs": (
+            "High Noon seasons",
+            "The three seasons behind the High Noon rank, within the lane and across everyone.",
+        ),
+    }
+
+
+def web_glossary(about: Optional[dict] = None, year: Optional[int] = None) -> dict:
+    """glossary.json: every workbook glossary term with its site label and wording, plus the
+    résumé point tables (`resume_scoring`). `about` is the parsed About sheet (meta['about'])
+    and `year` the latest season (for the league-strength examples)."""
+    p = _glossary_params(about or {})
+    rs = _resume_scoring(p, int(year if year is not None else YEARS_DEFAULT[-1]))
+    text = _web_glossary_text(p, rs)
+    terms = [k for k, _ in _GLOSSARY]
+    stale = sorted(set(text) - set(terms))
     if stale:
         logger.warning("glossary: site wordings for terms no longer in _GLOSSARY: %s", stale)
+    missing = [k for k in terms if k not in text]
+    if missing:
+        logger.warning("glossary: no site wording for %s; using the workbook text", missing)
     return {
         "entries": [
-            {"term": k, "definition": _WEB_GLOSSARY.get(k, v)} for k, v in _GLOSSARY
-        ]
+            {
+                "term": k,
+                "label": text.get(k, (k, v))[0],
+                "definition": text.get(k, (k, v))[1],
+            }
+            for k, v in _GLOSSARY
+        ],
+        "resume_scoring": rs,
     }
 
 
@@ -1416,7 +1867,7 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
     # before today's files so every live view can carry its rank on last season's board.
     asof_ranks = _write_asof(out_dir, ov, honors_by_name, cfg.rated_min_games, set(rated["slug"]))
     prev_ranks = asof_ranks.get(latest_year - 1)
-    rated["rank_prev"] = _prev_ranks(rated, prev_ranks, "all")
+    rated["rank_prev"], rated["clr_prev"] = _prev_ranks(rated, prev_ranks, "all")
 
     # index.json  (rated only)
     index_rows = [_index_row(r) for _, r in rated.iterrows()]
@@ -1453,7 +1904,7 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
         lf_tier, _ = _assign_tiers(lf["clr"].reset_index(drop=True))
         lf["tier"] = lf_tier.values
         lf["position"] = lane  # this file IS the lane page; label with this lane
-        lf["rank_prev"] = _prev_ranks(lf, prev_ranks, lane)
+        lf["rank_prev"], lf["clr_prev"] = _prev_ranks(lf, prev_ranks, lane)
         _write_json(out_dir / "lanes" / f"{lane}.json", [_index_row(r) for _, r in lf.iterrows()])
 
     # Per-(player, year) HN ranks — used by the trajectory chart to label each
@@ -1539,7 +1990,7 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
     _write_json(out_dir / "meta.json", meta)
 
     # glossary.json
-    _write_json(out_dir / "glossary.json", web_glossary())
+    _write_json(out_dir / "glossary.json", web_glossary(meta["about"], int(years[-1])))
 
     logger.info("[web] wrote bundle to %s", out_dir)
     return out_dir
@@ -1553,7 +2004,7 @@ _ASOF_FIELDS: list[str] = [
     "region_elo", "n_years", "first_year", "last_year", "games", "win_rate",
     "clr", "career_value", "pace_value", "peak_value", "resume_bonus",
     "total_score", "peak_lps", "tier", "hall_of_legends", "is_retired", "is_active", "titles",
-    "rank_prev",
+    "rank_prev", "clr_prev",
 ]
 # Identity fields an as-of row carries itself when the player isn't on today's board (a
 # 2013 regular who never reached today's games floor) -- the site has nothing to join.
@@ -1561,22 +2012,47 @@ _ASOF_IDENTITY_FIELDS: list[str] = [
     "playername", "photo", "photo_cx", "photo_ar", "photo_top", "photo_neck", "real_name",
     "hol_year",
 ]
+# Photo fields an as-of row overrides when that season has its own photo (a 2013 board shows
+# 2013 Faker, not 2026 Faker); see fetch_player_images.PHOTOS_BY_YEAR_JSON.
+_ASOF_PHOTO_FIELDS: list[str] = ["photo", "photo_cx", "photo_ar", "photo_top", "photo_neck"]
+
+
+def _photos_by_year() -> dict[str, dict[str, dict]]:
+    from .fetch_player_images import PHOTOS_BY_YEAR_JSON
+
+    if not PHOTOS_BY_YEAR_JSON.exists():
+        logger.warning("[web] %s missing -- past-year boards use today's photos "
+                       "(run lps.fetch_player_images)", PHOTOS_BY_YEAR_JSON.name)
+        return {}
+    return json.loads(PHOTOS_BY_YEAR_JSON.read_text("utf-8"))
+
+
+def _era_photo(by_year: dict[str, dict], year: int) -> Optional[dict]:
+    """The player's newest photo from `year` or before; failing that the earliest one after.
+    Only transparent cutouts count (head measured: `cx` set) -- older Leaguepedia photos are
+    often rectangular JPGs, which would paste a box over the hero stage and the avatars."""
+    yrs = sorted(int(y) for y, e in by_year.items() if e.get("cx") is not None)
+    if not yrs:
+        return None
+    before = [y for y in yrs if y <= year]
+    return by_year[str(before[-1] if before else yrs[0])]
 
 
 def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[dict]],
-                rated_min_games: int, today_slugs: set[str]) -> dict[int, dict[str, dict[str, int]]]:
+                rated_min_games: int, today_slugs: set[str]) -> dict[int, dict]:
     """Per-season "rankings as of the end of Y" boards -> `asof/<Y>.json`
     ({year, rated_count, tiers, all, lanes: {lane: rows}}), from career.py's
     `player_ratings_asof.json`. Ranks and tiers follow the same rules as the live board,
     applied to the career-through-Y numbers; the rated pool's games floor scales down for
-    early seasons (ASOF_MIN_GAMES_FRAC), so rows for players not on today's board carry
+    short early seasons (ASOF_SEASON_FRAC), so rows for players not on today's board carry
     their own identity fields (_ASOF_IDENTITY_FIELDS). Titles and Hall of Legends only
     count what had happened by Y. Status is read in hindsight: active = played in Y,
     retired = never played again, otherwise between teams (hiatus). Each row's `rank_prev` is
     its rank on the previous season's board in the same view (all roles / one lane), null if
     it wasn't rated then; the file's `prev_year` is null when there is no such board.
-    Returns {year: {view: {slug: rank}}} for every board written ("all" + each lane), so the
-    live board can diff against the last one."""
+    Each row also carries `clr_prev`, its CLR at the end of the previous season (null if it
+    hadn't played yet). Returns {year: {"rank" | "clr": {view: {slug: value}}}} for every
+    board written ("all" + each lane), so the live board can diff against the last one."""
     src = PROJECT_ROOT / "player_ratings_asof.json"
     asof_dir = out_dir / "asof"
     if not src.exists():
@@ -1584,7 +2060,8 @@ def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[
         return {}
     snaps = json.loads(src.read_text("utf-8"))
     base = ov.set_index("playername")
-    ranks: dict[int, dict[str, dict[str, int]]] = {}
+    photos = _photos_by_year()
+    ranks: dict[int, dict] = {}  # {year: {"rank" | "clr": {view: {slug: value}}}}
 
     def _shape(df: pd.DataFrame, year: int) -> pd.DataFrame:
         df = df[df["playername"].isin(base.index)].copy()
@@ -1592,6 +2069,10 @@ def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[
         df["slug"] = b["slug"].to_numpy()
         for c in _ASOF_IDENTITY_FIELDS[1:]:
             df[c] = b[c].to_numpy() if c in b.columns else None
+        era = [_era_photo(photos.get(n, {}), year) for n in df["playername"]]
+        df["_era_photo"] = [bool(e and e.get("url") and e["url"] != p) for e, p in zip(era, df["photo"])]
+        for c, k in zip(_ASOF_PHOTO_FIELDS, ("url", "cx", "ar", "top", "neck")):
+            df[c] = [e.get(k) if f else v for e, f, v in zip(era, df["_era_photo"], df[c])]
         df["current_team"] = df["team"]
         df["current_league"] = df["league"]
         active = df["last_year"] == year
@@ -1602,9 +2083,18 @@ def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[
         df["hall_of_legends"] = b["hall_of_legends"].to_numpy(dtype=bool) & ~(hol_y > year)
         return df
 
+    prev_games: dict[str, float] = {}
+    busiest = 0.0  # max over seasons so far of the 90th-percentile games in one season
+
     def _floor(all_rows: pd.DataFrame) -> int:
-        p99 = float(all_rows["games"].quantile(0.99)) if len(all_rows) else 0.0
-        return int(min(rated_min_games, max(ASOF_MIN_GAMES_LOW, round(ASOF_MIN_GAMES_FRAC * p99))))
+        nonlocal busiest, prev_games
+        g = dict(zip(all_rows["playername"], all_rows["games"].astype(float)))
+        season = pd.Series({n: v - prev_games.get(n, 0.0) for n, v in g.items()})
+        season = season[season > 0]
+        if len(season):
+            busiest = max(busiest, float(season.quantile(0.9)))
+        prev_games = g
+        return int(min(rated_min_games, max(ASOF_MIN_GAMES_LOW, round(ASOF_SEASON_FRAC * busiest))))
 
     def _rank(df: pd.DataFrame, min_games: int) -> pd.DataFrame:
         df = df[df["games"] >= min_games].copy()
@@ -1617,6 +2107,8 @@ def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[
         d = _row_dict(r, _ASOF_FIELDS)
         if r["slug"] not in today_slugs:
             d.update(_row_dict(r, _ASOF_IDENTITY_FIELDS))
+        elif r["_era_photo"]:
+            d.update(_row_dict(r, _ASOF_PHOTO_FIELDS))
         for k in ("clr", "career_value", "pace_value", "peak_value", "resume_bonus",
                   "total_score", "peak_lps", "win_rate", "region_elo"):
             d[k] = _round(d.get(k))
@@ -1645,22 +2137,25 @@ def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[
         all_df["positions"] = all_df["playername"].map(lambda n: positions.get(n, []))
         all_df["position"] = all_df["positions"].map(lambda p: p[0]["lane"] if p else None)
         all_df["titles"] = all_df["playername"].map(_titles)
-        min_games = _floor(all_df)
+        min_games = _floor(pd.DataFrame(snap["all"]))
         rated = _rank(all_df, min_games)
-        if not len(rated):
+        if len(rated) < ASOF_MIN_BOARD:
             continue
         prev = ranks.get(year - 1)
-        ranks[year] = {"all": dict(zip(rated["slug"], rated["rank"].astype(int)))}
-        rated["rank_prev"] = _prev_ranks(rated, prev, "all")
+        # Ranks from the rated board; CLR from everyone (so a newly rated player still shows growth).
+        ranks[year] = {"rank": {"all": dict(zip(rated["slug"], rated["rank"].astype(int)))},
+                       "clr": {"all": dict(zip(all_df["slug"], all_df["clr"].astype(float)))}}
+        rated["rank_prev"], rated["clr_prev"] = _prev_ranks(rated, prev, "all")
 
         lane_rows: dict[str, list[dict]] = {}
         for lane in ROLES:
             lf = lanes_df[lanes_df["position"] == lane].copy()
             lf["positions"] = lf["playername"].map(lambda n: positions.get(n, []))
             lf["titles"] = lf["playername"].map(_titles)
+            ranks[year]["clr"][lane] = dict(zip(lf["slug"], lf["clr"].astype(float)))
             lf = _rank(lf, min_games)
-            ranks[year][lane] = dict(zip(lf["slug"], lf["rank"].astype(int)))
-            lf["rank_prev"] = _prev_ranks(lf, prev, lane)
+            ranks[year]["rank"][lane] = dict(zip(lf["slug"], lf["rank"].astype(int)))
+            lf["rank_prev"], lf["clr_prev"] = _prev_ranks(lf, prev, lane)
             lane_rows[lane] = [_row(r) for _, r in lf.iterrows()]
 
         _, tier_meta = _assign_tiers(rated["clr"])
@@ -1677,11 +2172,15 @@ def _write_asof(out_dir: Path, ov: pd.DataFrame, honors_by_name: dict[str, list[
     return ranks
 
 
-def _prev_ranks(df: pd.DataFrame, prev: Optional[dict[str, dict[str, int]]], view: str) -> pd.Series:
-    """Each row's rank on the previous board's `view` (None = unrated then / no previous board).
-    Object dtype so the ranks stay ints in the JSON (a float column would write `9.0`)."""
-    m = (prev or {}).get(view, {})
-    return pd.Series([m.get(s) for s in df["slug"]], index=df.index, dtype=object)
+def _prev_ranks(df: pd.DataFrame, prev: Optional[dict], view: str) -> tuple[pd.Series, pd.Series]:
+    """(rank, CLR) of each row on the previous board's `view`: rank None = unrated then, CLR
+    None = no seasons yet (both None when there's no previous board). Object dtype so the
+    ranks stay ints in the JSON (a float column would write `9.0`)."""
+    rk = ((prev or {}).get("rank") or {}).get(view, {})
+    cl = ((prev or {}).get("clr") or {}).get(view, {})
+    rank = pd.Series([rk.get(s) for s in df["slug"]], index=df.index, dtype=object)
+    clr = pd.Series([_round(cl[s]) if s in cl else None for s in df["slug"]], index=df.index, dtype=object)
+    return rank, clr
 
 
 def _write_json(path: Path, obj) -> None:

@@ -63,7 +63,6 @@ _ACCUM_BASE_COLS = [
     "deaths_pts",
     "assists_pts",
     "damage_pts",
-    "fb_pts",
     "reg_pts",
     "playoff_pts",
     "tourn_pts",
@@ -120,14 +119,12 @@ _COLUMNS: list[tuple[str, str, str, int, str]] = [
     ("deaths_pts", "Deaths", _PTS, 8, "src"),
     ("assists_pts", "Assists", _PTS, 8, "src"),
     ("damage_pts", "Damage", _PTS, 8, "src"),
-    ("fb_pts", "FirstBlood", _PTS, 10, "src"),
     # per-tournament (filled dynamically from tournament_cols)
     # rate / quality stats
     ("avg_contrib", "AvgContrib", _SIGNED, 10, "rate"),
     ("avg_resid", "Intangibles", _SIGNED, 12, "rate"),
     ("avg_p_model", "AvgWinProb", _PCT, 10, "rate"),
     ("sched_strength", "SoS", _PCT, 8, "rate"),
-    ("fb_rate", "FB%", _PCT, 7, "rate"),
     ("best_game", "BestGame", _SIGNED, 10, "rate"),
     ("worst_game", "WorstGame", _SIGNED, 10, "rate"),
 ]
@@ -192,7 +189,7 @@ _GLOSSARY: list[tuple[str, str]] = [
         "Where the Resume score comes from, split into 14 "
         "categories -- each with a COUNT (#, how many the player earned across their career) "
         "and its WEIGHTED POINTS (Pt, already x w_bonus). The Pt columns sum exactly to "
-        "Resume: Intl = WldsChmp+WldsFin+WldsSemi+MSIChmp+MSIFin+MSISemi+IntlChmp+IntlFin+IntlSemi, "
+        "Resume: Intl = WldsChmp+WldsFin+WldsElim+MSIChmp+MSIFin+MSIElim+IntlChmp+IntlFin+IntlElim, "
         "Titles = DomChmp+DomFin+DomCup, Awards = MVP+AllPro. Only SCORED achievements are counted "
         "(an unrated-region title scores 0, so it isn't counted). Points are region-Elo scaled "
         "where the parent bonus is, so two titles can carry different Pt.",
@@ -206,8 +203,9 @@ _GLOSSARY: list[tuple[str, str]] = [
         "Worlds finalist (runner-up) finishes (count) and points (flat, part of Intl).",
     ),
     (
-        "WldsSemi# / WldsSemiPt",
-        "Worlds semifinalist or quarterfinalist finishes (count) and points (flat, part of Intl).",
+        "WldsElim# / WldsElimPt",
+        "Worlds runs eliminated before the final -- semifinal, quarterfinal or group stage (count) and points (flat, part "
+        "of Intl).",
     ),
     (
         "MSIChmp# / MSIChmpPt",
@@ -218,8 +216,9 @@ _GLOSSARY: list[tuple[str, str]] = [
         "MSI finalist (runner-up) finishes (count) and points (flat, part of Intl).",
     ),
     (
-        "MSISemi# / MSISemiPt",
-        "MSI semifinalist finishes (count) and points (flat, part of Intl).",
+        "MSIElim# / MSIElimPt",
+        "MSI runs eliminated before the final -- semifinal, quarterfinal or group stage (count) and points (flat, part "
+        "of Intl).",
     ),
     (
         "IntlChmp# / IntlChmpPt",
@@ -232,9 +231,9 @@ _GLOSSARY: list[tuple[str, str]] = [
         "Other cross-region event finalist finishes (count) and points (part of Intl).",
     ),
     (
-        "IntlSemi# / IntlSemiPt",
-        "Other cross-region event semifinalist or quarterfinalist finishes (count) and points "
-        "(part of Intl).",
+        "IntlElim# / IntlElimPt",
+        "Other cross-region event runs eliminated before the final -- semifinal, quarterfinal or group stage (count) and "
+        "points (part of Intl).",
     ),
     (
         "DomChmp# / DomChmpPt",
@@ -385,9 +384,8 @@ _GLOSSARY: list[tuple[str, str]] = [
         "Positive = won games the model rated as losses (clutch); negative = choked.",
     ),
     (
-        "Kills/Deaths/Assists/Damage/FirstBlood",
-        "Contribution split by stat source -- these "
-        "sum to Contribution. First blood is credited to the FB getter (+) / victim (-).",
+        "Kills/Deaths/Assists/Damage",
+        "Contribution split by stat source -- these sum to Contribution.",
     ),
     (
         "AvgContrib",
@@ -397,7 +395,7 @@ _GLOSSARY: list[tuple[str, str]] = [
     (
         "Intangibles",
         "TEAM-level: mean per-game (result - p_model), i.e. how much the team wins "
-        "ABOVE what its box score (KDA/damage/first blood) predicts -- macro, "
+        "ABOVE what its box score (KDA/damage) predicts -- macro, "
         "shotcalling, closing games, doing more with less. Identical for all 5 "
         "teammates (not individual).",
     ),
@@ -409,7 +407,6 @@ _GLOSSARY: list[tuple[str, str]] = [
         "SoS",
         "Strength of schedule: mean opponent-league baseline faced (higher = tougher).",
     ),
-    ("FB%", "Share of games the player got first blood or was the first-blood victim."),
     (
         "BestGame / WorstGame",
         "Player's single-game best / worst net contribution (win-prob).",
@@ -494,7 +491,6 @@ def build_export_frame(
             "sched_strength": g["baseline"].mean(),
             "best_game": g["net_contribution"].max(),
             "worst_game": g["net_contribution"].min(),
-            "fb_rate": g["c_fb"].apply(lambda s: float((s != 0).mean())),
         }
     )
     tourn_only = matches[matches["phase"] == "tournament"]

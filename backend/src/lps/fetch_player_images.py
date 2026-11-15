@@ -4,6 +4,11 @@ Fetch a player photo per workbook player from Leaguepedia and cache the CDN URLs
 Writes:
   data/leaguepedia/player_images.json
       {label: {url, file, team, tournament, year, page, real_name, country} | null}
+  data/leaguepedia/player_images_by_year.json
+      {label: {"<year>": {url, file, team, tournament, cx, ar, top, neck}}} -- the best photo
+      from each season of the player's career, for the site's past-year boards (a 2013 board
+      shows 2013 Faker). Filled for every player on the first run, then for new players;
+      `--refresh` re-picks both files.
 
 How it works (same image source as the pickems dashboard, but via Cargo so it can
 batch thousands of players and date every photo):
@@ -54,6 +59,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 PLAYER_IMAGES_JSON = LEAGUEPEDIA_DIR / "player_images.json"
+PHOTOS_BY_YEAR_JSON = LEAGUEPEDIA_DIR / "player_images_by_year.json"
 OVERRIDES_CSV = INFO_DIR / "player_image_overrides.csv"
 
 _BATCH = 80          # names per Cargo IN() query
@@ -259,12 +265,30 @@ _FOCUS_WIDTH = 160      # px; plenty to locate a head, tiny to download
 _FOCUS_WORKERS = 8
 _HEAD_BAND = 0.25       # fraction of image height below the top of the cutout taken as "head"
 _FOCUS_KEYS = ("cx", "ar", "top", "neck")
+_NECK_DIP = 0.1         # the neck is at least this much narrower than the widest part of the head
+_SHOULDERS = 1.25       # past the neck, a row this much wider than the head is the shoulders
+_DOME = 0.1             # fraction of image height below the top of the cutout that's surely head
 
 
 def _scaled_url(url: str, width: int) -> str:
     """Rewrite a Leaguepedia (Fandom) CDN url to its width-scaled render."""
     return re.sub(r"/revision/latest(?:/scale-to-width-down/\d+)?",
                   f"/revision/latest/scale-to-width-down/{width}", url)
+
+
+def _centre_run(row, cx: float, gap: int = 3) -> int:
+    """Width of the opaque run in `row` at (or nearest to) column `cx`, bridging gaps of up
+    to `gap` px (stray hair strands)."""
+    import numpy as np
+
+    xs = np.flatnonzero(row)
+    if not xs.size:
+        return 0
+    breaks = np.flatnonzero(np.diff(xs) > gap + 1)
+    starts, ends = np.r_[xs[0], xs[breaks + 1]], np.r_[xs[breaks], xs[-1]]
+    dist = np.maximum(0, np.maximum(starts - cx, cx - ends - 1))
+    i = int(np.argmin(dist))
+    return int(ends[i] - starts[i] + 1)
 
 
 def head_focus(url: str) -> dict[str, float | None]:
@@ -277,9 +301,12 @@ def head_focus(url: str) -> dict[str, float | None]:
 
     - cx: centroid of the opaque pixels in a band `_HEAD_BAND` of the height below the top
       of the cutout.
-    - neck: walking down from the top, the opaque width grows through the head, then shrinks.
-      Past the first shrink (the jaw can narrow before the neck under wide hair), keep going
-      until the shoulders outgrow the head and take the narrowest row in between.
+    - neck: walking down from the top, the width of the opaque run through the head centre
+      (so a raised hand beside the face doesn't count) grows through the head, then shrinks
+      through the jaw and neck. The neck is the narrowest row before the shoulders outgrow
+      the head (`_SHOULDERS` times its width -- ears a little wider than the hair don't
+      count), provided it is at least `_NECK_DIP` narrower than the head; for a close-up
+      cropped above the shoulders, the narrowest row before the bottom edge.
 
     All but `ar` are None for an opaque (non-cutout) image; `neck` is None if not found.
     """
@@ -305,17 +332,30 @@ def head_focus(url: str) -> dict[str, float | None]:
     cols = band.sum(axis=0)
     if not cols.sum():
         return out
-    out["cx"] = round(float((np.arange(w) + 0.5) @ cols / cols.sum()) / w, 3)
+    cx = float((np.arange(w) + 0.5) @ cols / cols.sum())
+    out["cx"] = round(cx / w, 3)
     out["top"] = round(y0 / h, 3)
-    widest = 0.0
-    for y in range(y0, h):
-        widest = max(widest, counts[y])
-        if y > y0 + 0.1 * h and counts[y] < 0.8 * widest:
-            end = y
-            while end + 1 < h and counts[end + 1] <= widest:
-                end += 1
-            out["neck"] = round((y + int(np.argmin(counts[y : end + 1]))) / h, 3)
+    # Width of the silhouette through the head centre only: a raised hand or arm beside the
+    # face would otherwise widen the jaw rows and stop the neck search at mid-face.
+    run = np.pad([_centre_run(mask[y], cx) for y in range(h)], 1, mode="edge").astype(float)
+    counts = np.convolve(run, np.ones(3) / 3, mode="valid")  # edge-padded: no fake dip at the bottom
+
+    # Skip the dome of the hair (and any bun or ponytail on top): narrower than the neck.
+    start = min(h - 1, y0 + max(1, round(_DOME * h)))
+    def dipped(y: int, head_w: float) -> bool:
+        return start < y < h - 2 and counts[y] < (1 - _NECK_DIP) * head_w
+
+    narrowest, head_w = start, counts[y0 : start + 1].max()
+    for y in range(start, h):
+        if counts[y] > _SHOULDERS * head_w and dipped(narrowest, head_w):
             break
+        if counts[y] < counts[narrowest] or (counts[y] >= head_w and not dipped(narrowest, head_w)):
+            narrowest = y  # (second case: the head is still growing)
+            head_w = counts[y0 : y + 1].max()
+    # Running off the bottom is fine for close-ups cropped below the neck, unless the
+    # narrowest row is the bottom edge itself (cropped mid-neck, or no neck at all).
+    if dipped(narrowest, head_w):
+        out["neck"] = round(narrowest / h, 3)
     return out
 
 
@@ -439,6 +479,43 @@ def fetch_player_images(
     return out
 
 
+def fetch_photos_by_year(
+    labels: list[str],
+    lp: LPClient,
+    careers: dict[str, tuple[int, int] | None],
+) -> dict[str, dict[str, dict]]:
+    """{label: {"<year>": {url, file, team, tournament}}}: the best photo (same tie-breaks as
+    `_pick`) from each season of the player's career that has one. Pinned labels
+    (`info/player_image_overrides.csv`) are skipped -- they keep their pinned photo everywhere."""
+    overrides = _load_overrides()
+    auto = [lab for lab in labels if lab not in overrides and careers.get(lab)]
+    pages_by_handle = _candidate_pages(sorted({bare_handle(lab) for lab in auto}), lp)
+    photos_by_page = _page_photos(sorted({p for ps in pages_by_handle.values() for p in ps}), lp)
+    page_by_label = _match_pages(auto, pages_by_handle, photos_by_page)
+
+    picks: dict[str, dict[int, _Photo]] = {}
+    for lab, page in page_by_label.items():
+        first, last = careers[lab]  # type: ignore[misc]
+        best: dict[int, _Photo] = {}
+        for ph in photos_by_page[page.casefold()]:
+            if ph.year is not None and first <= ph.year <= last:
+                if ph.year not in best or ph.sort_key() > best[ph.year].sort_key():
+                    best[ph.year] = ph
+        if best:
+            picks[lab] = best
+    urls = _thumb_urls(sorted({ph.file for b in picks.values() for ph in b.values()}))
+    out: dict[str, dict[str, dict]] = {}
+    for lab, best in picks.items():
+        ys = {str(y): {"url": urls[ph.file], "file": ph.file, "team": ph.team or None,
+                       "tournament": ph.tournament or None}
+              for y, ph in sorted(best.items()) if ph.file in urls}
+        if ys:
+            out[lab] = ys
+    logger.info("[images] by-year photos: %d players, %d photos",
+                len(out), sum(len(v) for v in out.values()))
+    return out
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--players", nargs="+", metavar="LABEL", help="Specific workbook labels (default: all).")
@@ -462,11 +539,24 @@ def main() -> None:
         logger.info("[images] no new players to fetch (use --refresh to re-pick)")
     # A re-picked photo replaces its whole entry, so it is re-measured here too.
     measured = add_head_focus(cache, force=args.refocus)
-    if not (labels or measured):
-        return
-    LEAGUEPEDIA_DIR.mkdir(parents=True, exist_ok=True)
-    PLAYER_IMAGES_JSON.write_text(json.dumps(cache, ensure_ascii=False, indent=1), encoding="utf-8")
-    logger.info("[images] wrote %s", PLAYER_IMAGES_JSON)
+    if labels or measured:
+        LEAGUEPEDIA_DIR.mkdir(parents=True, exist_ok=True)
+        PLAYER_IMAGES_JSON.write_text(json.dumps(cache, ensure_ascii=False, indent=1), encoding="utf-8")
+        logger.info("[images] wrote %s", PLAYER_IMAGES_JSON)
+
+    # Per-season photos for the past-year boards: every player on the first run, then the
+    # same labels as above (new players, or everyone with --refresh / the named --players).
+    by_year: dict[str, dict[str, dict]] = {}
+    if PHOTOS_BY_YEAR_JSON.exists():
+        by_year = json.loads(PHOTOS_BY_YEAR_JSON.read_text(encoding="utf-8"))
+    yr_labels = labels if by_year else list(args.players or careers)
+    if yr_labels:
+        by_year.update(fetch_photos_by_year(yr_labels, LPClient(), careers))
+    flat = {f"{lab}|{y}": e for lab, ys in by_year.items() for y, e in ys.items()}
+    measured_y = add_head_focus(flat, force=args.refocus)  # fills the entries in place
+    if yr_labels or measured_y:
+        PHOTOS_BY_YEAR_JSON.write_text(json.dumps(by_year, ensure_ascii=False, indent=1), encoding="utf-8")
+        logger.info("[images] wrote %s", PHOTOS_BY_YEAR_JSON)
 
 
 if __name__ == "__main__":
