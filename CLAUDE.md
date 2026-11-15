@@ -39,6 +39,12 @@ poetry run mypy src/                        # type-check
 
 Most modules are runnable scripts with a `main()` and `if __name__ == "__main__"`. Prefer `python -m lps.<module>` over invoking files directly (src-layout + relative imports require package context).
 
+**Frontend dev server: don't start one.** The user keeps `npm run dev` running on
+`http://localhost:3000` (Next.js hot-reloads edits). Never run `npm run dev` / `next dev` yourself or
+launch a second server on another port — open the existing one (`.claude/launch.json`'s `frontend`
+entry attaches to :3000 without starting anything). If :3000 isn't responding, ask the user rather than
+starting your own.
+
 Credentials live in `.env` (gitignored): `LP_USERNAME` / `LP_PASSWORD` are Leaguepedia bot passwords, only needed for fetching Leaguepedia data. `config.py` loads `.env` at import.
 
 ## Module map (`src/lps/`)

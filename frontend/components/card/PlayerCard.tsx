@@ -280,23 +280,24 @@ function Nameplate({ player, edition }: { player: PlayerDetail; edition: Edition
       </div>
 
       {/* identity */}
-      <div className="absolute inset-x-[40px] top-[44px] flex flex-col items-center text-center">
+      {/* sits between the inner rule (y=40) and the plate's bottom edge (y=104), centred */}
+      <div className="absolute inset-x-[40px] top-[42px] bottom-[4px] flex flex-col items-center justify-center text-center">
         {player.real_name && (
-          <span className="max-w-full truncate text-[8.5px] font-semibold tracking-[0.32em] text-text-muted">
+          <span className="max-w-full truncate text-[8.5px] font-semibold leading-none tracking-[0.32em] text-text-muted">
             {upper(player.real_name)}
           </span>
         )}
         <span
-          className="max-w-full truncate font-serif font-extrabold leading-tight tracking-[0.06em] text-metal"
+          className="max-w-full truncate font-serif font-extrabold leading-[1.15] tracking-[0.06em] text-metal"
           style={{ fontSize: handleSize }}
         >
           {upper(handle)}
         </span>
-        <span className="mt-0.5 flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.22em] text-text-muted">
-          <LeagueMark league={player.current_league} size={11} />
-          {player.current_team ?? "—"}
-          <span className="text-gold">◆</span>
-          {laneLabel(player.position)}
+        <span className="flex max-w-full items-center gap-1.5 text-[9px] font-semibold uppercase leading-none tracking-[0.22em] text-text-muted">
+          <LeagueMark league={player.current_league} size={11} className="shrink-0" />
+          <span className="min-w-0 truncate">{player.current_team ?? "—"}</span>
+          <span className="shrink-0 text-gold">◆</span>
+          <span className="shrink-0">{laneLabel(player.position)}</span>
         </span>
       </div>
     </div>
