@@ -24,6 +24,9 @@ const stageOnly = process.argv.includes("--stage");
 const project = process.env.PAGES_PROJECT || "lps";
 const limit = Number(process.env.PAGES_FILE_LIMIT || 20000);
 const MAX_FILE = 25 * 1024 * 1024;
+// Windows: deleting a ~15k-file tree can hit ENOTEMPTY/EBUSY while an indexer or antivirus holds
+// a file for a moment; rmSync retries those when asked to.
+const RM = { recursive: true, force: true, maxRetries: 10, retryDelay: 300 };
 
 const fail = (msg) => {
   console.error(msg);
@@ -44,7 +47,7 @@ if (existsSync(path.join(root, "public", "data", "archive")))
 // Copy everything the build reads; local build state, caches and the archive stay behind.
 const SKIP = new Set(["node_modules", ".next", ".build", "out", "data-archive", "scripts", "tsconfig.tsbuildinfo"]);
 const work = path.join(root, ".build");
-rmSync(work, { recursive: true, force: true });
+rmSync(work, RM);
 mkdirSync(work);
 for (const e of readdirSync(root)) {
   if (!SKIP.has(e) && !e.endsWith(".stackdump")) cpSync(path.join(root, e), path.join(work, e), { recursive: true });
@@ -53,10 +56,10 @@ const nextBin = path.join(root, "node_modules", "next", "dist", "bin", "next");
 run(process.execPath, [nextBin, "build"], { cwd: work, shell: false });
 
 const out = path.join(root, "out");
-rmSync(out, { recursive: true, force: true });
+rmSync(out, RM);
 renameSync(path.join(work, "out"), out);
-rmSync(work, { recursive: true, force: true });
-rmSync(path.join(out, "data"), { recursive: true, force: true });
+rmSync(work, RM);
+rmSync(path.join(out, "data"), RM);
 
 let files = 0;
 let bytes = 0;
