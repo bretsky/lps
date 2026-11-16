@@ -6,6 +6,7 @@ import type { PlayerDetail } from "@/lib/types";
 import { fmt, fmtInt, fmtPct, laneLabel, displayName, localRealName } from "@/lib/format";
 import { TIER_COLORS, editionFor, editionLabel, upper, cardTeamLogo } from "@/lib/theme";
 import { useLocale, useT } from "@/lib/i18n";
+import { countryName } from "@/lib/i18n/countries";
 import { TierBadge } from "@/components/board/TierBadge";
 import { HolCrown, StatusDot } from "@/components/board/StatusBadges";
 import { EventMark, LeagueMark } from "@/components/ui/Marks";
@@ -21,7 +22,8 @@ export function ProfileHeader({
   laneRank: number | null;
 }) {
   const m = useT();
-  const realName = localRealName(player, useLocale());
+  const locale = useLocale();
+  const realName = localRealName(player, locale);
   const isHol = player.hall_of_legends;
   const tier = player.tier ?? "contenders";
   const accent = isHol ? "#f1d58f" : TIER_COLORS[tier];
@@ -121,7 +123,7 @@ export function ProfileHeader({
             {realName && (
               <div className="mt-3 text-[11px] font-semibold tracking-[0.4em] text-text-muted">
                 {upper(realName)}
-                {player.country ? <span className="text-text-dim"> · {upper(player.country)}</span> : null}
+                {player.country ? <span className="text-text-dim"> · {upper(countryName(player.country, locale))}</span> : null}
               </div>
             )}
             <div className="flex items-center gap-3">
