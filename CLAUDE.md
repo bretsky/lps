@@ -139,7 +139,7 @@ Credentials live in `.env` (gitignored): `LP_USERNAME` / `LP_PASSWORD` are Leagu
 - **Leaguepedia match JSON** → `data/leaguepedia/matches/`.
 - **Region mappings, starting/ending Elos** → the top-level **`info/`** directory (`INFO_DIR = PROJECT_ROOT / "info"` in `config.py`).
 
-⚠️ **The README says region/Elo files live in `data/leaguepedia/info/`, but the code reads them from the top-level `info/` dir.** Trust `config.py` (`INFO_DIR`), not the README, for where these files actually go. Files: `team_regions_<year>.csv`, `starting_elos_<year>.csv`, `ending_elos_<year>.csv`.
+⚠️ **Region/Elo files live in `backend/info/` (`INFO_DIR`), not `data/leaguepedia/info/`** (an old README said the latter, and some module docstrings still may). Trust `config.py`. Files: `team_regions_<year>.csv`, `starting_elos_<year>.csv`, `ending_elos_<year>.csv`.
 
 - `data/` is entirely **gitignored** — the large CSVs and scraped JSON are not in version control. `info/` IS committed (region mappings + computed Elos are the valuable hand-curated artifacts).
 - `player_above_expected_metrics.csv` at the repo root is a large (~75 MB) generated output, not source.

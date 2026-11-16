@@ -1,339 +1,127 @@
-# LPS (League Performance Score)
+# CLR backend
 
-A League of Legends analytics system for calculating player contributions to win probability, similar to baseball's WAR (Wins Above Replacement).
+The Python half of [CLR](../README.md): data ingestion, the scoring models, regional Elo, and the
+pipeline that writes the per-season and career workbooks and the website's JSON bundle.
 
-## Features
+Python 3.12+, managed with [Poetry](https://python-poetry.org/). Run every command from this
+`backend/` folder; it's a src-layout package, so run modules with `python -m lps.<module>`.
 
-- **Win Probability Models**: Position-specific ensemble models for predicting match outcomes
-- **Player Contribution Analysis**: Calculate how much each player/position contributes to win probability
-- **Regional Elo Estimation**: Fetch international tournament data to estimate regional strength
-- **Data Integration**: Support for both Oracle's Elixir data (2014+) and Leaguepedia historical data
+## Setup
 
-## Installation
-
-1. Install dependencies using Poetry:
 ```bash
 poetry install
-```
-
-2. Set up Leaguepedia credentials (for fetching historical match data):
-
-Create a `.env` file in the project root:
-```bash
 cp .env.example .env
 ```
 
-Then edit `.env` and add your credentials:
-```bash
-LP_USERNAME=your_leaguepedia_username
-LP_PASSWORD=your_leaguepedia_api_password
+`.env` holds Leaguepedia credentials, which the pipeline needs to fetch international matches,
+pre-2014 games, rosters, titles and photos:
+
+```ini
+LP_USERNAME=YourWikiUser@YourBotName
+LP_PASSWORD=your_bot_password
 ```
 
-To get credentials:
-- Create an account at https://lol.fandom.com
-- Go to Special:BotPasswords in your preferences
-- Generate a bot password
+To get them, sign in at [lol.fandom.com](https://lol.fandom.com/), open
+`Special:BotPasswords`, and create a bot password with read access.
 
-Note: Leaguepedia credentials are optional if you only use Oracle's Elixir data.
+### Oracle's Elixir data
 
-## Data Sources
+Game-level box scores from 2014 on come from [Oracle's Elixir](https://oracleselixir.com/), one
+CSV per season in `data/oracle/` (the filename must contain the year, e.g.
+`2025_LoL_esports_match_data_from_OraclesElixir.csv`). You can download them by hand from the site
+and drop them in.
 
-### Oracle's Elixir
-Place Oracle's Elixir CSV files in `data/oracle/`:
-- `LeagueofLegends-2018.csv`
-- `LeagueofLegends-2019.csv`
-- etc.
+`lps.refresh_oracle` (run automatically by `update_all`) instead keeps them current through the
+Google Drive API. It reuses an OAuth `token.json` with the Drive scope from a sibling project,
+looked up at `../../python-sharp/token.json` or under `PSHARP_PATH`. Without one, download the CSVs
+by hand and pass `--skip-oracle` to `update_all`.
 
-Download from: https://oracleselixir.com/
+## Updating scores and rankings
 
-### Leaguepedia (for pre-2014 data)
-Use the fetch script to download international tournament matches:
-
-```bash
-python -m lps.fetch_international_matches
-```
-
-This will download matches from:
-- **MSI** (Mid-Season Invitational)
-- **Worlds** (World Championship)
-- **IEM** (Intel Extreme Masters)
-- **First Stand** events
-
-Data will be saved to `data/leaguepedia/matches/`.
-
-### Mapping Teams to Regions
-
-After downloading matches, extract all unique team names and create year-specific CSVs for region mapping:
+One command pulls the latest data and rebuilds everything:
 
 ```bash
-python -m lps.extract_team_names
+poetry run python -m lps.update_all --dry-run   # print the plan, run nothing
+poetry run python -m lps.update_all             # refresh the latest season, reuse cached earlier ones
+poetry run python -m lps.update_all --full      # re-pull everything, recompute every season and the whole Elo chain
 ```
 
-This creates separate CSV files for each year in the info directory:
-- `data/leaguepedia/info/team_regions_2011.csv`
-- `data/leaguepedia/info/team_regions_2012.csv`
-- ... (one file per year with international tournament data)
+In order, it:
 
-Each CSV has two columns:
-- `team_name`: The canonical team name (already filled)
-- `region`: Empty for you to fill in (e.g., NA, EU, KR, CN, LMS/PCS, BR, etc.)
+1. **Refreshes Oracle's Elixir CSVs** that changed upstream (and busts the caches of any older
+   season Oracle's Elixir corrected).
+2. **Preflight**: picks the target year from the newest Oracle CSV (`--year` overrides) and checks
+   that the CSV and credentials are present.
+3. **Pulls Leaguepedia**: re-fetches the current year's international matches and the
+   achievements and awards tables (backing up the existing CSVs to `info/backup_auto/` first).
+4. **Region guard**: any international team seen for the first time is appended to
+   `info/team_regions_<year>.csv` with a blank region, and the run **stops** until you fill it in.
+   Regional Elo is only right once every team has a region.
+5. **Regional Elo**: recomputes `info/ending_elos_<year>.csv`.
+6. **Scores**: rebuilds `player_ratings_<year>.xlsx` per season and
+   `player_ratings_career_<first>_<last>.xlsx` (the career ranking and CLR) via `lps.career`.
+7. **Photos**: picks Leaguepedia photos for new players.
+8. **Web bundle**: writes the site's JSON to `../frontend/public/data/current/` via `lps.export_web`.
+9. **Deploy**, only with `--deploy`: builds and uploads the site.
 
-**Why year-specific files?**
-- Teams can change regions (e.g., team relocations)
-- Regions themselves have changed (e.g., LMS → PCS in 2020)
-- More accurate historical tracking
-
-**Fill in the regions manually**, then validate:
-
-```bash
-python -m lps.team_regions
-```
-
-This shows completion status for each year and identifies teams without regions assigned.
-
-### Computing Regional Elo Ratings
-
-After filling in team regions, compute regional Elo ratings from international matches.
-
-**Year-by-Year Mode (Recommended):**
-
-For each year, create a `starting_elos_YEAR.csv` file in the info directory with your starting ratings:
-
-```csv
-region,starting_elo
-NA,1000
-EU,1050
-KR,1150
-CN,1100
-LMS,980
-```
-
-Save this as `data/leaguepedia/info/starting_elos_2015.csv`.
-
-Then compute Elos for that year:
-
-```bash
-python -m lps.regional_elo --year 2015
-```
-
-This will:
-1. Load starting Elos from `data/leaguepedia/info/starting_elos_2015.csv`
-2. Load team regions from `data/leaguepedia/info/team_regions_2015.csv`
-3. Process all 2015 international matches chronologically
-4. Update regional Elos based on match outcomes
-5. Save ending Elos to `data/leaguepedia/info/ending_elos_2015.csv`
-
-The ending Elos can be used as starting Elos for the next year!
-
-**Multi-Year Mode (Legacy):**
-
-Compute all years at once with carry-over:
-
-```bash
-python -m lps.regional_elo
-```
-
-This processes all years chronologically with Elos carrying over between years.
-
-**Elo Configuration:**
-- Default starting Elo: 1000 (all regions start equal)
-- K-factor: 32 (controls how much Elo changes per match)
-- Teams with region "N/A" are excluded from calculations
-
-## Usage
-
-### Updating scores & rankings (the one command)
-
-Once set up (credentials + Oracle CSVs in place), a single command pulls the latest
-data and rebuilds every score and ranking:
-
-```bash
-# Incremental: refresh the latest year, reuse cached prior years (fast)
-poetry run python -m lps.update_all
-
-# Full rebuild: re-pull everything, recompute the whole 2011→latest Elo chain
-poetry run python -m lps.update_all --full
-
-# See exactly what it would do without running anything
-poetry run python -m lps.update_all --dry-run
-```
-
-What it does, in order:
-
-1. **Preflight** — picks the target year from the newest Oracle CSV (`--year` to override).
-2. **Pull Leaguepedia** — force-refreshes the current year's international matches and re-fetches achievements/awards (existing achievement CSVs are backed up to `info/backup_auto/` first).
-3. **Region guard** — if any newly-seen international team has no region yet, it appends the team (blank region) to `info/team_regions_<year>.csv` **without touching your existing mappings**, then **stops** so you can fill them in. Regional Elo is only correct once every team is mapped.
-4. **Regional Elo** — recomputes `info/ending_elos_<year>.csv`.
-5. **Scores** — rebuilds the per-year workbooks and `Career_LPS.xlsx`.
-
-Outputs: `player_ratings_<year>.xlsx` (per year) and `player_ratings_career_<first>_<last>.xlsx` (career rankings + CLR).
-
-Handy flags: `--skip-fetch` (recompute from cache, no network), `--skip-elo`, `--skip-achievements`, `--skip-regions`, `--year N`. Note: Oracle's Elixir CSVs must still be downloaded manually into `data/oracle/` (no public API) — the script halts with a clear message if the target year's CSV is missing.
+Useful flags: `--skip-fetch` (no network, recompute from cache), `--skip-oracle`,
+`--skip-achievements`, `--skip-regions`, `--skip-elo`, `--skip-web`, `--year N`. Exit code `2` means
+it halted on something only a person can do (such as filling in regions); `1` means a step failed.
 
 ### Adding a new season
 
-A brand-new year needs a few one-time setup steps the first time it appears (after that, plain `update_all` runs handle it). For year `YYYY`:
+The latest year is detected from the newest Oracle CSV, so a new season mostly rolls over on its
+own. The first run of a new year `YYYY` needs two things by hand:
 
-1. **Drop in the Oracle CSV** — download the `YYYY` file from https://oracleselixir.com/ into `data/oracle/` (the filename must contain the year). The "latest year" is detected automatically from this, so no code edit is needed.
-2. **First run** — `poetry run python -m lps.update_all`. It pulls that year's international matches + achievements, then **halts at the region guard**, having appended the new international teams (with a blank `region`) to `info/team_regions_YYYY.csv`.
-3. **Fill in the regions** in `info/team_regions_YYYY.csv`. Use `N/A` for teams you want excluded from Elo (leaving a cell **blank** keeps halting the run; `N/A` means "intentionally excluded").
-4. **Seed the starting Elos** — create `info/starting_elos_YYYY.csv` by carrying `info/ending_elos_<YYYY-1>.csv` forward (rename the `ending_elo` column to `starting_elo`). If regions merged/renamed at this boundary (e.g. the 2025 LTA/LCP consolidation), rename/blend the affected rows here — or run `--full`, which reseeds every boundary via `rerun_elos.py`. If you skip this step, `update_all` carries the prior year forward automatically (with a warning) so domestic scoring still has league baselines.
-5. **Re-run** — `poetry run python -m lps.update_all` (add `--skip-fetch` to reuse what step 2 already pulled). It computes `ending_elos_YYYY.csv` and rebuilds all workbooks.
+1. Run `update_all`. It downloads the new CSV, pulls the year's international matches, then halts
+   at the region guard.
+2. Fill in `region` for each new team in `info/team_regions_YYYY.csv`. Use `N/A` to exclude a team
+   from Elo; a blank cell keeps halting the run.
+3. Seed `info/starting_elos_YYYY.csv` from `info/ending_elos_<YYYY-1>.csv` (rename the
+   `ending_elo` column to `starting_elo`, and merge or rename any regions that changed at the
+   boundary). If you skip this, the prior year carries forward with a warning; `--full` reseeds
+   every boundary through `rerun_elos.py`.
+4. Run `update_all` again (`--skip-fetch` reuses the first run's pull).
 
-As the season progresses, just re-run `poetry run python -m lps.update_all` to fold in new data — steps 3–4 are already done.
+## What lives where
 
-### Ensemble Win Probability Model
+| Path | Contents | In git? |
+|---|---|---|
+| `src/lps/` | The package (see the module map in [`../CLAUDE.md`](../CLAUDE.md)). | yes |
+| `info/` | Hand-curated inputs and computed Elos: `team_regions_<year>.csv`, `starting_elos_<year>.csv`, `ending_elos_<year>.csv`, `player_id_aliases.csv` and `player_handle_bridge.csv` (identity fixes), achievements and awards, and an optional `player_image_overrides.csv` to pin or block a photo. | yes |
+| `data/oracle/` | Oracle's Elixir CSVs. | no |
+| `data/leaguepedia/` | Scraped Leaguepedia JSON (matches, player history, photos). | no |
+| `data/cache/` | Per-season feature caches. Delete a season's files to force it to rebuild. | no |
+| `player_ratings_*.xlsx` | Generated workbooks. | no |
+| `analysis/` | One-off investigation scripts, not part of the pipeline. | yes |
 
-```python
-from lps.win_probability_ensemble import main
+## How the models fit together
 
-# Train ensemble model and test scenarios
-main()
-```
+Scoring is two-stage, retrained each season:
 
-This will:
-1. Train 5 position-specific LogisticRegression models (top, jungle, mid, bot, support)
-2. Train a meta-model to combine position predictions
-3. Test on various game scenarios (balanced, dominating, losing, mixed)
-4. Show feature contributions and position-level win rate attributions
+1. **Expected performance** (`expected_stats.py`, `player_contribution.py`): predicts the stat line
+   an average player would produce in the same role and game state.
+2. **Win probability** (`win_probability_ensemble.py`): five per-role models plus a meta-model
+   predict a team's chance of winning from its players' actual stat lines.
 
-### Fetching Leaguepedia Data
+A player's **contribution** in a game (`contribution.py`) is the change in predicted win
+probability when their expected stat line is swapped for their real one. `season.py` turns contributions, win credit and
+the regional Elo factor (`regional_elo.py`) into season LPS; `career.py` builds career value, pace,
+peak and the résumé (`achievements.py`) into CLR. The site's
+[About page](https://clr.brettselby.xyz/about) defines every number in plain language.
 
-```python
-from lps.fetch_international_matches import main
-
-# Fetch all international tournament matches
-main()
-```
-
-Or use the configuration in the script to customize:
-
-```python
-from lps.fetch_international_matches import (
-    fetch_all_international_matches,
-    INTERNATIONAL_TOURNAMENTS,
-)
-from lps.lp_client import LPClient
-
-# Customize tournaments
-INTERNATIONAL_TOURNAMENTS["MSI"] = ["Mid-Season Invitational"]
-INTERNATIONAL_TOURNAMENTS["Worlds"] = ["World Championship"]
-
-client = LPClient()
-matches = fetch_all_international_matches(client, force_refetch=False)
-```
-
-### Working with Team Regions
-
-```python
-from lps.team_regions import load_team_regions_by_year, get_team_region
-
-# Load all year-specific team region mappings
-regions_by_year = load_team_regions_by_year()
-
-# Get a specific team's region for a specific year
-region_2024 = get_team_region("Cloud9", 2024, regions_by_year)  # Returns "NA"
-region_2015 = get_team_region("ahq e-Sports Club", 2015, regions_by_year)  # Returns "LMS"
-
-# Load regions for a single year
-from lps.team_regions import load_team_regions
-regions_2024 = load_team_regions(2024)
-```
-
-## Project Structure
-
-```
-lps/
-  src/lps/
-    update_all.py                  # Master driver: pull data -> Elo -> scores
-    config.py                      # Configuration and paths
-    io_oracle.py                   # Oracle's Elixir data loading
-    lp_client.py                   # Leaguepedia API client
-    fetch_international_matches.py  # Script to fetch tournament data
-    regional_elo.py                # Regional Elo from international results
-    win_probability.py             # Basic win probability model
-    win_probability_ensemble.py    # Ensemble win probability model
-    player_contribution.py         # Player contribution analysis
-    season.py / career.py          # Per-year + cumulative career ratings
-    export_excel.py                # Excel workbook writer
-  data/                            # gitignored
-    oracle/                        # Oracle's Elixir CSV files
-    leaguepedia/matches/           # Leaguepedia match data (JSON)
-  info/                            # committed: region maps + computed Elos
-    team_regions_<year>.csv
-    starting_elos_<year>.csv / ending_elos_<year>.csv
-  pyproject.toml
-  README.md
-```
-
-## Model Architecture
-
-### Ensemble Win Probability Model
-
-**Stage 1: Position Models**
-- 5 separate LogisticRegression models (one per role)
-- Features per position:
-  - kills
-  - deaths
-  - assists
-  - csdiffat15 (CS difference at 15 minutes)
-
-**Stage 2: Meta-Model**
-- LogisticRegression combining position predictions
-- Inputs:
-  - 5 position win rate predictions (0.0 to 1.0)
-  - 1 team-level firstblood flag (0 or 1)
-- StandardScaler for feature normalization
-- No intercept (forced 50% baseline for neutral game)
-
-**Baseline Comparison**
-- Simple average of 5 position predictions
-- Used to validate that learned weighting adds value
-
-## Configuration
-
-### Leaguepedia Tournaments
-
-Edit `src/lps/fetch_international_matches.py`:
-
-```python
-INTERNATIONAL_TOURNAMENTS = {
-    "MSI": ["Mid-Season Invitational"],
-    "Worlds": ["World Championship"],
-    "AllStar": ["All-Star"],
-}
-
-START_YEAR = 2010
-END_YEAR = 2025
-```
-
-### Model Hyperparameters
-
-Edit `src/lps/win_probability_ensemble.py`:
-
-```python
-# Position model parameters
-C: float = 1.0
-max_iter: int = 1000
-solver: str = "lbfgs"
-
-# Meta-model parameters
-meta_C: float = 1.0
-meta_fit_intercept: bool = False
-```
+Regional Elo runs year by year over every international event Leaguepedia lists (Worlds, MSI,
+First Stand, EWC, IEM, Rift Rivals, wildcard events and others; see
+`fetch_international_matches.py`) with K = 64; a region with no seed starts at 1000. Each year's
+ending Elos seed the next year's starting Elos.
 
 ## Development
 
-Run the ensemble model:
 ```bash
-python -m lps.win_probability_ensemble
+poetry run pytest
+poetry run black src/ && poetry run isort src/
+poetry run mypy src/
 ```
 
-Run the data fetcher:
-```bash
-python -m lps.fetch_international_matches
-```
-
-## License
-
-MIT
+[`../CLAUDE.md`](../CLAUDE.md) documents the module map, data layout and the non-obvious gotchas
+(caches that bake in player identities, the year-rollover traps, and so on).

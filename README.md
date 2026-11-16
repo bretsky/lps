@@ -1,49 +1,107 @@
-# LPS — League Performance Score
+# CLR: League of Legends all-time rankings
 
-A League of Legends esports analytics system that quantifies each player's contribution to their
-team's win probability (a WAR-like metric), plus an all-time career ranking (CLR) and a public
-rankings website.
+**Live site: [clr.brettselby.xyz](https://clr.brettselby.xyz)** (English · 한국어 · 简体中文)
 
-The repo is split into two projects:
+An all-time ranking of professional League of Legends players, built game by game from 2011 to
+today. Every pro game a player has played is scored by how much their own play moved their team's
+chance of winning, adjusted for the strength of the opposition and the stakes of the match. Those
+scores add up into a season rating (**LPS**, League Performance Score) and then into a career rating
+(**CLR**, Career Legend Rating) that weighs longevity, rate, peak and trophies.
+
+The idea borrows from baseball's WAR and JAWS and hockey's Pidutti Point Share: one number per
+career, on a scale where seasons compare directly across eras, regions and roles.
+
+## How the score works
+
+1. **Contribution.** Two models are trained on each season's pro games. One predicts the stat line
+   (kills, deaths, assists, damage) an average player would produce in the same role and game
+   situation; the other predicts a team's chance of winning from what its players actually
+   produced. A player's contribution in a game is how much that predicted win chance changes when
+   their expected stat line is swapped for their real one.
+2. **Game score.** Each game earns a win credit, the player's contribution, and a bonus for beating
+   the odds, all multiplied by a **region factor** for the strength of the opposing league.
+3. **Regional strength** comes from an Elo system run over every international event (Worlds, MSI,
+   First Stand, IEM and others) year by year, so a game against an LCK team is worth more than the
+   same game against a weaker league.
+4. **Season LPS** adds the matches up, with playoffs and international events counting for more.
+5. **CLR** combines four parts: career value (total LPS, era-adjusted, scaled to a typical career),
+   pace value (LPS per season, shrunk toward average for short careers), peak value (the best
+   stretch of seasons), and a **résumé** of fixed points for titles, deep international runs and
+   awards.
+
+The site's [About page](https://clr.brettselby.xyz/about) defines every number in full, with the
+exact weights and point tables. [`docs/holistic-lps-plan.md`](docs/holistic-lps-plan.md) has the
+design reasoning behind CLR.
+
+## Repository layout
 
 | Folder | What it is |
 |---|---|
-| **`backend/`** | The Python analytics system — win-probability models, regional Elo, data ingestion, and the ratings/CLR pipeline that generates the `player_ratings_*.xlsx` workbooks. Managed with Poetry. See [`backend/README.md`](backend/README.md) and [`CLAUDE.md`](CLAUDE.md). |
-| **`frontend/`** | The rankings website (tiers, trading cards, granular score breakdowns) that consumes a JSON bundle exported from the backend. See the build plan in [`docs/website-plan.md`](docs/website-plan.md). |
+| [`backend/`](backend/) | Python 3.12 (Poetry). Data ingestion, the win-probability and expected-performance models, regional Elo, and the pipeline that writes per-season and career workbooks plus the site's JSON bundle. See [`backend/README.md`](backend/README.md). |
+| [`frontend/`](frontend/) | The website: Next.js 15, React 19, TypeScript and Tailwind, exported as a fully static site and hosted on Cloudflare Pages. |
+| [`docs/`](docs/) | Design notes: the CLR plan, the website plan and the roadmap. |
+| [`CLAUDE.md`](CLAUDE.md) | Contributor notes on how the pieces fit together and the non-obvious gotchas. |
 
-## Quick start (backend)
+The hand-curated inputs (team-to-region mappings per year, Elo seeds and results, identity fixes
+for players who share a handle) live in `backend/info/` and are committed. Raw match data and
+caches (`backend/data/`) are not; the pipeline downloads them.
+
+## Running the site locally
+
+The current data bundle is committed in `frontend/public/data/current/`, so the site runs without
+the backend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Then open <http://localhost:3000>.
+
+## Running the pipeline
 
 ```bash
 cd backend
 poetry install
-poetry run python -m lps.career        # build the career ranking workbook
+cp .env.example .env          # add Leaguepedia bot credentials (see backend/README.md)
+poetry run python -m lps.update_all --dry-run    # show the plan
+poetry run python -m lps.update_all              # refresh the latest season end to end
 ```
 
-## Publishing the site
+`update_all` pulls the latest Oracle's Elixir and Leaguepedia data, recomputes regional Elo,
+rebuilds every season's scores and the career ranking, and writes the site bundle. The full set of
+steps, flags and the yearly rollover are in [`backend/README.md`](backend/README.md).
 
-The site is a fully static Next.js export hosted on **Cloudflare Pages** (no server). The
-backend writes the data bundle to `frontend/public/data/current/`; `frontend/scripts/deploy.mjs`
-builds every page from it into `frontend/out/` and uploads that with `wrangler`.
+## Publishing
+
+The site is a static export with no server. `frontend/scripts/deploy.mjs` builds every page into
+`frontend/out/` and uploads it to Cloudflare Pages with `wrangler`:
 
 ```bash
-cd backend && poetry run python -m lps.update_all --deploy   # refresh data, then publish
-cd frontend && npm run stage                                 # build out/ only, no upload
-cd frontend && npm run deploy                                # build + upload the current bundle
+cd frontend && npm run stage     # build out/ only
+cd frontend && npm run deploy    # build and upload
 ```
 
-One-time setup: `npx wrangler@4 login`, then
-`npx wrangler@4 pages project create lps --production-branch main`, then add the custom domain
-under the project's *Custom domains* tab in the Cloudflare dashboard. Deploys from `main` go to
-production; from any other branch, to a `<branch>.lps.pages.dev` preview.
+`python -m lps.update_all --deploy` runs the deploy as its last step. The Korean and Chinese
+profile pages go to a second Pages deployment that the main site proxies, to stay under Pages'
+20,000-file limit; [`CLAUDE.md`](CLAUDE.md) explains the setup.
 
-Limits to keep in mind: Pages allows 20,000 files per site on the free plan (100,000 paid) and
-25 MiB per file. The script checks both before uploading. Today's build is about 8.7k files
-(four per player: profile and card, each as HTML plus an RSC payload). The JSON bundle itself
-isn't uploaded, since the site only reads it at build time, and past bundles are archived to
-`frontend/data-archive/`, outside `public/`.
+## Data sources and credits
 
-## Docs
+- **[Oracle's Elixir](https://oracleselixir.com/)** for game-level box scores from 2014 on.
+- **[Leaguepedia](https://lol.fandom.com/)** for 2011–13 games (and gaps in the 2014–15 Eastern
+  leagues), international results, rosters,
+  titles, awards and player photos. Leaguepedia content is licensed
+  [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
+- **[Data Dragon](https://developer.riotgames.com/docs/lol#data-dragon)** for champion icons.
 
-- [`docs/website-plan.md`](docs/website-plan.md) — full website build plan (data pipeline, tiers, cards, breakdowns).
-- [`docs/holistic-lps-plan.md`](docs/holistic-lps-plan.md) — the CLR (Career Legend Rating) design.
-- [`CLAUDE.md`](CLAUDE.md) — how the backend fits together + non-obvious gotchas.
+CLR isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone
+officially involved in producing or managing Riot Games properties. Riot Games and all associated
+properties are trademarks or registered trademarks of Riot Games, Inc. League and team marks
+belong to their owners.
+
+## License
+
+The code is released under the [MIT License](LICENSE). The data under `frontend/public/data/` and
+`backend/info/` is derived from the sources above and remains subject to their terms.
