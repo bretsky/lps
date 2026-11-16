@@ -33,6 +33,37 @@ body {
   --font-cjk: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC",
     "Source Han Sans SC", sans-serif;
 }
+
+/* Korean / Chinese legibility. The small labels are styled for uppercase Latin: 7–11px with
+   0.2–0.45em letter-spacing, which pulls Hangul/Hanzi apart and leaves their denser glyphs too
+   small to read. In those languages, cap the tracking and step the small sizes up (1.5–2.5px).
+   Specificity (0,3,0) beats the single-class Tailwind utilities. */
+:root:is(:lang(ko), :lang(zh)) :is([class*="tracking-"], .deco-title) {
+  letter-spacing: 0.04em;
+}
+:root:is(:lang(ko), :lang(zh)) .text-\[6\.5px\] { font-size: 9px; }
+:root:is(:lang(ko), :lang(zh)) .text-\[7px\] { font-size: 9.5px; }
+:root:is(:lang(ko), :lang(zh)) .text-\[7\.5px\] { font-size: 10px; }
+:root:is(:lang(ko), :lang(zh)) .text-\[8px\] { font-size: 10px; }
+:root:is(:lang(ko), :lang(zh)) .text-\[8\.5px\] { font-size: 10.5px; }
+:root:is(:lang(ko), :lang(zh)) .text-\[9px\] { font-size: 11px; }
+:root:is(:lang(ko), :lang(zh)) .text-\[9\.5px\] { font-size: 11px; }
+:root:is(:lang(ko), :lang(zh)) .text-\[10px\] { font-size: 11.5px; }
+:root:is(:lang(ko), :lang(zh)) .text-\[11px\] { font-size: 12.5px; }
+:root:is(:lang(ko), :lang(zh)) .text-xs { font-size: 13px; }
+/* The player card has fixed 340×520 geometry and its back is already full in English, so it
+   gets a smaller step and tighter leading (CJK fonts' default line-height is taller). These
+   values keep the back's content inside the card; re-measure if you add anything to it. */
+:root:is(:lang(ko), :lang(zh)) .card-face [class*="text-["] { line-height: 1.15; }
+:root:is(:lang(ko), :lang(zh)) .card-face .text-\[6\.5px\] { font-size: 8px; }
+:root:is(:lang(ko), :lang(zh)) .card-face .text-\[7px\] { font-size: 8.5px; }
+:root:is(:lang(ko), :lang(zh)) .card-face .text-\[7\.5px\] { font-size: 8.5px; }
+:root:is(:lang(ko), :lang(zh)) .card-face .text-\[8px\] { font-size: 9px; }
+:root:is(:lang(ko), :lang(zh)) .card-face .text-\[8\.5px\] { font-size: 9.5px; }
+:root:is(:lang(ko), :lang(zh)) .card-face .text-\[9px\] { font-size: 10px; }
+:root:is(:lang(ko), :lang(zh)) .card-face .text-\[9\.5px\] { font-size: 10.5px; }
+:root:is(:lang(ko), :lang(zh)) .card-face .text-\[10px\] { font-size: 11px; }
+
 /* Hidden until React has re-rendered in the reader's language (see lib/i18n/config.ts). */
 html[data-i18n-pending] body {
   visibility: hidden;

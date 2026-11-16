@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { PlayerDetail, RadarAxes } from "@/lib/types";
 import { laneLabel } from "@/lib/format";
-import { useT } from "@/lib/i18n";
+import { useLocale, useT } from "@/lib/i18n";
 
 const AXES: RadarAxes[] = ["peak", "longevity", "consistency", "resume", "impact", "clutch", "dominance"];
 
@@ -44,6 +44,8 @@ interface CardRadarProps {
 
 export function CardRadar({ player, accentColor }: CardRadarProps) {
   const t = useT();
+  // CJK labels: upright (a synthesized italic smears Hangul/Hanzi), larger, untracked.
+  const cjk = useLocale() !== "en";
   const hasLane = player.radar.lane !== null;
   const [mode, setMode] = useState<"global" | "lane">("global");
   const radarData = mode === "lane" && hasLane ? player.radar.lane! : player.radar.global;
@@ -118,8 +120,11 @@ export function CardRadar({ player, accentColor }: CardRadarProps) {
                 x={lx.toFixed(1)}
                 y={(ly - 3).toFixed(1)}
                 textAnchor={anchor}
-                fontSize="9"
-                fontFamily="var(--font-display), sans-serif" fontStyle="italic" fontWeight="600" letterSpacing="0.06em"
+                fontSize={cjk ? 10.5 : 9}
+                fontFamily="var(--font-display), sans-serif"
+                fontStyle={cjk ? "normal" : "italic"}
+                fontWeight="600"
+                letterSpacing={cjk ? "0" : "0.06em"}
                 fill="#7f93bd"
               >
                 {t.radar.axes[axis]}

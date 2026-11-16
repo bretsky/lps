@@ -112,7 +112,7 @@ const Face = forwardRef<HTMLDivElement, FaceProps>(function Face(
   return (
     <div
       ref={ref}
-      className="absolute inset-0"
+      className="card-face absolute inset-0"
       style={{
         backfaceVisibility: "hidden",
         WebkitBackfaceVisibility: "hidden",
