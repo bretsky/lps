@@ -154,7 +154,7 @@ export default function Board({
   return (
     <div className="mx-auto max-w-6xl px-4 pb-16 pt-6">
       {/* Lane tabs, client-nav style: caps, gold underline on the active tab */}
-      <nav className="mb-5 flex flex-wrap items-end gap-x-6 gap-y-2 border-b border-border">
+      <nav className="mb-5 flex flex-wrap items-end gap-x-6 gap-y-2 border-b border-border xl:flex-nowrap">
         {LANE_FILTERS.map((l) => {
           const active = lane === l;
           return (
@@ -167,7 +167,7 @@ export default function Board({
                 e.preventDefault();
                 setLane(l);
               }}
-              className={`relative -mb-px pb-2.5 font-serif text-[13px] font-bold uppercase tracking-[0.18em] transition-colors ${
+              className={`relative -mb-px shrink-0 whitespace-nowrap pb-2.5 font-serif text-[13px] font-bold uppercase tracking-[0.18em] transition-colors ${
                 active ? "text-gold-bright" : "text-text-dim hover:text-text-muted"
               }`}
             >
@@ -179,7 +179,7 @@ export default function Board({
             </a>
           );
         })}
-        <div className="ml-auto flex flex-wrap items-center gap-2 pb-2">
+        <div className="ml-auto flex min-w-0 flex-wrap items-center gap-2 pb-2 xl:flex-nowrap">
           {years.length > 0 && (
             <select
               value={asOf === null ? "today" : String(asOf)}
@@ -202,7 +202,7 @@ export default function Board({
             aria-label={m.board.search}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            className="deco-control w-52 px-3 py-1.5 text-sm placeholder:text-text-dim focus:border-teal focus:outline-none"
+            className="deco-control w-52 min-w-28 shrink px-3 py-1.5 text-sm placeholder:text-text-dim focus:border-teal focus:outline-none"
           />
           <select
             value={league}
