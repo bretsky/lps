@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- CLR site mark: the mid-lane frame (top and bot lane corners, cut to points by the
+       diagonal) with a faceted trophy at its centre. Source for favicon.ico and
+       apple-icon.png too: rebuild those with `node scripts/build-icons.mjs`. -->
+  <defs>
+    <linearGradient id="frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a98145"/>
+      <stop offset="1" stop-color="#5b4019"/>
+    </linearGradient>
+    <linearGradient id="lane" gradientUnits="userSpaceOnUse" x1="0" y1="32" x2="32" y2="0">
+      <stop offset="0" stop-color="#cfa961"/>
+      <stop offset=".5" stop-color="#f6e2ad"/>
+      <stop offset="1" stop-color="#cfa961"/>
+    </linearGradient>
+    <linearGradient id="lit" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff6d8"/>
+      <stop offset="1" stop-color="#e2c27e"/>
+    </linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d2ad62"/>
+      <stop offset="1" stop-color="#7d5b28"/>
+    </linearGradient>
+    <!-- rounded top-left / bottom-right only: the lane runs out to square corners -->
+    <clipPath id="tile"><path d="M5 0 H32 V27 A5 5 0 0 1 27 32 H0 V5 A5 5 0 0 1 5 0 Z"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#tile)">
+    <rect width="32" height="32" fill="#060b12"/>
+    <!-- top lane (left + top edges) and bot lane (bottom + right edges) -->
+    <path fill-rule="evenodd" fill="url(#frame)" d="M2 2 H30 V30 H2 Z M7 7 H25 V25 H7 Z"/>
+    <!-- mid lane, corner to corner, with dark gaps along both edges -->
+    <polygon fill="url(#lane)" points="-13.2,38.8 38.8,-13.2 45.2,-6.8 -6.8,45.2"/>
+    <path stroke="#060b12" stroke-width="1.4" d="M-13.2 38.8 L38.8 -13.2 M-6.8 45.2 L45.2 -6.8"/>
+  </g>
+
+  <!-- trophy: dark gap around the silhouette, then lit (left) and shaded (right) faces -->
+  <path fill="#060b12" stroke="#060b12" stroke-width="2.6"
+        d="M10.5 8.5 H21.5 L20.6 13 L17.6 16.6 H14.4 L11.4 13 Z M15.1 16.6 H16.9 V20.2 H15.1 Z M13.2 20.2 H18.8 L19.6 23.6 H12.4 Z"/>
+  <path fill="none" stroke="#060b12" stroke-width="3.2" d="M10.7 10 H8.6 V12.2 L11.2 14.6 M21.3 10 H23.4 V12.2 L20.8 14.6"/>
+  <path fill="none" stroke="url(#shade)" stroke-width="1.2" d="M10.7 10 H8.6 V12.2 L11.2 14.6 M21.3 10 H23.4 V12.2 L20.8 14.6"/>
+  <path fill="url(#lit)" d="M10.5 8.5 H16 V16.6 H14.4 L11.4 13 Z"/>
+  <path fill="url(#shade)" d="M16 8.5 H21.5 L20.6 13 L17.6 16.6 H16 Z"/>
+  <path fill="url(#lit)" d="M15.1 16.6 H16 V20.2 H15.1 Z"/>
+  <path fill="url(#shade)" d="M16 16.6 H16.9 V20.2 H16 Z"/>
+  <path fill="url(#lit)" d="M13.2 20.2 H16 V23.6 H12.4 Z"/>
+  <path fill="url(#shade)" d="M16 20.2 H18.8 L19.6 23.6 H16 Z"/>
+  <rect x="10.5" y="8.5" width="11" height=".9" fill="#fff6d8"/>
+</svg>

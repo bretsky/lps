@@ -21,7 +21,9 @@ The repo is split into `backend/` (this Python system) and `frontend/` (the rank
 
 Site assets: official event/league marks live in `frontend/public/icons/{events,leagues}/` (committed;
 rebuilt by `backend/analysis/fetch_brand_icons.py`) and are mapped by league short name in
-`frontend/lib/icons.ts`. Player photos and team logos are hotlinked from Leaguepedia's CDN.
+`frontend/lib/icons.ts`. The site's own mark is `frontend/app/icon.svg` (mid-lane frame + trophy); after
+editing it, run `node scripts/build-icons.mjs` in `frontend/` to regenerate `app/favicon.ico` and
+`app/apple-icon.png` from it. Player photos and team logos are hotlinked from Leaguepedia's CDN.
 
 One-off investigation/debug scripts go in **`backend/analysis/`**, not `src/lps/` or the
 `backend/` root. They're kept for reference and aren't part of the pipeline (see its README).
