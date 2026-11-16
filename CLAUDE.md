@@ -32,7 +32,7 @@ metadata shallowly, so a page's `openGraph` must be complete). Titles and descri
 languages live in `lib/i18n/seo.ts` (`SEO`); `DocTitle` sets the same titles client-side when the reader's
 language changes. `app/sitemap.ts` / `app/robots.ts` emit `/sitemap.xml` / `/robots.txt`. Preview
 images are PNGs drawn at build time with `next/og` (`lib/og.tsx`): `/og/player/<slug>.png` per player,
-`/og/site.png` for the boards (fonts from the `@fontsource/*` dev dependencies; no player photos, so
+`/og/role/<slug>.png` / `/og/asof/<year>.png` per role board and past season (each with that board's own top five, `lib/og-board.tsx`), `/og/site.png` for today's board and About (fonts from the `@fontsource/*` dev dependencies; no player photos, so
 the build never hits Leaguepedia). Today's role boards are pages (`/role/{top,jungle,mid,adc,support}`);
 the board's role tabs are links that rewrite the URL in place. Profiles end in a "Ranked nearby"
 list and every board/profile/About footer links all role boards and past seasons (`SiteLinks`), so

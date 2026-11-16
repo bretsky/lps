@@ -1,6 +1,6 @@
 // Link-preview images (og:image / twitter:image, 1200×630), drawn at build time with
 // next/og (satori) and written out as plain PNGs by the static export: one per player
-// (app/og/player/[file]) and one for the boards and About (app/og/site.png).
+// (app/og/player/[file]) and one per board (lib/og-board.tsx: app/og/site.png, role/, asof/).
 //
 // No player photos: they're hotlinked from Leaguepedia's CDN, and fetching ~2k of them on
 // every build would be slow and rude. Fonts come from the @fontsource packages (WOFF, which

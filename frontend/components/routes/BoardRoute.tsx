@@ -8,7 +8,7 @@ import { loadBoardPage, loadMeta } from "@/lib/data";
 import type { Locale } from "@/lib/i18n/config";
 import { SEO } from "@/lib/i18n/seo";
 import { absUrl, boardItemList, pageMeta, topFive } from "@/lib/seo";
-import { ROLE_SLUGS, SITE_NAME, localePath } from "@/lib/site";
+import { ROLE_SLUGS, SITE_NAME, localePath, ogBoardImage } from "@/lib/site";
 
 const boardUrlPath = (asOf: number | null, view: BoardView) =>
   asOf !== null ? `/asof/${asOf}` : view === "all" ? "/" : `/role/${ROLE_SLUGS[view]}`;
@@ -37,6 +37,7 @@ export async function boardMetadata(locale: Locale, asOf: number | null, view: B
     path: boardUrlPath(asOf, view),
     locale,
     localized: true,
+    image: ogBoardImage(asOf, view),
   });
 }
 

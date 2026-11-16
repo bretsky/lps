@@ -105,7 +105,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ file: s
       </div>
       <div
         style={{
-          width: 330,
+          // Runs out over the frame's right padding to the gold border, so the score centres
+          // between the divider and the border rather than hugging the divider.
+          width: 386,
+          marginRight: -56,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",

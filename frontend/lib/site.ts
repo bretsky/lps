@@ -63,4 +63,7 @@ export const ROLE_SINGULAR: Record<Lane, string> = {
 /** Share-image URLs (prerendered PNGs, see app/og/). */
 export const ogPlayerImage = (slug: string) => `/og/player/${slug}.png`;
 export const OG_SITE_IMAGE = "/og/site.png";
+/** A board's share image: its own top five (a role board, a past season), else the site's. */
+export const ogBoardImage = (asOf: number | null, lane: Lane | "all") =>
+  asOf !== null ? `/og/asof/${asOf}.png` : lane === "all" ? OG_SITE_IMAGE : `/og/role/${ROLE_SLUGS[lane]}.png`;
 export const OG_SIZE = { width: 1200, height: 630 };
