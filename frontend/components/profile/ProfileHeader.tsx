@@ -3,9 +3,9 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import type { PlayerDetail } from "@/lib/types";
-import { fmt, fmtInt, fmtPct, laneLabel, displayName } from "@/lib/format";
+import { fmt, fmtInt, fmtPct, laneLabel, displayName, localRealName } from "@/lib/format";
 import { TIER_COLORS, editionFor, editionLabel, upper, cardTeamLogo } from "@/lib/theme";
-import { useT } from "@/lib/i18n";
+import { useLocale, useT } from "@/lib/i18n";
 import { TierBadge } from "@/components/board/TierBadge";
 import { HolCrown, StatusDot } from "@/components/board/StatusBadges";
 import { EventMark, LeagueMark } from "@/components/ui/Marks";
@@ -21,6 +21,7 @@ export function ProfileHeader({
   laneRank: number | null;
 }) {
   const m = useT();
+  const realName = localRealName(player, useLocale());
   const isHol = player.hall_of_legends;
   const tier = player.tier ?? "contenders";
   const accent = isHol ? "#f1d58f" : TIER_COLORS[tier];
@@ -117,9 +118,9 @@ export function ProfileHeader({
                 {isHol && player.hol_year ? ` · ${player.hol_year}` : ""}
               </span>
             </div>
-            {player.real_name && (
+            {realName && (
               <div className="mt-3 text-[11px] font-semibold tracking-[0.4em] text-text-muted">
-                {upper(player.real_name)}
+                {upper(realName)}
                 {player.country ? <span className="text-text-dim"> · {upper(player.country)}</span> : null}
               </div>
             )}

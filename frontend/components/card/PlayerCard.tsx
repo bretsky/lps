@@ -4,7 +4,7 @@
 import { forwardRef, useCallback, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import type { PlayerDetail, TierKey } from "@/lib/types";
-import { displayName, fmt, fmtInt, fmtPct, laneLabel } from "@/lib/format";
+import { displayName, fmt, fmtInt, fmtPct, laneLabel, localRealName } from "@/lib/format";
 import {
   TIER_COLORS,
   TEAL,
@@ -15,7 +15,7 @@ import {
   upper,
   type Edition,
 } from "@/lib/theme";
-import { useT } from "@/lib/i18n";
+import { useLocale, useT } from "@/lib/i18n";
 import { EventMark, HonorMark, LeagueMark } from "@/components/ui/Marks";
 import { Star } from "@/components/profile/AchievementIcons";
 import { ChampionIcon } from "@/components/ui/ChampionIcon";
@@ -256,6 +256,7 @@ function RankPlaque({ rank }: { rank: number }) {
 /** Upper-Deck-style plate: chevron fans either side, edition medallion on top. */
 function Nameplate({ player, edition }: { player: PlayerDetail; edition: Edition }) {
   const m = useT();
+  const realName = localRealName(player, useLocale());
   const handle = displayName(player.playername);
   const handleSize = handle.length > 11 ? 20 : handle.length > 8 ? 24 : 28;
   return (
@@ -291,9 +292,9 @@ function Nameplate({ player, edition }: { player: PlayerDetail; edition: Edition
       {/* identity */}
       {/* sits between the inner rule (y=40) and the plate's bottom edge (y=104), centred */}
       <div className="absolute inset-x-[40px] top-[42px] bottom-[4px] flex flex-col items-center justify-center text-center">
-        {player.real_name && (
+        {realName && (
           <span className="max-w-full truncate text-[8.5px] font-semibold leading-none tracking-[0.32em] text-text-muted">
-            {upper(player.real_name)}
+            {upper(realName)}
           </span>
         )}
         <span

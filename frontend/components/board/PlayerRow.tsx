@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import type { IndexRow } from "@/lib/types";
-import { fmt, fmtInt, fmtPct, laneLabel, displayName } from "@/lib/format";
-import { useT } from "@/lib/i18n";
+import { fmt, fmtInt, fmtPct, laneLabel, displayName, localRealName } from "@/lib/format";
+import { useLocale, useT } from "@/lib/i18n";
 import { TIER_COLORS } from "@/lib/theme";
 import { LeagueMark, Portrait, TrophyPills } from "@/components/ui/Marks";
 import { ClrBar } from "./ClrBar";
@@ -69,6 +69,7 @@ function ClrMove({ clr, prev, prevYear }: { clr: number; prev: number | null | u
 
 export function PlayerRow({ row, maxClr, prevYear = null }: { row: IndexRow; maxClr: number; prevYear?: number | null }) {
   const m = useT();
+  const realName = localRealName(row, useLocale());
   const isHol = row.hall_of_legends;
   const tierColor = TIER_COLORS[row.tier];
   const podium = row.rank <= 3;
@@ -113,7 +114,7 @@ export function PlayerRow({ row, maxClr, prevYear = null }: { row: IndexRow; max
           <LeagueMark league={row.current_league} size={13} />
           <span className="truncate">
             {row.current_team ?? "—"}
-            {row.real_name ? <span className="hidden xl:inline"> · {row.real_name}</span> : null}
+            {realName ? <span className="hidden xl:inline"> · {realName}</span> : null}
           </span>
         </div>
       </div>

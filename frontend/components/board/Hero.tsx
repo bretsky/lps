@@ -5,8 +5,8 @@
 // all-time top five as cutouts rising out of a deco sunburst over a neon floor,
 // with their names set along the bottom.
 
-import { displayName } from "@/lib/format";
-import { useT } from "@/lib/i18n";
+import { displayName, localRealName } from "@/lib/format";
+import { useLocale, useT } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import Link from "next/link";
 import type { IndexRow } from "@/lib/types";
@@ -26,6 +26,7 @@ const STAGE_ORDER = [3, 1, 0, 2, 4];
 
 export function Hero({ rows, asOf = null }: { rows: IndexRow[]; asOf?: number | null }) {
   const m = useT();
+  const locale = useLocale();
   const top = rows.slice(0, 5);
   const roll = STAGE_ORDER.map((i) => top[i]).filter(Boolean);
 
@@ -146,7 +147,7 @@ export function Hero({ rows, asOf = null }: { rows: IndexRow[]; asOf?: number | 
               }`}
             >
               <span className="text-[9px] font-semibold uppercase tracking-[0.28em] text-text-muted">
-                {r.real_name ?? `#${r.rank}`}
+                {localRealName(r, locale) ?? `#${r.rank}`}
               </span>
               <span className="font-display text-2xl font-black uppercase leading-none tracking-wide text-text group-hover:text-gold-bright sm:text-[28px]">
                 <span className="mr-1.5 text-metal">{r.rank}</span>

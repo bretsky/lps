@@ -32,3 +32,13 @@ export function displayName(playername: string): string {
   }
   return s.trim() || playername;
 }
+
+/** The player's real name for the reader's language: their Hangul name on the Korean site and
+ *  Chinese name on the Chinese site when Leaguepedia has one (export_web._local_names), else
+ *  the romanized Players.Name. */
+export function localRealName(
+  p: { real_name?: string | null; name_ko?: string | null; name_zh?: string | null },
+  locale: "en" | "ko" | "zh",
+): string | null {
+  return (locale === "ko" ? p.name_ko : locale === "zh" ? p.name_zh : null) || p.real_name || null;
+}

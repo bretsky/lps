@@ -126,7 +126,8 @@ _INDEX_FIELDS: list[str] = [
     "clr", "career_value", "pace_value", "peak_value", "resume_bonus",
     "total_score", "peak_lps", "tier",
     "hall_of_legends", "hol_year", "is_retired", "is_active",
-    "photo", "photo_cx", "photo_ar", "photo_top", "photo_neck", "real_name", "titles",
+    "photo", "photo_cx", "photo_ar", "photo_top", "photo_neck", "real_name", "name_ko", "name_zh",
+    "titles",
     "rank_prev",  # rank on the previous season's board in the same view (null = unrated then)
     "clr_prev",   # CLR at the end of the previous season, same view (null = hadn't played yet)
 ]
@@ -746,7 +747,7 @@ def _resume_breakdown(row: pd.Series) -> dict:
 # The scalar columns we send on the full player detail JSON, grouped for the
 # frontend's breakdown view.
 _DETAIL_HEADLINE = ["rank", "slug", "playername", "position", "positions",
-                    "photo", "photo_caption", "real_name", "country",
+                    "photo", "photo_caption", "real_name", "name_ko", "name_zh", "country",
                     "current_team", "current_league", "current_year",
                     "region_elo", "n_years", "first_year", "last_year", "games",
                     "win_rate", "clr", "tier",
@@ -1660,9 +1661,25 @@ def _year_teams(
     return out
 
 
+_HANGUL_NAME = re.compile(r"[가-힣]+")
+# Han only, no space or 々: Leaguepedia writes Japanese names "村瀬 俊介" / "佐々木 志郎", Chinese
+# ones unspaced. Traditional characters (Taiwan / Hong Kong / Macao) are kept as written.
+_HAN_NAME = re.compile(r"[一-鿿㐀-䶿]+")
+
+
+def _local_names(native: str | None, country: str | None) -> dict[str, str | None]:
+    """The site's Korean / Chinese display names from Leaguepedia's `NativeName`: name_ko when
+    it's a Hangul name (이상혁), name_zh when it's a Chinese one (卓定) -- not a Japanese
+    player's kanji name, which Chinese readers wouldn't write that way."""
+    n = (native or "").strip()
+    return {"name_ko": n if _HANGUL_NAME.fullmatch(n) else None,
+            "name_zh": n if _HAN_NAME.fullmatch(n) and country != "Japan" else None}
+
+
 def _player_photos(playernames: Iterable[str]) -> dict[str, dict[str, str | float | None]]:
-    """{playername: {url, photo_caption, photo_cx/ar/top/neck, real_name, country}} from the
-    Leaguepedia photo cache (`photo_*` = head position and aspect, for avatar crops).
+    """{playername: {url, photo_caption, photo_cx/ar/top/neck, real_name, name_ko, name_zh,
+    country}} from the Leaguepedia photo cache (`photo_*` = head position and aspect, for
+    avatar crops; `name_ko` / `name_zh` = the name the Korean / Chinese site shows).
 
     Empty (and the frontend falls back to a monogram) until
     `python -m lps.fetch_player_images` has populated it.
@@ -1685,6 +1702,7 @@ def _player_photos(playernames: Iterable[str]) -> dict[str, dict[str, str | floa
                      "photo_cx": e.get("cx"), "photo_ar": e.get("ar"),
                      "photo_top": e.get("top"), "photo_neck": e.get("neck"),
                      "real_name": clean_text(e.get("real_name")) or None,
+                     **_local_names(clean_text(e.get("native_name")), e.get("country")),
                      "country": clean_text(e.get("country")) or None}
     return out
 
@@ -1924,7 +1942,7 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
     photos = _player_photos(ov["playername"].tolist())
     ov["photo"] = ov["playername"].map(lambda n: (photos.get(n) or {}).get("url"))
     for col in ("photo_caption", "photo_cx", "photo_ar", "photo_top", "photo_neck",
-                "real_name", "country"):
+                "real_name", "name_ko", "name_zh", "country"):
         ov[col] = ov["playername"].map(lambda n, c=col: (photos.get(n) or {}).get(c))
     logger.info("[web] player photos: %d / %d players", int(ov["photo"].notna().sum()), len(ov))
 
@@ -1969,7 +1987,7 @@ def build_web_bundle(cfg: ExportConfig) -> Path:
     enrich_cols = [
         "playername", "slug", "current_team", "current_league", "current_year",
         "hall_of_legends", "hol_year", "is_retired", "is_active", "positions", "photo",
-        "photo_cx", "photo_ar", "photo_top", "photo_neck", "real_name", "titles",
+        "photo_cx", "photo_ar", "photo_top", "photo_neck", "real_name", "name_ko", "name_zh", "titles",
     ]
     ov_enrich = ov[[c for c in enrich_cols if c in ov.columns]].copy()
     for lane in ROLES:
@@ -2098,7 +2116,7 @@ _ASOF_FIELDS: list[str] = [
 # 2013 regular who never reached today's games floor) -- the site has nothing to join.
 _ASOF_IDENTITY_FIELDS: list[str] = [
     "playername", "photo", "photo_cx", "photo_ar", "photo_top", "photo_neck", "real_name",
-    "hol_year",
+    "name_ko", "name_zh", "hol_year",
 ]
 # Photo fields an as-of row overrides when that season has its own photo (a 2013 board shows
 # 2013 Faker, not 2026 Faker); see fetch_player_images.PHOTOS_BY_YEAR_JSON.

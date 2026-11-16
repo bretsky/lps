@@ -3,7 +3,7 @@ Fetch a player photo per workbook player from Leaguepedia and cache the CDN URLs
 
 Writes:
   data/leaguepedia/player_images.json
-      {label: {url, file, team, tournament, year, page, real_name, country} | null}
+      {label: {url, file, team, tournament, year, page, real_name, native_name, country} | null}
   data/leaguepedia/player_images_by_year.json
       {label: {"<year>": {url, file, team, tournament, cx, ar, top, neck}}} -- the best photo
       from each season of the player's career, for the site's past-year boards (a 2013 board
@@ -27,7 +27,9 @@ batch thousands of players and date every photo):
      workbook) so retired players show a playing-days photo, not a later appearance;
      All-Star costume shots lose ties within a year. Resolved to a scaled CDN thumbnail
      via the MediaWiki imageinfo API.
-  6. The matched page's `Players.Name` / `Country` ride along for the card's name block.
+  6. The matched page's `Players.Name` / `NativeName` / `Country` ride along for the card's name
+     block (`NativeName` is the name in the player's own script, 이상혁 / 卓定, shown on the
+     Korean / Chinese site). Cached entries missing `native_name` are backfilled on every run.
 
 `info/player_image_overrides.csv` (label,file) pins a specific wiki file when the
 guess is wrong; an empty `file` blocks a photo for that label.
@@ -216,16 +218,31 @@ def clean_text(s: str | None) -> str:
 
 
 def _page_bios(pages: list[str], lp: LPClient) -> dict[str, dict[str, str]]:
-    """{page_casefold: {real_name, country}} from the Players table."""
+    """{page_casefold: {real_name, native_name, country}} from the Players table."""
     out: dict[str, dict[str, str]] = {}
     for quoted in _in_batches(pages):
-        for r in lp.query(tables="Players", fields="OverviewPage=page, Name=name, Country=country",
+        for r in lp.query(tables="Players",
+                          fields="OverviewPage=page, Name=name, NativeName=native, Country=country",
                           where=f"OverviewPage IN ({quoted})"):
             if r.get("page"):
                 out[r["page"].casefold()] = {"real_name": clean_text(r.get("name")),
+                                             "native_name": clean_text(r.get("native")),
                                              "country": clean_text(r.get("country"))}
         time.sleep(1)
     return out
+
+
+def backfill_native_names(cache: dict[str, dict | None], lp: LPClient) -> int:
+    """Fill `native_name` on cached entries fetched before it was recorded (one Players query
+    per batch of pages, no photo work). Returns how many entries were filled."""
+    todo = {lab: e for lab, e in cache.items() if e and e.get("page") and "native_name" not in e}
+    if not todo:
+        return 0
+    logger.info("[images] backfilling native names for %d cached players", len(todo))
+    bios = _page_bios(sorted({e["page"] for e in todo.values()}), lp)
+    for e in todo.values():
+        e["native_name"] = bios.get(e["page"].casefold(), {}).get("native_name") or None
+    return len(todo)
 
 
 def _thumb_urls(files: list[str], width: int = _THUMB_WIDTH) -> dict[str, str]:
@@ -435,7 +452,7 @@ def fetch_player_images(
     lp: LPClient,
     careers: dict[str, tuple[int, int] | None] | None = None,
 ) -> dict[str, dict | None]:
-    """{label: {url, file, team, tournament, year, page, real_name, country} | None}.
+    """{label: {url, file, team, tournament, year, page, real_name, native_name, country} | None}.
 
     `careers` ({label: (first_year, last_year)}) steers each pick toward a photo from the
     player's playing years.
@@ -472,6 +489,7 @@ def fetch_player_images(
             out[lab] = {"url": urls[ph.file], "file": ph.file, "team": ph.team or None,
                         "tournament": ph.tournament or None, "year": ph.year,
                         "page": page, "real_name": bio.get("real_name") or None,
+                        "native_name": bio.get("native_name") or None,
                         "country": bio.get("country") or None}
         else:
             out[lab] = None
@@ -537,9 +555,12 @@ def main() -> None:
         cache.update(fetch_player_images(labels, LPClient(), careers))
     else:
         logger.info("[images] no new players to fetch (use --refresh to re-pick)")
+    backfilled = 0
+    if any(e and e.get("page") and "native_name" not in e for e in cache.values()):
+        backfilled = backfill_native_names(cache, LPClient())
     # A re-picked photo replaces its whole entry, so it is re-measured here too.
     measured = add_head_focus(cache, force=args.refocus)
-    if labels or measured:
+    if labels or measured or backfilled:
         LEAGUEPEDIA_DIR.mkdir(parents=True, exist_ok=True)
         PLAYER_IMAGES_JSON.write_text(json.dumps(cache, ensure_ascii=False, indent=1), encoding="utf-8")
         logger.info("[images] wrote %s", PLAYER_IMAGES_JSON)

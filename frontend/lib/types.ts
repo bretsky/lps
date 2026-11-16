@@ -52,6 +52,8 @@ export interface IndexRow {
   photo_neck?: number | null;            // neck, 0..1 of photo height (avatar zoom)
   titles?: TitleTally | null;            // champion counts for the trophy pills
   real_name?: string | null;             // Leaguepedia Players.Name
+  name_ko?: string | null;               // Hangul name (Players.NativeName), shown on the Korean site
+  name_zh?: string | null;               // Chinese name (Players.NativeName), shown on the Chinese site
   rank_prev?: number | null;             // rank on the previous season's board, same view (null = unrated then)
   clr_prev?: number | null;              // CLR at the end of the previous season, same view (null = no seasons yet)
 }
@@ -149,6 +151,8 @@ export interface PlayerDetail {
   photo?: string | null;                 // Leaguepedia CDN thumbnail
   photo_caption?: string | null;         // "Team · Year" the photo was taken
   real_name?: string | null;             // Leaguepedia Players.Name
+  name_ko?: string | null;               // Hangul name (Players.NativeName), shown on the Korean site
+  name_zh?: string | null;               // Chinese name (Players.NativeName), shown on the Chinese site
   country?: string | null;
   current_team: string | null;
   current_league: string | null;

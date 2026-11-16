@@ -86,7 +86,10 @@ export default function Board({ initialRows, summaries, tiers, asOf, years, late
     let out = source;
     if (qn)
       out = out.filter(
-        (r) => r.playername.toLowerCase().includes(qn) || (r.real_name ?? "").toLowerCase().includes(qn),
+        (r) =>
+          r.playername.toLowerCase().includes(qn) ||
+          // any language's name finds the player: "faker", "lee sang", "이상혁", "卓定"
+          [r.real_name, r.name_ko, r.name_zh].some((n) => (n ?? "").toLowerCase().includes(qn)),
       );
     if (league !== "all") out = out.filter((r) => r.current_league === league);
     out = [...out].sort((a, b) => (b[sortKey] ?? -Infinity) - (a[sortKey] ?? -Infinity));
