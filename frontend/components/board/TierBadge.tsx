@@ -1,8 +1,12 @@
+"use client";
+
 import type { TierKey } from "@/lib/types";
-import { TIER_COLORS, TIER_LABELS } from "@/lib/theme";
+import { TIER_COLORS } from "@/lib/theme";
+import { useT } from "@/lib/i18n";
 
 /** Engraved tier plaque: lozenge + caps in the tier's colour, chamfered edge. */
 export function TierBadge({ tier, size = "sm" }: { tier: TierKey; size?: "sm" | "md" }) {
+  const m = useT();
   const c = TIER_COLORS[tier];
   const md = size === "md";
   return (
@@ -18,7 +22,7 @@ export function TierBadge({ tier, size = "sm" }: { tier: TierKey; size?: "sm" | 
       }}
     >
       <span className={`${md ? "h-1.5 w-1.5" : "h-1 w-1"} rotate-45`} style={{ background: c }} />
-      {TIER_LABELS[tier]}
+      {m.tiers[tier].label}
     </span>
   );
 }

@@ -1,9 +1,13 @@
+"use client";
+
 /* eslint-disable @next/next/no-img-element */
 // Rankings masthead, in the manner of a hall-of-fame induction poster: the
 // all-time top five as cutouts rising out of a deco sunburst over a neon floor,
 // with their names set along the bottom.
 
 import { displayName } from "@/lib/format";
+import { useT } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import Link from "next/link";
 import type { IndexRow } from "@/lib/types";
 import { TIER_COLORS } from "@/lib/theme";
@@ -21,6 +25,7 @@ const SLOTS: [number, number, number, number][] = [
 const STAGE_ORDER = [3, 1, 0, 2, 4];
 
 export function Hero({ rows, asOf = null }: { rows: IndexRow[]; asOf?: number | null }) {
+  const m = useT();
   const top = rows.slice(0, 5);
   const roll = STAGE_ORDER.map((i) => top[i]).filter(Boolean);
 
@@ -52,27 +57,30 @@ export function Hero({ rows, asOf = null }: { rows: IndexRow[]; asOf?: number | 
       <div className="neon-line absolute inset-x-0 bottom-[150px] h-px opacity-60" />
 
       <div className="relative mx-auto max-w-6xl px-4">
-        <Link
-          href="/about"
-          className="absolute right-4 top-3 z-10 font-serif text-[11px] font-bold uppercase tracking-[0.25em] text-text-dim hover:text-gold-bright"
-        >
-          About ▸
-        </Link>
+        <div className="absolute right-4 top-3 z-10 flex items-center gap-5">
+          <LanguageSwitcher />
+          <Link
+            href="/about"
+            className="font-serif text-[11px] font-bold uppercase tracking-[0.25em] text-text-dim hover:text-gold-bright"
+          >
+            {m.nav.about} ▸
+          </Link>
+        </div>
         {/* masthead */}
         <div className="pt-10 text-center">
           <div className="deco-rule mx-auto max-w-md font-serif text-[11px] font-bold uppercase tracking-[0.45em] text-gold">
-            <span>League of Legends Esports</span>
+            <span>{m.hero.kicker}</span>
           </div>
           <h1 className="mt-3 font-display text-[56px] font-black uppercase leading-[0.85] tracking-[0.02em] sm:text-[88px]">
-            <span className="text-metal">All-Time</span>{" "}
-            <span className="font-serif text-[0.62em] font-semibold tracking-[0.12em] text-text">Rankings</span>
+            <span className="text-metal">{m.hero.titleA}</span>{" "}
+            <span className="font-serif text-[0.62em] font-semibold tracking-[0.12em] text-text">{m.hero.titleB}</span>
           </h1>
           <p className="mt-3 font-serif text-[11px] font-semibold uppercase tracking-[0.32em] text-text-muted">
-            Career Legend Rating
+            {m.hero.subtitle}
             {asOf !== null && (
               <>
                 {" "}
-                <span className="text-teal">◆</span> <span className="text-gold">as of {asOf}</span>
+                <span className="text-teal">◆</span> <span className="text-gold">{m.hero.asOf(asOf)}</span>
               </>
             )}
           </p>
@@ -89,7 +97,7 @@ export function Hero({ rows, asOf = null }: { rows: IndexRow[]; asOf?: number | 
                 href={`/card/${r.slug}`}
                 className="group absolute bottom-0 -translate-x-1/2 transition-transform duration-300 hover:-translate-y-1"
                 style={{ left: `${slot[0]}%`, zIndex: slot[2], opacity: slot[3] }}
-                title={`#${rank} ${displayName(r.playername)} — view card`}
+                title={m.hero.viewCard(rank, displayName(r.playername))}
               >
                 {r.photo ? (
                   // Glow lives on the wrapper: a mask clips its own element's filter output to the

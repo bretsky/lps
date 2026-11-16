@@ -1,5 +1,8 @@
+"use client";
+
 import type { Honor, PlayerDetail } from "@/lib/types";
 import { fmt } from "@/lib/format";
+import { useT, type Messages } from "@/lib/i18n";
 import { MEDAL_COLOR } from "@/lib/theme";
 import { isEventKind, leagueIcon } from "@/lib/icons";
 import { EventMark, LeagueMark } from "@/components/ui/Marks";
@@ -13,10 +16,10 @@ type Cat = { key: string; label: string; hint: string; medal?: Medal };
 
 type Row = { label: string; icon: React.ReactNode; cats: Cat[] };
 
-const PLACES = (prefix: string, keys: [string, string, string], hint: string): Cat[] => [
-  { key: keys[0], label: "Champion", medal: "gold", hint: `${prefix} champion` },
-  { key: keys[1], label: "Finalist", medal: "silver", hint: `${prefix} finalist (runner-up)` },
-  { key: keys[2], label: "Out before final", medal: "bronze", hint: `${prefix}: eliminated before the final (${hint})` },
+const PLACES = (m: Messages, event: string, keys: [string, string, string]): Cat[] => [
+  { key: keys[0], label: m.resume.cats.champion, medal: "gold", hint: m.resume.hint.champion(event) },
+  { key: keys[1], label: m.resume.cats.finalist, medal: "silver", hint: m.resume.hint.finalist(event) },
+  { key: keys[2], label: m.resume.cats.out, medal: "bronze", hint: m.resume.hint.out(event) },
 ];
 
 function primaryLeague(player: PlayerDetail): string | null {
@@ -30,6 +33,7 @@ function primaryLeague(player: PlayerDetail): string | null {
 }
 
 export function ResumeGrid({ player }: { player: PlayerDetail }) {
+  const m = useT();
   const rb = player.resume_breakdown ?? {};
   const totalPts = Object.values(rb).reduce((s, v) => s + (v?.pts ?? 0), 0);
   const totalN = Object.values(rb).reduce((s, v) => s + (v?.n ?? 0), 0);
@@ -37,35 +41,35 @@ export function ResumeGrid({ player }: { player: PlayerDetail }) {
 
   const rows: Row[] = [
     {
-      label: "Worlds",
+      label: m.resume.rows.worlds,
       icon: <EventMark event="worlds" size={26} />,
-      cats: PLACES("Worlds", ["wlds_title", "wlds_final", "wlds_semi"], "semifinal, quarterfinal or group stage"),
+      cats: PLACES(m, m.events.worlds, ["wlds_title", "wlds_final", "wlds_semi"]),
     },
     {
-      label: "MSI",
+      label: m.resume.rows.msi,
       icon: <EventMark event="msi" size={26} />,
-      cats: PLACES("MSI", ["msi_title", "msi_final", "msi_semi"], "semifinal, quarterfinal or group stage"),
+      cats: PLACES(m, m.events.msi, ["msi_title", "msi_final", "msi_semi"]),
     },
     {
-      label: "Other Intl",
+      label: m.resume.rows.otherIntl,
       icon: <CupIntl className="h-6 w-6 text-gold" />,
-      cats: PLACES("IEM / EWC / MSC / First Stand / Rift Rivals", ["othr_intl_champ", "othr_intl_final", "othr_intl_semi"], "semifinal, quarterfinal or group stage"),
+      cats: PLACES(m, m.resume.otherIntlEvents, ["othr_intl_champ", "othr_intl_final", "othr_intl_semi"]),
     },
     {
-      label: "League",
+      label: m.resume.rows.league,
       icon: leagueIcon(league) ? <LeagueMark league={league} size={24} /> : <CupDomestic className="h-6 w-6 text-gold" />,
       cats: [
-        { key: "dom_champ", label: "Champion", medal: "gold", hint: "Domestic league title" },
-        { key: "dom_final", label: "Finalist", medal: "silver", hint: "Runner-up in a domestic league" },
-        { key: "dom_cup", label: "Cup", medal: "bronze", hint: "Domestic cup / secondary domestic title" },
+        { key: "dom_champ", label: m.resume.cats.champion, medal: "gold", hint: m.resume.hint.domChampion },
+        { key: "dom_final", label: m.resume.cats.finalist, medal: "silver", hint: m.resume.hint.domFinalist },
+        { key: "dom_cup", label: m.resume.cats.cup, medal: "bronze", hint: m.resume.hint.domCup },
       ],
     },
     {
-      label: "Awards",
+      label: m.resume.rows.awards,
       icon: <Laurel className="h-6 w-6 text-gold" />,
       cats: [
-        { key: "mvp", label: "MVP", hint: "Regular-season or playoff MVP" },
-        { key: "allpro", label: "All-Pro", hint: "All-Pro team selection" },
+        { key: "mvp", label: m.resume.cats.mvp, hint: m.resume.hint.mvp },
+        { key: "allpro", label: m.resume.cats.allpro, hint: m.resume.hint.allpro },
       ],
     },
   ];
@@ -73,10 +77,8 @@ export function ResumeGrid({ player }: { player: PlayerDetail }) {
   return (
     <section className="deco-panel">
       <div className="mb-4 flex items-baseline justify-between gap-4">
-        <h2 className="deco-title flex-1">Résumé</h2>
-        <div className="shrink-0 font-mono text-xs text-text-dim">
-          {fmt(totalPts, 1)} pts · {totalN} achievements
-        </div>
+        <h2 className="deco-title flex-1">{m.resume.title}</h2>
+        <div className="shrink-0 font-mono text-xs text-text-dim">{m.resume.summary(fmt(totalPts, 1), totalN)}</div>
       </div>
 
       <div className="space-y-2">
@@ -103,6 +105,7 @@ export function ResumeGrid({ player }: { player: PlayerDetail }) {
 }
 
 function Tile({ cat, n, pts }: { cat: Cat; n: number; pts: number }) {
+  const m = useT();
   const dim = n === 0;
   const color = cat.medal ? MEDAL_COLOR[cat.medal] : cat.key === "mvp" ? "#f1d58f" : "#1fd1c1";
   const Icon = cat.key === "mvp" ? Star : cat.key === "allpro" ? Shield : null;
@@ -121,7 +124,7 @@ function Tile({ cat, n, pts }: { cat: Cat; n: number; pts: number }) {
           {Icon && <Icon className="h-3 w-3" />}
           {cat.label}
         </div>
-        <div className="font-mono text-[10px] text-text-dim">{fmt(pts, 1)} pts</div>
+        <div className="font-mono text-[10px] text-text-dim">{m.common.pts(fmt(pts, 1))}</div>
       </div>
       <span className={`font-display text-2xl font-extrabold leading-none ${dim ? "text-text-dim" : "text-text"}`}>{n}</span>
     </div>
@@ -129,18 +132,10 @@ function Tile({ cat, n, pts }: { cat: Cat; n: number; pts: number }) {
 }
 
 const KIND_ORDER: Honor["kind"][] = ["worlds", "msi", "first_stand", "ewc", "intl", "domestic", "cup"];
-const KIND_NAME: Record<Honor["kind"], string> = {
-  worlds: "Worlds",
-  msi: "MSI",
-  first_stand: "First Stand",
-  ewc: "EWC",
-  intl: "Intl",
-  domestic: "League",
-  cup: "Cup",
-};
 
 /** Every podium finish, year by year, with the event's / league's own mark. */
 function TrophyCase({ honors }: { honors: Honor[] }) {
+  const m = useT();
   if (!honors.length) return null;
   const byYear = new Map<number, Honor[]>();
   for (const h of honors) byYear.set(h.year, [...(byYear.get(h.year) ?? []), h]);
@@ -148,7 +143,7 @@ function TrophyCase({ honors }: { honors: Honor[] }) {
   return (
     <div className="mt-5">
       <div className="deco-rule mb-3 font-serif text-[10px] font-bold uppercase tracking-[0.3em] text-gold">
-        <span>Trophy case · {honors.filter((h) => h.medal === "gold").length} titles</span>
+        <span>{m.resume.trophyCase(honors.filter((h) => h.medal === "gold").length)}</span>
       </div>
       <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
         {years.map((y) => (
@@ -170,9 +165,11 @@ function TrophyCase({ honors }: { honors: Honor[] }) {
 }
 
 function HonorChip({ h }: { h: Honor }) {
+  const m = useT();
   const color = MEDAL_COLOR[h.medal];
-  const place = h.medal === "gold" ? "Champion" : h.medal === "silver" ? "Finalist" : "Semis";
-  const name = h.kind === "domestic" ? h.league ?? "League" : h.kind === "intl" || h.kind === "cup" ? h.event ?? KIND_NAME[h.kind] : KIND_NAME[h.kind];
+  const place = m.resume.chipPlace[h.medal];
+  const kind = m.resume.kind;
+  const name = h.kind === "domestic" ? h.league ?? kind.domestic : h.kind === "intl" || h.kind === "cup" ? h.event ?? kind[h.kind] : kind[h.kind];
   const mark =
     isEventKind(h.kind) ? (
       <EventMark event={h.kind} medal={h.medal} size={16} />

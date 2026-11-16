@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Barlow, Big_Shoulders_Display, Cinzel, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { LocaleReady } from "@/components/i18n/LocaleReady";
+import { LOCALE_INIT_SCRIPT } from "@/lib/i18n/config";
 
 // Body copy.
 const sans = Barlow({
@@ -46,11 +48,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
+    // lang / data-locale are set before paint by LOCALE_INIT_SCRIPT (the reader's language),
+    // hence suppressHydrationWarning: the prebuilt HTML always says "en".
     <html
       lang="en"
       className={`${sans.variable} ${display.variable} ${serif.variable} ${mono.variable}`}
+      suppressHydrationWarning
     >
-      <body className="min-h-screen bg-bg font-sans text-text antialiased">{children}</body>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: LOCALE_INIT_SCRIPT }} />
+      </head>
+      <body className="min-h-screen bg-bg font-sans text-text antialiased">
+        <LocaleReady />
+        {children}
+      </body>
     </html>
   );
 }

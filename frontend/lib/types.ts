@@ -256,9 +256,13 @@ export interface CareerStats extends BoxLine {
   n_champions: number;
 }
 
+/** Korean / Chinese wordings the backend adds beside an English one (web_glossary_i18n.py). */
+export type I18nText = Partial<Record<"ko" | "zh", string>>;
+
 export interface ResumeRound {
   key: "champion" | "finalist" | "semifinalist" | "quarterfinalist" | "group";
   label: string;
+  i18n?: I18nText;
   /** Share of the champion's points this round earns (champion = 1). */
   share: number;
 }
@@ -274,6 +278,7 @@ export interface ResumeScoring {
   events: {
     code: string;
     name: string;
+    i18n?: I18nText;
     kind: "intl" | "cup";
     tournament_weight: number;
     /** Worlds / MSI: title value set directly rather than from the tournament weight. */
@@ -286,12 +291,17 @@ export interface ResumeScoring {
     finalist: number;
     leagues: { league: string; strength: number; champion: number; finalist: number }[];
   };
-  awards: { key: string; label: string; points: number; scaled: boolean }[];
-  example: { label: string; steps: number[]; total: number };
+  awards: { key: string; label: string; i18n?: I18nText; points: number; scaled: boolean }[];
+  example: { label: string; i18n?: I18nText; steps: number[]; total: number };
 }
 
 export interface GlossaryJson {
   /** term = the workbook column code (stable anchor id); label = the readable name. */
-  entries: { term: string; label?: string; definition: string }[];
+  entries: {
+    term: string;
+    label?: string;
+    definition: string;
+    i18n?: Partial<Record<"ko" | "zh", { label: string; definition: string }>>;
+  }[];
   resume_scoring?: ResumeScoring;
 }

@@ -1,12 +1,15 @@
 // About / glossary: what every number on the site means, straight from glossary.json
 // (backend export_excel._GLOSSARY), grouped by lib/glossary.ts. Each term has a stable
-// anchor, so other pages can deep-link to /about#<termId(term)>.
+// anchor, so other pages can deep-link to /about#<termId(term)>. The body is a client
+// component (components/about/AboutBody) so it follows the reader's language.
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Fragment } from "react";
 import { loadGlossary, loadMeta } from "@/lib/data";
-import { groupGlossary, tidy, type GlossarySection } from "@/lib/glossary";
-import type { Meta, ResumeScoring } from "@/lib/types";
+import { groupGlossary } from "@/lib/glossary";
+import type { Meta } from "@/lib/types";
+import { AboutBody } from "@/components/about/AboutBody";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
+import { DocTitle, T } from "@/components/i18n/T";
 
 export const metadata: Metadata = {
   title: "About · CLR",
@@ -14,7 +17,6 @@ export const metadata: Metadata = {
 };
 
 const WEIGHT_KEY = "Weights (w_career, w_pace, w_peak, w_bonus)";
-const WEIGHT_LABELS = ["Career", "Pace", "Peak", "Résumé"];
 
 /** The four CLR weights from the workbook's About sheet, or null if the row is missing. */
 function clrWeights(meta: Meta): number[] | null {
@@ -27,292 +29,27 @@ function clrWeights(meta: Meta): number[] | null {
   return nums.length === 4 && nums.every(Number.isFinite) ? nums : null;
 }
 
-/** A point value for the tables: up to three decimals, trailing zeros dropped (0.375, 3, 0.12). */
-function pts(x: number): string {
-  return String(Number(x.toFixed(3)));
-}
-
-const TH = "px-2 py-1.5 font-serif text-[10px] font-bold uppercase tracking-[0.16em] text-text-muted";
-const TD = "px-2 py-1.5 text-right tabular-nums";
-
-/** The résumé's point tables: every number is what that achievement adds to CLR. */
-function ResumeTables({ rs }: { rs: ResumeScoring }) {
-  const intl = rs.events.filter((e) => e.kind === "intl");
-  const cups = rs.events.filter((e) => e.kind === "cup");
-  const eventRows = (rows: ResumeScoring["events"]) =>
-    rows.map((e) => (
-      <tr key={e.code} className="border-t border-border">
-        <td className="px-2 py-1.5 text-left text-text">{e.name}</td>
-        <td className={`${TD} text-text-muted`}>{e.anchored ? "set" : pts(e.tournament_weight)}</td>
-        {rs.rounds.map((r) => (
-          <td key={r.key} className={`${TD} ${r.key === "champion" ? "font-semibold text-gold-bright" : "text-text"}`}>
-            {pts(e.points[r.key])}
-          </td>
-        ))}
-      </tr>
-    ));
-  const decayPct = Math.round(rs.repeat_decay * 100);
-  const steps = rs.example.steps;
-
-  return (
-    <section id="resume-points" className="deco-panel scroll-mt-6">
-      <h2 className="deco-title">How the résumé is scored</h2>
-      <p className="mt-1.5 text-sm text-text-muted">
-        Every achievement adds a fixed number of points to CLR. All the values below already include the résumé&apos;s
-        CLR weight (×{pts(rs.weight)}), so they are exactly what a first-time achievement adds to a player&apos;s CLR.
-      </p>
-
-      <div className="mt-4 space-y-6 text-[14px] leading-relaxed">
-        <div>
-          <h3 className="font-display text-lg font-bold uppercase tracking-wide text-gold-bright">
-            International events and cups
-          </h3>
-          <p className="mt-1 text-text">
-            Worlds and MSI titles have set values. Every other event&apos;s title is worth {pts(rs.champ_per_weight * rs.weight)}{" "}
-            × its tournament weight, the same importance weight its games carry in LPS (Worlds = 1). Each round below the
-            title earns a fixed share of the title value:{" "}
-            {rs.rounds
-              .filter((r) => r.key !== "champion")
-              .map((r) => `${r.label.toLowerCase()} ${Math.round(r.share * 1000) / 10}%`)
-              .join(", ")}
-            . Every player on the team&apos;s roster gets the full amount.
-          </p>
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[640px] border-collapse text-[13px]">
-              <thead>
-                <tr>
-                  <th className={`${TH} text-left`}>Event</th>
-                  <th className={`${TH} text-right`}>Weight</th>
-                  {rs.rounds.map((r) => (
-                    <th key={r.key} className={`${TH} text-right`}>
-                      {r.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {eventRows(intl)}
-                {cups.length ? (
-                  <tr className="border-t border-border">
-                    <td colSpan={2 + rs.rounds.length} className="px-2 pb-1 pt-3 text-left font-serif text-[10px] font-bold uppercase tracking-[0.16em] text-text-muted">
-                      Domestic cups (counted under domestic titles)
-                    </td>
-                  </tr>
-                ) : null}
-                {eventRows(cups)}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="min-w-0">
-            <h3 className="font-display text-lg font-bold uppercase tracking-wide text-gold-bright">Domestic leagues</h3>
-            <p className="mt-1 text-text">
-              A split playoff title is worth up to {pts(rs.domestic.champion)} and a lost final up to{" "}
-              {pts(rs.domestic.finalist)}, multiplied by the league&apos;s strength: its Elo rating divided by the
-              strongest league&apos;s that year. The values for {rs.domestic.year}:
-            </p>
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full border-collapse text-[13px]">
-                <thead>
-                  <tr>
-                    <th className={`${TH} text-left`}>League</th>
-                    <th className={`${TH} text-right`}>Strength</th>
-                    <th className={`${TH} text-right`}>Title</th>
-                    <th className={`${TH} text-right`}>Runner-up</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rs.domestic.leagues.map((l) => (
-                    <tr key={l.league} className="border-t border-border">
-                      <td className="px-2 py-1.5 text-left text-text">{l.league}</td>
-                      <td className={`${TD} text-text-muted`}>{Math.round(l.strength * 100)}%</td>
-                      <td className={`${TD} font-semibold text-gold-bright`}>{pts(l.champion)}</td>
-                      <td className={`${TD} text-text`}>{pts(l.finalist)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="min-w-0">
-            <h3 className="font-display text-lg font-bold uppercase tracking-wide text-gold-bright">Individual awards</h3>
-            <p className="mt-1 text-text">
-              International honors are flat. Domestic awards (marked *) are multiplied by league strength, like titles,
-              so the value shown is the most they can be worth.
-            </p>
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full border-collapse text-[13px]">
-                <thead>
-                  <tr>
-                    <th className={`${TH} text-left`}>Award</th>
-                    <th className={`${TH} text-right`}>Points</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rs.awards.map((a) => (
-                    <tr key={a.key} className="border-t border-border">
-                      <td className="px-2 py-1.5 text-left text-text">
-                        {a.label}
-                        {a.scaled ? <span className="text-text-muted"> *</span> : null}
-                      </td>
-                      <td className={`${TD} text-gold-bright`}>{pts(a.points)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h3 className="font-display text-lg font-bold uppercase tracking-wide text-gold-bright">Repeats</h3>
-          <p className="mt-1 text-text">
-            Winning the same thing again is worth {decayPct}% of the time before: the same round of the same event (every
-            Worlds title, every MSI runner-up finish), all domestic league titles together, all domestic runner-up
-            finishes together, and each award type. A player&apos;s most valuable instance always counts in full. For
-            example, {rs.example.label.charAt(0).toLowerCase() + rs.example.label.slice(1)} add {steps.map(pts).join(" + ")} ={" "}
-            <span className="font-semibold text-gold-bright">{pts(rs.example.total)}</span>, not{" "}
-            {pts(steps[0] * steps.length)}.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Section({ s }: { s: GlossarySection }) {
-  return (
-    <section id={s.id} className="deco-panel scroll-mt-6">
-      <h2 className="deco-title">{s.title}</h2>
-      <p className="mt-1.5 text-sm text-text-muted">{s.blurb}</p>
-
-      {s.layout === "cards" ? (
-        <dl className="mt-4 grid gap-3 md:grid-cols-2">
-          {s.entries.map((e) => (
-            <div
-              key={e.id}
-              id={e.id}
-              className="group min-w-0 scroll-mt-6 border-l-2 border-gold-deep/70 bg-bg-card/60 px-4 py-3 target:border-teal target:bg-teal-deep/20"
-            >
-              <dt className="flex items-baseline justify-between gap-3">
-                <span className="min-w-0 font-display text-xl font-bold uppercase tracking-wide text-gold-bright">
-                  {e.label ?? e.term}
-                </span>
-                <a
-                  href={`#${e.id}`}
-                  className="font-mono text-xs text-text-dim opacity-0 transition-opacity hover:text-teal group-hover:opacity-100"
-                  aria-label={`Link to ${e.label ?? e.term}`}
-                >
-                  #
-                </a>
-              </dt>
-              <dd className="mt-1 text-[14px] leading-relaxed text-text [overflow-wrap:anywhere]">{tidy(e.definition)}</dd>
-            </div>
-          ))}
-        </dl>
-      ) : (
-        <dl className="mt-4 divide-y divide-border">
-          {s.entries.map((e) => (
-            <div
-              key={e.id}
-              id={e.id}
-              className="scroll-mt-6 grid gap-1 py-2.5 sm:grid-cols-[minmax(0,15rem)_1fr] sm:gap-4 target:bg-teal-deep/20"
-            >
-              <dt className="break-words text-[14px] font-semibold text-gold-bright">{e.label ?? e.term}</dt>
-              <dd className="min-w-0 text-[14px] leading-relaxed text-text [overflow-wrap:anywhere]">{tidy(e.definition)}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
-    </section>
-  );
-}
-
 export default async function AboutPage() {
   const [glossary, meta] = await Promise.all([loadGlossary(), loadMeta()]);
-  const sections = groupGlossary(glossary);
-  const weights = clrWeights(meta);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
-      <nav className="mb-6 font-serif text-[11px] font-bold uppercase tracking-[0.25em]">
+      <DocTitle k="about" />
+      <nav className="mb-6 flex items-center justify-between gap-4 font-serif text-[11px] font-bold uppercase tracking-[0.25em]">
         <Link href="/" className="text-text-dim hover:text-gold-bright">
-          ◂ All-time rankings
+          ◂ <T k="nav.rankings" />
         </Link>
+        <LanguageSwitcher />
       </nav>
 
-      <header className="text-center">
-        <div className="deco-rule mx-auto max-w-md font-serif text-[11px] font-bold uppercase tracking-[0.45em] text-gold">
-          <span>How it works</span>
-        </div>
-        <h1 className="mt-3 font-display text-[48px] font-black uppercase leading-[0.9] tracking-[0.02em] sm:text-[72px]">
-          <span className="text-metal">About</span>{" "}
-          <span className="font-serif text-[0.6em] font-semibold tracking-[0.12em] text-text">CLR</span>
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-text-muted">
-          The <span className="text-gold-bright">Career Legend Rating</span> (CLR) ranks every player&apos;s whole
-          career. Its base is LPS (League Performance Score), which measures how much each player moved their
-          team&apos;s chances of winning, game by game, against what an average player would have done in the same
-          spot. Seasons are scored on their own, then rolled up into CLR, which also counts titles, placements and
-          awards.
-        </p>
-      </header>
-
-      {/* current settings */}
-      <div className="mx-auto mt-6 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4">
-        {weights ? (
-          weights.map((w, i) => (
-            <div key={WEIGHT_LABELS[i]} className="deco-control px-3 py-2 text-center">
-              <div className="font-serif text-[10px] font-bold uppercase tracking-[0.22em] text-text-muted">
-                {WEIGHT_LABELS[i]} weight
-              </div>
-              <div className="font-display text-2xl font-black text-gold-bright">×{w}</div>
-            </div>
-          ))
-        ) : null}
-      </div>
-      <p className="mt-3 text-center font-serif text-[10px] font-bold uppercase tracking-[0.25em] text-text-dim">
-        Seasons {meta.years[0]}–{meta.years[1]} <span className="text-teal">◆</span> rated at {meta.rated_min_games}+
-        games <span className="text-teal">◆</span> build {meta.build_id}
-      </p>
-
-      {/* contents */}
-      <nav aria-label="Sections" className="mt-8 flex flex-wrap justify-center gap-2">
-        {sections
-          .flatMap((s) =>
-            s.id === "resume" && glossary.resume_scoring
-              ? [s, { id: "resume-points", title: "Résumé points" }]
-              : [s],
-          )
-          .map((s) => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              className="deco-control px-3 py-1.5 font-serif text-[11px] font-bold uppercase tracking-[0.16em] text-text-muted hover:text-gold-bright"
-            >
-              {s.title}
-            </a>
-          ))}
-      </nav>
-
-      <div className="mt-6 space-y-6">
-        {sections.map((s) => (
-          <Fragment key={s.id}>
-            <Section s={s} />
-            {s.id === "resume" && glossary.resume_scoring ? <ResumeTables rs={glossary.resume_scoring} /> : null}
-          </Fragment>
-        ))}
-      </div>
-
-      <footer className="mt-10 border-t border-gold-deep/40 py-8 text-center">
-        <p className="text-[11px] text-text-dim">
-          Not endorsed by Riot Games · Data and photos from Oracle&apos;s Elixir and Leaguepedia · League marks © their
-          owners
-        </p>
-      </footer>
+      <AboutBody
+        sections={groupGlossary(glossary)}
+        resumeScoring={glossary.resume_scoring ?? null}
+        weights={clrWeights(meta)}
+        years={[meta.years[0], meta.years[1]]}
+        ratedMinGames={meta.rated_min_games}
+        buildId={meta.build_id}
+      />
     </main>
   );
 }

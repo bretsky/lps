@@ -20,6 +20,24 @@ body {
   color: #eee4cf;
 }
 
+/* Korean / Chinese glyphs: the Latin web fonts have none, so every font stack falls through
+   to the reader's system CJK font, picked per language (Han characters differ between
+   Korean and Simplified Chinese fonts). */
+:root {
+  --font-cjk: sans-serif;
+}
+:root:lang(ko) {
+  --font-cjk: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Noto Sans CJK KR", "Nanum Gothic", sans-serif;
+}
+:root:lang(zh) {
+  --font-cjk: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC",
+    "Source Han Sans SC", sans-serif;
+}
+/* Hidden until React has re-rendered in the reader's language (see lib/i18n/config.ts). */
+html[data-i18n-pending] body {
+  visibility: hidden;
+}
+
 /* The arena: a deep-blue sky with a faint gold sunburst rising from below the
    fold, teal haze in the corners, and a neon grid that recedes into the dark. */
 body {

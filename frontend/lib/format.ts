@@ -1,10 +1,4 @@
-export const LANE_LABELS: Record<string, string> = {
-  top: "Top",
-  jng: "Jungle",
-  mid: "Mid",
-  bot: "Bot",
-  sup: "Support",
-};
+import type { Messages } from "./i18n/en";
 
 export function fmt(n: number | null | undefined, digits = 1): string {
   if (n === null || n === undefined || Number.isNaN(n)) return "—";
@@ -21,14 +15,10 @@ export function fmtInt(n: number | null | undefined): string {
   return Math.round(n).toString();
 }
 
-export function laneLabel(lane: string | null | undefined): string {
+/** Lane name in the reader's language (`m` = useT()). */
+export function laneLabel(m: Messages, lane: string | null | undefined): string {
   if (!lane) return "—";
-  return LANE_LABELS[lane] ?? lane;
-}
-
-export function yearsLabel(first: number, last: number, n: number): string {
-  if (first === last) return `${first} · ${n}yr`;
-  return `${first}–${last} · ${n}yr`;
+  return m.lanes[lane as keyof Messages["lanes"]] ?? lane;
 }
 
 /** Player handle for display: drops the disambiguation suffix the pipeline adds to

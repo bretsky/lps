@@ -56,6 +56,7 @@ import shutil
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Iterable, Optional
 
 import numpy as np
@@ -940,6 +941,14 @@ def _resume_scoring(p: dict, year: int) -> dict:
     from .scoring import load_league_elos
     from .season import _viewership_weights
 
+    from .web_glossary_i18n import (
+        AWARD_LABELS,
+        EXAMPLE_LABEL,
+        RESUME_EVENT_NAMES,
+        RESUME_ROUND_LABELS,
+        i18n_pair,
+    )
+
     cfg, wb = BonusConfig(), p["w_bonus"]
     tw = _viewership_weights()
     events = []
@@ -950,6 +959,7 @@ def _resume_scoring(p: dict, year: int) -> dict:
             {
                 "code": code,
                 "name": name,
+                "i18n": i18n_pair(RESUME_EVENT_NAMES.get(code)),
                 "kind": "cup" if code in _RESUME_CUPS else "intl",
                 "tournament_weight": round(float(tw.get(code, 0.0)), 3),
                 "anchored": anchored,
@@ -976,6 +986,7 @@ def _resume_scoring(p: dict, year: int) -> dict:
         {
             "key": k,
             "label": lbl,
+            "i18n": i18n_pair(AWARD_LABELS.get(k)),
             "points": round(cfg.award_points.get(k, 0.0) * cfg.award_weight * wb, 3),
             "scaled": k not in FLAT_AWARDS,
         }
@@ -989,7 +1000,13 @@ def _resume_scoring(p: dict, year: int) -> dict:
         "weight": wb,
         "repeat_decay": d,
         "rounds": [
-            {"key": r, "label": lbl, "share": cfg.intl_bucket.get(r, 0.0)} for r, lbl in _RESUME_ROUNDS
+            {
+                "key": r,
+                "label": lbl,
+                "i18n": i18n_pair(RESUME_ROUND_LABELS.get(r)),
+                "share": cfg.intl_bucket.get(r, 0.0),
+            }
+            for r, lbl in _RESUME_ROUNDS
         ],
         "champ_per_weight": cfg.champ_per_weight,
         "events": events,
@@ -1000,38 +1017,37 @@ def _resume_scoring(p: dict, year: int) -> dict:
             "leagues": leagues,
         },
         "awards": awards,
-        "example": {"label": "Six Worlds titles", "steps": steps, "total": round(sum(steps), 3)},
+        "example": {
+            "label": "Six Worlds titles",
+            "i18n": i18n_pair(EXAMPLE_LABEL),
+            "steps": steps,
+            "total": round(sum(steps), 3),
+        },
     }
 
 
-def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
-    """term -> (site label, plain-English definition). See the block comment above."""
+def _glossary_ctx(p: dict, rs: dict) -> SimpleNamespace:
+    """Every number the glossary quotes, already formatted, shared by the English wording below
+    and the Korean / Chinese ones in web_glossary_i18n (so the three always quote the same values)."""
     f = _fmt
-    wc, wp, wk, wb, d = p["w_career"], p["w_pace"], p["w_peak"], p["w_bonus"], p["decay"]
-    e1, e2, e3 = p["era"]
-    pb = p["peak_bonus"]
     ev = {e["code"]: e for e in rs["events"]}
 
     def pts(code: str, rnd: str) -> str:
         return f(ev[code]["points"][rnd], 3)
 
     others = [e for e in rs["events"] if e["kind"] == "intl" and not e["anchored"]]
-    o_lo = min(e["points"]["champion"] for e in others)
-    o_hi = max(e["points"]["champion"] for e in others)
     aw = {a["key"]: a["points"] for a in rs["awards"]}
     dom = rs["domestic"]
     yr = dom["year"]
     lg = dom["leagues"][:4]
-    dom_eg = ", ".join(f"{x['league']} {f(x['champion'], 2)}" for x in lg)
     steps = rs["example"]["steps"]
-    step_txt = ", ".join(f(s) for s in steps[:4])
 
-    # Region factor examples for the latest year (strongest league, then a few others).
+    # Region factor examples for the latest year (strongest league, then a few others):
+    # (league, factor), league None = the strongest league.
     rexp = p["region_exp"]
-    rf = []
+    region_factors: list[tuple[Optional[str], str]] = []
     if lg:
-        top_strength = 0.5 ** rexp
-        rf.append(f"facing the strongest league gives {f(top_strength, 2)}")
+        region_factors.append((None, f(0.5**rexp, 2)))
         from .scoring import load_league_elos
 
         elos = load_league_elos(yr) or {}
@@ -1041,7 +1057,59 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
             if e is None:
                 continue
             base = 1.0 / (1.0 + 10 ** ((peak - e) / 400.0))
-            rf.append(f"facing the {x['league']} gives {f(base ** rexp, 2)}")
+            region_factors.append((x["league"], f(base**rexp, 2)))
+
+    e1, e2, e3 = p["era"]
+    pb = p["peak_bonus"]
+    return SimpleNamespace(
+        pts=pts,
+        wc=f(p["w_career"]),
+        wp=f(p["w_pace"]),
+        wk=f(p["w_peak"]),
+        wb=f(p["w_bonus"]),
+        d=f(p["decay"]),
+        e1=f(e1, 3),
+        e2=f(e2, 3),
+        e3=f(e3, 3),
+        pb=f(pb),
+        peak3=f(10 * (1 + pb * 2)),
+        divisor=f(p["divisor"]),
+        pace_prior=f(p["pace_prior"]),
+        alpha=f(p["alpha"]),
+        beta=f(p["beta"]),
+        win30=f(p["beta"] * 0.7, 3),
+        lose80=f(p["beta"] * 0.8, 3),
+        rexp=f(rexp),
+        w_playoff=f(p["w_playoff"]),
+        intl_weight=f(p["intl_weight"]),
+        tw={code: f(e["tournament_weight"]) for code, e in ev.items()},
+        champ_per_weight=f(rs["champ_per_weight"] * p["w_bonus"], 3),
+        o_lo=f(min(e["points"]["champion"] for e in others)),
+        o_hi=f(max(e["points"]["champion"] for e in others)),
+        aw={k: f(v) for k, v in aw.items()},
+        dom_champion=f(dom["champion"]),
+        dom_finalist=f(dom["finalist"]),
+        year=yr,
+        dom_eg=[(x["league"], f(x["champion"], 2)) for x in lg],
+        steps=[f(s) for s in steps[:4]],
+        total=f(rs["example"]["total"]),
+        six=f(6 * steps[0]),
+        region_factors=region_factors,
+    )
+
+
+def _web_glossary_text(c: SimpleNamespace) -> dict[str, tuple[str, str]]:
+    """term -> (site label, plain-English definition). See the block comment above."""
+    pts = c.pts
+    wc, wp, wk, wb, d = c.wc, c.wp, c.wk, c.wb, c.d
+    yr = c.year
+    o_lo, o_hi, aw = c.o_lo, c.o_hi, c.aw
+    dom_eg = ", ".join(f"{lg} {v}" for lg, v in c.dom_eg)
+    step_txt = ", ".join(c.steps)
+    rf = [
+        f"facing the strongest league gives {v}" if lg is None else f"facing the {lg} gives {v}"
+        for lg, v in c.region_factors
+    ]
     rf_txt = f" (in {yr}, " + ", ".join(rf) + ")" if rf else ""
 
     return {
@@ -1065,8 +1133,8 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
         "CLR": (
             "Career Legend Rating (CLR)",
             f"The headline number the all-time board is ranked by. It adds up four weighted "
-            f"parts: CLR = {f(wc)} × Career value + {f(wp)} × Pace value + {f(wk)} × Peak value + "
-            f"{f(wb)} × Résumé. The first three are built from LPS, the season performance score "
+            f"parts: CLR = {wc} × Career value + {wp} × Pace value + {wk} × Peak value + "
+            f"{wb} × Résumé. The first three are built from LPS, the season performance score "
             f"described below, and each is on the scale of roughly one season of LPS, so the "
             f"weights compare directly. Career value rewards longevity, pace value rewards how "
             f"much a player produced per season, peak value rewards how high their best seasons "
@@ -1078,34 +1146,34 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
         "CareerVal": (
             "Career value",
             f"Total career production, scaled to a typical career. Career LPS (every season's "
-            f"LPS added together) is divided by {f(p['divisor'])}, the average career length in "
+            f"LPS added together) is divided by {c.divisor}, the average career length in "
             f"years of the top 100 retired players. Longer careers keep a proportional edge; "
             f"shorter ones score less. Before the seasons are added up, each is multiplied by an "
-            f"era factor, because early seasons had fewer events to earn points in: ×{f(e1, 3)} "
-            f"for 2014 and earlier, ×{f(e2, 3)} for 2015–2017 and ×{f(e3, 3)} from 2018 on. Shown "
-            f"multiplied by its CLR weight ({f(wc)}).",
+            f"era factor, because early seasons had fewer events to earn points in: ×{c.e1} "
+            f"for 2014 and earlier, ×{c.e2} for 2015–2017 and ×{c.e3} from 2018 on. Shown "
+            f"multiplied by its CLR weight ({wc}).",
         ),
         "PaceVal": (
             "Pace value",
             f"How much a player produced per season: career LPS divided by the number of "
             f"seasons played. Short careers are noisy, so this is blended with the average "
             f"player's figure, trusting the player's own number more the more they have played "
-            f"(their share is games ÷ (games + {f(p['pace_prior'])}), counting games adjusted for "
+            f"(their share is games ÷ (games + {c.pace_prior}), counting games adjusted for "
             f"schedule length and stakes). A brilliant short career still scores well, but a "
             f"handful of lucky games can't top the board. It balances career value, which "
-            f"rewards length. Shown multiplied by its CLR weight ({f(wp)}).",
+            f"rewards length. Shown multiplied by its CLR weight ({wp}).",
         ),
         "PeakVal": (
             "Peak value",
             f"How high a player's best stretch of seasons was. Sort the player's seasons from "
             f"best to worst by LPS (era-adjusted, as in career value). For each number of "
-            f"seasons k, take the average of the best k and add a length bonus of {f(pb)} × (the "
+            f"seasons k, take the average of the best k and add a length bonus of {c.pb} × (the "
             f"k-th best season) × (k − 1); peak value is the largest of these. A one-season peak "
             f"scores exactly that season, while k equally good seasons of S score S × (1 + "
-            f"{f(pb)} × (k − 1)): three seasons of 10 score {f(10 * (1 + pb * 2))}. A weaker "
+            f"{c.pb} × (k − 1)): three seasons of 10 score {c.peak3}. A weaker "
             f"season only joins the peak if it is close to the others (about three-quarters of "
             f"the best or better). Improving any season can never lower peak value. Shown "
-            f"multiplied by its CLR weight ({f(wk)}).",
+            f"multiplied by its CLR weight ({wk}).",
         ),
         "PeakYrs": (
             "Peak years",
@@ -1123,14 +1191,14 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
             f"results that a box score can't see. It isn't a model; every achievement has a "
             f"fixed point value, listed in full in the tables below. A Worlds title is worth "
             f"{pts('WLDs', 'champion')} CLR, an MSI title {pts('MSI', 'champion')}, a domestic "
-            f"league title up to {f(dom['champion'])}, and a domestic season MVP up to "
-            f"{f(aw['regional_mvp'])}. Team results are credited in full to every player on the "
+            f"league title up to {c.dom_champion}, and a domestic season MVP up to "
+            f"{aw['regional_mvp']}. Team results are credited in full to every player on the "
             f"roster (not split between them), and each lands in the season and lane the player "
             f"played that year. Winning the same thing again is worth less each time: the best "
-            f"one counts in full and each repeat is worth {f(d)}× the one before, so six Worlds "
-            f"titles add {step_txt}, … = {f(rs['example']['total'])} rather than "
-            f"{f(6 * steps[0])}. Résumé points are not adjusted for era or schedule. The values "
-            f"above are after the résumé's CLR weight ({f(wb)}); profiles show the résumé the "
+            f"one counts in full and each repeat is worth {d}× the one before, so six Worlds "
+            f"titles add {step_txt}, … = {c.total} rather than "
+            f"{c.six}. Résumé points are not adjusted for era or schedule. The values "
+            f"above are after the résumé's CLR weight ({wb}); profiles show the résumé the "
             f"same way, so career + pace + peak + résumé = CLR.",
         ),
         "Intl": (
@@ -1140,10 +1208,10 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
             f"Rivals, IEM, IPL, MLG, DreamHack, the Asia Invitational, the International Wildcard "
             f"Invitational and the 2012 OGN Champions. A Worlds title is worth "
             f"{pts('WLDs', 'champion')} CLR and an MSI title {pts('MSI', 'champion')}. Every "
-            f"other event's title is worth {f(rs['champ_per_weight'] * wb, 3)} × its tournament "
+            f"other event's title is worth {c.champ_per_weight} × its tournament "
             f"weight, the same importance weight LPS gives that event's games (based on its "
             f"viewership next to Worlds, or set by hand for old or small events), which puts "
-            f"them between {f(o_lo)} and {f(o_hi)}. Lower finishes earn a fixed share of the "
+            f"them between {o_lo} and {o_hi}. Lower finishes earn a fixed share of the "
             f"title value: runner-up ½, semifinal ¼, quarterfinal ⅛, group stage 4%. So Worlds "
             f"pays {pts('WLDs', 'finalist')} for a lost final, {pts('WLDs', 'semifinalist')} "
             f"for a semifinal, {pts('WLDs', 'quarterfinalist')} for a quarterfinal and "
@@ -1152,7 +1220,7 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
         "Titles": (
             "Domestic titles and cups",
             f"Points for domestic league playoffs and cups. Winning a split's playoffs is worth "
-            f"{f(dom['champion'])} CLR and losing the final {f(dom['finalist'])}, each multiplied "
+            f"{c.dom_champion} CLR and losing the final {c.dom_finalist}, each multiplied "
             f"by the league's strength that year: its regional Elo rating divided by the "
             f"strongest league's. In {yr} a title is worth {dom_eg}. A league with no rating that "
             f"year (one that sent no team to international events) scores 0. The KeSPA Cup "
@@ -1164,9 +1232,9 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
             f"Points for MVP awards and All-Pro selections, pulled from Leaguepedia. Honors at "
             f"Worlds, MSI and other international events are flat; domestic ones are multiplied "
             f"by league strength, like titles. A Worlds Finals MVP or tournament MVP is worth "
-            f"{f(aw['worlds_finals_mvp'])} CLR, a domestic season MVP up to "
-            f"{f(aw['regional_mvp'])} and a domestic All-Pro 1st-team pick up to "
-            f"{f(aw['all_pro_1'])}. Awards are deliberately small next to team results; they "
+            f"{aw['worlds_finals_mvp']} CLR, a domestic season MVP up to "
+            f"{aw['regional_mvp']} and a domestic All-Pro 1st-team pick up to "
+            f"{aw['all_pro_1']}. Awards are deliberately small next to team results; they "
             f"mostly separate teammates who shared the same trophies.",
         ),
         "Resume breakdown (# / Pt columns)": (
@@ -1183,7 +1251,7 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
         "WldsChmp# / WldsChmpPt": (
             "Worlds titles",
             f"World Championships won. The first is worth {pts('WLDs', 'champion')}; each "
-            f"further title is worth {f(d)}× the one before ({step_txt}, …).",
+            f"further title is worth {d}× the one before ({step_txt}, …).",
         ),
         "WldsFin# / WldsFinPt": (
             "Worlds runner-up",
@@ -1213,7 +1281,7 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
         "IntlChmp# / IntlChmpPt": (
             "Other international titles",
             f"Titles at every other event between regions (First Stand, the Esports World Cup, "
-            f"Rift Rivals, IEM and the rest), worth {f(o_lo)} to {f(o_hi)} depending on the "
+            f"Rift Rivals, IEM and the rest), worth {o_lo} to {o_hi} depending on the "
             f"event's weight (see the table above).",
         ),
         "IntlFin# / IntlFinPt": (
@@ -1227,13 +1295,13 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
         ),
         "DomChmp# / DomChmpPt": (
             "Domestic league titles",
-            f"Domestic split-playoff wins, up to {f(dom['champion'])} each, scaled by league "
+            f"Domestic split-playoff wins, up to {c.dom_champion} each, scaled by league "
             f"strength. All of a player's league titles share one repeat discount, whichever "
             f"league they came from.",
         ),
         "DomFin# / DomFinPt": (
             "Domestic runner-up",
-            f"Domestic playoff finals lost, up to {f(dom['finalist'])} each, scaled by league "
+            f"Domestic playoff finals lost, up to {c.dom_finalist} each, scaled by league "
             f"strength and discounted for repeats.",
         ),
         "DomCup# / DomCupPt": (
@@ -1255,16 +1323,16 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
         "LPS": (
             "League Performance Score (LPS)",
             f"A player's score for one season, built game by game. Every game earns three "
-            f"things: a win credit of {f(p['alpha'])} if the team won the series; the player's "
+            f"things: a win credit of {c.alpha} if the team won the series; the player's "
             f"contribution, meaning how much their play moved the team's chance of winning "
             f"compared with an average player in the same spot; and a win bonus for beating the "
             f"odds. That total is multiplied by a region factor for the strength of the "
             f"opposition, so the same performance is worth more against stronger leagues. The "
             f"games of a best-of series are averaged into one match score. Matches are then "
             f"added up across the season: a full regular season is worth the same in every "
-            f"league however long its schedule, a full playoff run is worth {f(p['w_playoff'])}× "
+            f"league however long its schedule, a full playoff run is worth {c.w_playoff}× "
             f"that, and international events count by importance (Worlds 1, MSI "
-            f"{f(ev['MSI']['tournament_weight'])}, and so on). Last, each season is rescaled to a "
+            f"{c.tw['MSI']}, and so on). Last, each season is rescaled to a "
             f"common schedule length, so seasons from different years are worth the same and "
             f"add up to career LPS. Playing more, going deeper and winning bigger events all "
             f"raise LPS.",
@@ -1294,10 +1362,10 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
         ),
         "Baseline": (
             "Win credit (baseline)",
-            f"The flat part of each game's score: {f(p['alpha'])} points times the region "
+            f"The flat part of each game's score: {c.alpha} points times the region "
             f"factor, paid only when the player's team wins the series. The region factor is "
             f"the chance the opponent's league would beat that year's strongest league (from "
-            f"regional Elo ratings), raised to the power {f(rexp)}{rf_txt}. The factor "
+            f"regional Elo ratings), raised to the power {c.rexp}{rf_txt}. The factor "
             f"multiplies the whole game score, not just this part, which is how LPS rewards "
             f"competing against strong opposition.",
         ),
@@ -1315,11 +1383,11 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
         ),
         "WinBonus": (
             "Win bonus",
-            f"Credit for winning when the stats said you shouldn't: {f(p['beta'])} × (result − "
+            f"Credit for winning when the stats said you shouldn't: {c.beta} × (result − "
             f"predicted chance of winning), where result is 1 for a win and 0 for a loss, times "
             f"the region factor. Winning a game the model gave a 30% chance adds "
-            f"{f(p['beta'] * 0.7, 3)} before the region factor; losing one it gave 80% takes "
-            f"away {f(p['beta'] * 0.8, 3)}.",
+            f"{c.win30} before the region factor; losing one it gave 80% takes "
+            f"away {c.lose80}.",
         ),
         "Kills/Deaths/Assists/Damage": (
             "Contribution by stat",
@@ -1350,12 +1418,12 @@ def _web_glossary_text(p: dict, rs: dict) -> dict[str, tuple[str, str]]:
         "Regular / Playoffs / Tourneys": (
             "Regular season, playoffs, tournaments",
             f"Season LPS split by phase. A full regular season is worth the same in every league; "
-            f"a full playoff run is worth {f(p['w_playoff'])}× that. International events and "
+            f"a full playoff run is worth {c.w_playoff}× that. International events and "
             f"domestic cups are weighted by importance (Worlds 1, MSI "
-            f"{f(ev['MSI']['tournament_weight'])}, First Stand {f(ev['FST']['tournament_weight'])}, "
-            f"KeSPA Cup {f(ev['KeSPA']['tournament_weight'])}), a champion's full run is worth the "
+            f"{c.tw['MSI']}, First Stand {c.tw['FST']}, "
+            f"KeSPA Cup {c.tw['KeSPA']}), a champion's full run is worth the "
             f"event's weight however many matches the bracket has, and the year's deepest "
-            f"international run is worth {f(p['intl_weight'])}× a full regular season. The three "
+            f"international run is worth {c.intl_weight}× a full regular season. The three "
             f"phases add up to LPS.",
         ),
         "AvgWinProb": (
@@ -1413,9 +1481,14 @@ def web_glossary(about: Optional[dict] = None, year: Optional[int] = None) -> di
     """glossary.json: every workbook glossary term with its site label and wording, plus the
     résumé point tables (`resume_scoring`). `about` is the parsed About sheet (meta['about'])
     and `year` the latest season (for the league-strength examples)."""
+    from .web_glossary_i18n import glossary_text_ko, glossary_text_zh
+
     p = _glossary_params(about or {})
     rs = _resume_scoring(p, int(year if year is not None else YEARS_DEFAULT[-1]))
-    text = _web_glossary_text(p, rs)
+    ctx = _glossary_ctx(p, rs)
+    text = _web_glossary_text(ctx)
+    # Site translations (/about in Korean and Chinese); a term without one shows in English.
+    i18n = {"ko": glossary_text_ko(ctx), "zh": glossary_text_zh(ctx)}
     terms = [k for k, _ in _GLOSSARY]
     stale = sorted(set(text) - set(terms))
     if stale:
@@ -1423,12 +1496,21 @@ def web_glossary(about: Optional[dict] = None, year: Optional[int] = None) -> di
     missing = [k for k in terms if k not in text]
     if missing:
         logger.warning("glossary: no site wording for %s; using the workbook text", missing)
+    for loc, tr in i18n.items():
+        untranslated = [k for k in text if k not in tr]
+        if untranslated:
+            logger.warning("glossary: no %s wording for %s; the site shows English", loc, untranslated)
     return {
         "entries": [
             {
                 "term": k,
                 "label": text.get(k, (k, v))[0],
                 "definition": text.get(k, (k, v))[1],
+                **(
+                    {"i18n": {loc: {"label": tr[k][0], "definition": tr[k][1]} for loc, tr in i18n.items() if k in tr}}
+                    if any(k in tr for tr in i18n.values())
+                    else {}
+                ),
             }
             for k, v in _GLOSSARY
         ],

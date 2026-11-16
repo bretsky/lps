@@ -1,9 +1,14 @@
+"use client";
+
 import type { PlayerDetail } from "@/lib/types";
 import { fmt, laneLabel } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 
 // Level 5 — splits by team/league/lane, per-game rates, region context, HN peer rank.
 
 export function SplitsPanel({ player }: { player: PlayerDetail }) {
+  const m = useT();
+  const r = m.splits.rate;
   const teams = player.splits.teams ?? [];
   const leagues = player.splits.leagues ?? [];
   const lanes = player.splits.lanes ?? [];
@@ -11,81 +16,72 @@ export function SplitsPanel({ player }: { player: PlayerDetail }) {
   return (
     <section className="deco-panel">
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="deco-title">
-          Splits & Context
-        </h2>
+        <h2 className="deco-title">{m.splits.title}</h2>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <SplitList title="Teams" items={teams} />
-        <SplitList title="Leagues" items={leagues} />
-        <SplitList
-          title="Lanes"
-          items={lanes.map((l) => ({ ...l, name: laneLabel(l.name) }))}
-        />
+        <SplitList title={m.splits.teams} items={teams} />
+        <SplitList title={m.splits.leagues} items={leagues} />
+        <SplitList title={m.splits.lanes} items={lanes.map((l) => ({ ...l, name: laneLabel(m, l.name) }))} />
       </div>
 
       <div className="mt-5 grid gap-3 border-t border-border/60 pt-4 sm:grid-cols-2 lg:grid-cols-4">
         <Rate
-          label="LPS / Game"
+          label={r.lpsGame.label}
           value={fmt(player.rates.pts_per_game_w, 3)}
-          hint="Weighted per-game LPS (phase & stakes adjusted)."
+          hint={r.lpsGame.hint}
         />
         <Rate
-          label="Clutch Gap"
+          label={r.clutch.label}
           value={fmt(player.rates.clutch_gap, 3)}
-          hint="Difference in per-game production in higher-stakes games."
+          hint={r.clutch.hint}
           signed
           numeric={player.rates.clutch_gap}
         />
         <Rate
-          label="Intangibles"
+          label={r.intangibles.label}
           value={fmt(player.rates.avg_resid, 3)}
-          hint="Avg residual — unmodeled per-game value (avg_resid)."
+          hint={r.intangibles.hint}
           signed
           numeric={player.rates.avg_resid}
         />
         <Rate
-          label="SoS"
+          label={r.sos.label}
           value={fmt(player.rates.sched_strength, 2)}
-          hint="Schedule strength — avg opponent quality faced."
+          hint={r.sos.hint}
         />
         <Rate
-          label="Region Elo"
+          label={r.regionElo.label}
           value={fmt(player.region_elo, 0)}
-          hint="Current region strength (season-avg Elo of primary league)."
+          hint={r.regionElo.hint}
         />
         <Rate
-          label="Avg Contribution"
+          label={r.avgContrib.label}
           value={fmt(player.rates.avg_contrib, 3)}
-          hint="Per-game contribution above baseline (win-prob added)."
+          hint={r.avgContrib.hint}
           signed
           numeric={player.rates.avg_contrib}
         />
         <Rate
-          label="HN Rank (lane)"
+          label={r.hnLane.label}
           value={
             player.high_noon.hn_lane != null
               ? `#${fmt(player.high_noon.hn_lane, 1)}`
               : "—"
           }
           hint={
-            player.high_noon.hn_lane_yrs
-              ? `Best-N seasons: ${player.high_noon.hn_lane_yrs}`
-              : "High Noon peer rank across best seasons within lane."
+            player.high_noon.hn_lane_yrs ? m.splits.bestN(player.high_noon.hn_lane_yrs) : r.hnLane.hint
           }
         />
         <Rate
-          label="HN Rank (global)"
+          label={r.hnGlobal.label}
           value={
             player.high_noon.hn_global != null
               ? `#${fmt(player.high_noon.hn_global, 1)}`
               : "—"
           }
           hint={
-            player.high_noon.hn_global_yrs
-              ? `Best-N seasons: ${player.high_noon.hn_global_yrs}`
-              : "High Noon peer rank across best seasons vs all lanes."
+            player.high_noon.hn_global_yrs ? m.splits.bestN(player.high_noon.hn_global_yrs) : r.hnGlobal.hint
           }
         />
       </div>

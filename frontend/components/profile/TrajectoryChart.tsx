@@ -18,6 +18,7 @@ import {
   Shield,
 } from "./AchievementIcons";
 import { leagueIcon } from "@/lib/icons";
+import { useT } from "@/lib/i18n";
 
 // Official event marks drawn as alpha masks so the medal tint (currentColor)
 // still reads: gold / silver / bronze Worlds, MSI, First Stand and EWC logos.
@@ -61,26 +62,10 @@ const CUP_ICON: Record<TournamentFamily, IconComponent> = {
   cup: Laurel,
 };
 
-const CUP_LABEL: Record<TournamentFamily, string> = {
-  worlds: "Worlds",
-  msi: "MSI",
-  first_stand: "First Stand",
-  ewc: "Esports World Cup",
-  intl: "Other international",
-  domestic: "Domestic league",
-  cup: "Domestic cup",
-};
-
 const MEDAL_TONE: Record<Medal, string> = {
   gold: "text-gold-bright",
   silver: "text-slate-300",
   bronze: "text-[#d18a55]",
-};
-
-const MEDAL_LABEL: Record<Medal, string> = {
-  gold: "champion",
-  silver: "finalist",
-  bronze: "semifinalist",
 };
 
 const CUP_ORDER: TournamentFamily[] = ["worlds", "msi", "first_stand", "ewc", "intl", "domestic", "cup"];
@@ -96,6 +81,7 @@ const PHASE_COLORS = {
 } as const;
 
 export function TrajectoryChart({ player }: { player: PlayerDetail }) {
+  const m = useT();
   const breakdown = player.trajectory_breakdown ?? {};
 
   const entries = Object.entries(player.trajectory ?? {})
@@ -132,12 +118,9 @@ export function TrajectoryChart({ player }: { player: PlayerDetail }) {
   return (
     <section className="deco-panel">
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="deco-title">
-          Season-by-Season
-        </h2>
+        <h2 className="deco-title">{m.season.title}</h2>
         <div className="text-xs text-text-dim">
-          Peak {fmt(player.career_lps.peak_lps, 1)}
-          {peakYear && <> ({peakYear})</>} · {entries.length} seasons
+          {m.season.summary(fmt(player.career_lps.peak_lps, 1), peakYear, entries.length)}
         </div>
       </div>
 
@@ -172,7 +155,7 @@ export function TrajectoryChart({ player }: { player: PlayerDetail }) {
 
         {/* Row 3: year labels */}
         <div className="mt-1 grid gap-x-1.5" style={gridStyle}>
-          <RowLabel>Year</RowLabel>
+          <RowLabel>{m.season.year}</RowLabel>
           {entries.map(([year]) => (
             <div
               key={`yr-${year}`}
@@ -185,7 +168,7 @@ export function TrajectoryChart({ player }: { player: PlayerDetail }) {
 
         {/* Row 4: team logos / names */}
         <div className="mt-0.5 grid gap-x-1.5" style={gridStyle}>
-          <RowLabel>Team</RowLabel>
+          <RowLabel>{m.season.team}</RowLabel>
           {entries.map(([year]) => {
             const teams = yearTeams[String(year)] ?? [];
             if (teams.length === 0) return <div key={`t-${year}`} />;
@@ -257,6 +240,8 @@ function BarAndRankOverlay({
   upperFrac: number;
   lowerFrac: number;
 }) {
+  const m = useT();
+  const tip = m.season.tip;
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   // Viewport anchor for the tooltip. It's portalled to <body> with fixed
   // positioning: the chart sits in an overflow-x scroller (which forces
@@ -471,25 +456,25 @@ function BarAndRankOverlay({
             {teams.length > 0 && (
               <div className="text-text-dim">{teams.map((t) => t.name).join(" / ")}</div>
             )}
-            <div className="font-semibold text-text-muted">{fmt(v, 2)} LPS</div>
+            <div className="font-semibold text-text-muted">{tip.lps(fmt(v, 2))}</div>
             {bd && (
               <div className="mt-0.5 space-y-0.5">
                 {(bd.reg_pts ?? 0) > 0 && (
-                  <div style={{ color: "rgb(34,211,238)" }}>Regular {fmt(bd.reg_pts!, 2)}</div>
+                  <div style={{ color: "rgb(34,211,238)" }}>{tip.regular(fmt(bd.reg_pts!, 2))}</div>
                 )}
                 {(bd.playoff_pts ?? 0) > 0 && (
-                  <div style={{ color: "rgb(167,139,250)" }}>Playoffs {fmt(bd.playoff_pts!, 2)}</div>
+                  <div style={{ color: "rgb(167,139,250)" }}>{tip.playoffs(fmt(bd.playoff_pts!, 2))}</div>
                 )}
                 {(bd.tourn_pts ?? 0) > 0 && (
-                  <div style={{ color: "rgb(251,191,36)" }}>Intl {fmt(bd.tourn_pts!, 2)}</div>
+                  <div style={{ color: "rgb(251,191,36)" }}>{tip.intl(fmt(bd.tourn_pts!, 2))}</div>
                 )}
               </div>
             )}
             {yr?.global != null && (
-              <div style={{ color: "rgb(241,213,143)" }}>Global #{yr.global}</div>
+              <div style={{ color: "rgb(241,213,143)" }}>{tip.global(yr.global)}</div>
             )}
             {yr?.lane != null && (
-              <div style={{ color: "rgb(31,209,193)" }}>Lane #{yr.lane}</div>
+              <div style={{ color: "rgb(31,209,193)" }}>{tip.lane(yr.lane)}</div>
             )}
           </div>
         );
@@ -509,6 +494,8 @@ function RowLabel({ children }: { children: ReactNode }) {
 }
 
 function AchievementCell({ ach, league }: { ach: YearAchievements; league?: string }) {
+  const m = useT();
+  const s = m.season;
   const lg = leagueIcon(league);
   const chips: ReactNode[] = [];
 
@@ -523,7 +510,7 @@ function AchievementCell({ ach, league }: { ach: YearAchievements; league?: stri
         chips.push(
           <span
             key={`${family}-${medal}`}
-            title={`${league} ${MEDAL_LABEL[medal]}${n > 1 ? ` ×${n}` : ""}`}
+            title={s.chip(league ?? s.cup.domestic, s.medal[medal], n)}
             className={`inline-flex items-center gap-0.5 leading-none ${MEDAL_TONE[medal]}`}
           >
             <span
@@ -543,7 +530,7 @@ function AchievementCell({ ach, league }: { ach: YearAchievements; league?: stri
           key={`${family}-${medal}`}
           Icon={Icon}
           tone={MEDAL_TONE[medal]}
-          title={`${CUP_LABEL[family]} ${MEDAL_LABEL[medal]}${n > 1 ? ` ×${n}` : ""}`}
+          title={s.chip(s.cup[family], s.medal[medal], n)}
           n={n}
         />,
       );
@@ -555,7 +542,7 @@ function AchievementCell({ ach, league }: { ach: YearAchievements; league?: stri
         key="mvp"
         Icon={Star}
         tone="text-rose-400"
-        title={`MVP award${(ach.mvp ?? 0) > 1 ? ` ×${ach.mvp}` : ""}`}
+        title={s.mvpChip(ach.mvp ?? 0)}
         n={ach.mvp ?? 0}
       />,
     );
@@ -566,7 +553,7 @@ function AchievementCell({ ach, league }: { ach: YearAchievements; league?: stri
         key="allpro"
         Icon={Shield}
         tone="text-indigo-300"
-        title={`All-Pro selection${(ach.allpro ?? 0) > 1 ? ` ×${ach.allpro}` : ""}`}
+        title={s.allproChip(ach.allpro ?? 0)}
         n={ach.allpro ?? 0}
       />,
     );
@@ -604,63 +591,65 @@ function IconChip({
 }
 
 function Legend() {
+  const m = useT();
+  const l = m.season.legend;
   return (
     <div className="mt-4 space-y-2 border-t border-border/60 pt-3 text-[10px] text-text-muted">
       <div className="flex flex-wrap gap-x-4 gap-y-1">
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-2 w-2 rounded-sm bg-cyan-600/70" /> regular season
+          <span className="inline-block h-2 w-2 rounded-sm bg-cyan-600/70" /> {l.regular}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-2 w-2 rounded-sm bg-violet-500/70" /> playoffs
+          <span className="inline-block h-2 w-2 rounded-sm bg-violet-500/70" /> {l.playoffs}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-2 w-2 rounded-sm bg-amber-400/80" /> international
+          <span className="inline-block h-2 w-2 rounded-sm bg-amber-400/80" /> {l.intl}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-2 w-2 rounded-sm ring-2 ring-fuchsia-400 ring-inset bg-transparent" /> peak yr
+          <span className="inline-block h-2 w-2 rounded-sm ring-2 ring-fuchsia-400 ring-inset bg-transparent" /> {l.peakYr}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-2 w-2 rounded-sm bg-rose-500/60" /> negative
+          <span className="inline-block h-2 w-2 rounded-sm bg-rose-500/60" /> {l.negative}
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block h-0.5 w-4 rounded-sm" style={{ background: "rgb(241,213,143)" }} />
-          HN global rank
+          {l.hnGlobal}
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block h-0.5 w-4 rounded-sm" style={{ background: "rgb(31,209,193)" }} />
-          HN lane rank
+          {l.hnLane}
         </span>
-        <span className="text-text-dim">(line top = rank #1)</span>
+        <span className="text-text-dim">{l.lineTop}</span>
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-        <span className="uppercase tracking-widest text-text-dim">Cup = tournament:</span>
+        <span className="uppercase tracking-widest text-text-dim">{l.cups}</span>
         {CUP_ORDER.map((f) => {
           const Icon = CUP_ICON[f];
           return (
             <span key={f} className="inline-flex items-center gap-1 text-accent-gold">
               <Icon className="h-4 w-4" />
-              <span className="text-text-muted">{CUP_LABEL[f]}</span>
+              <span className="text-text-muted">{m.season.cup[f]}</span>
             </span>
           );
         })}
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-        <span className="uppercase tracking-widest text-text-dim">Tint = placement:</span>
-        {MEDAL_ORDER.map((m) => (
-          <span key={m} className={`inline-flex items-center gap-1 ${MEDAL_TONE[m]}`}>
+        <span className="uppercase tracking-widest text-text-dim">{l.tint}</span>
+        {MEDAL_ORDER.map((medal) => (
+          <span key={medal} className={`inline-flex items-center gap-1 ${MEDAL_TONE[medal]}`}>
             <CupDomestic className="h-4 w-4" />
-            <span className="text-text-muted">{MEDAL_LABEL[m]}</span>
+            <span className="text-text-muted">{m.season.medal[medal]}</span>
           </span>
         ))}
         <span className="inline-flex items-center gap-1 text-rose-400">
           <Star className="h-4 w-4" />
-          <span className="text-text-muted">MVP award</span>
+          <span className="text-text-muted">{l.mvp}</span>
         </span>
         <span className="inline-flex items-center gap-1 text-indigo-300">
           <Shield className="h-4 w-4" />
-          <span className="text-text-muted">All-Pro selection</span>
+          <span className="text-text-muted">{l.allpro}</span>
         </span>
       </div>
     </div>

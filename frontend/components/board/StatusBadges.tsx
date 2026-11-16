@@ -1,9 +1,12 @@
+"use client";
+
 import type { IndexRow } from "@/lib/types";
+import { useT } from "@/lib/i18n";
 
 // Hall of Legends crown -- a small gold inline icon rendered inline with the
 // player's name.  Tooltip shows induction year when known.
 export function HolCrown({ year }: { year: number | null }) {
-  const title = year ? `Hall of Legends inductee (${year})` : "Hall of Legends inductee";
+  const title = useT().status.hol(year);
   return (
     <span
       title={title}
@@ -22,11 +25,12 @@ export function HolCrown({ year }: { year: number | null }) {
 // text chip. Green = currently competing; muted gray = retired;
 // yellow = gray zone (hiatus / military / coaching / unknown).
 export function StatusDot({ row }: { row: Pick<IndexRow, "is_active" | "is_retired"> }) {
+  const m = useT();
   if (row.is_active === true) {
     return (
       <span
-        title="Active — competing this season"
-        aria-label="Active"
+        title={m.status.active}
+        aria-label={m.status.activeShort}
         className="inline-block h-2 w-2 shrink-0 rounded-full bg-emerald-400 ring-2 ring-emerald-400/20"
       />
     );
@@ -34,16 +38,16 @@ export function StatusDot({ row }: { row: Pick<IndexRow, "is_active" | "is_retir
   if (row.is_retired === true) {
     return (
       <span
-        title="Retired"
-        aria-label="Retired"
+        title={m.status.retired}
+        aria-label={m.status.retired}
         className="inline-block h-2 w-2 shrink-0 rounded-full bg-text-dim/60"
       />
     );
   }
   return (
     <span
-      title="Inactive — hiatus, military, coaching, or unknown"
-      aria-label="Inactive"
+      title={m.status.inactive}
+      aria-label={m.status.inactiveShort}
       className="inline-block h-2 w-2 shrink-0 rounded-full bg-amber-400 ring-2 ring-amber-400/20"
     />
   );

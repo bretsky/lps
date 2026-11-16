@@ -1,9 +1,11 @@
+"use client";
 /* eslint-disable @next/next/no-img-element */
 // Official event / league marks, a medal-tinted honor glyph, and the round
 // player portrait used across the board, profile and card.
 
 import type { Honor, TitleTally } from "@/lib/types";
-import { EVENT_ICON, EVENT_LABEL, isEventKind, leagueIcon, type EventKey } from "@/lib/icons";
+import { EVENT_ICON, isEventKind, leagueIcon, type EventKey } from "@/lib/icons";
+import { useT, type Messages } from "@/lib/i18n";
 import { MEDAL_COLOR, MEDAL_METAL } from "@/lib/theme";
 import { CupDomestic, CupIntl } from "@/components/profile/AchievementIcons";
 
@@ -23,11 +25,13 @@ export function EventMark({
   title?: string;
   className?: string;
 }) {
+  const m = useT();
+  const label = title ?? m.events[event];
   return (
     <span
       role="img"
-      aria-label={title ?? EVENT_LABEL[event]}
-      title={title ?? EVENT_LABEL[event]}
+      aria-label={label}
+      title={label}
       className={`mark-mask inline-block shrink-0 ${className}`}
       style={
         {
@@ -69,7 +73,7 @@ export function LeagueMark({
 /** One podium finish as a glyph: official mark for Worlds / MSI / First Stand / EWC /
  *  the league, a cup silhouette for everything else. Medal shown by tint/ring. */
 export function HonorMark({ honor, size = 20 }: { honor: Honor; size?: number }) {
-  const label = honorLabel(honor);
+  const label = honorLabel(useT(), honor);
   if (isEventKind(honor.kind)) {
     return <EventMark event={honor.kind} medal={honor.medal} size={size} title={label} />;
   }
@@ -97,34 +101,31 @@ export function HonorMark({ honor, size = 20 }: { honor: Honor; size?: number })
   );
 }
 
-const PLACE: Record<Medal, string> = { gold: "Champion", silver: "Finalist", bronze: "Semifinalist" };
-
-export function honorLabel(h: Honor): string {
+/** "2023 Worlds — Champion" in the reader's language (`m` = useT()). */
+export function honorLabel(m: Messages, h: Honor): string {
   const what =
     h.kind === "domestic"
-      ? h.league ?? "League"
+      ? h.league ?? m.events.domestic
       : h.kind === "cup" || h.kind === "intl"
-        ? h.event ?? EVENT_LABEL[h.kind]
-        : EVENT_LABEL[h.kind];
-  return `${h.year} ${what} — ${PLACE[h.medal]}`;
+        ? h.event ?? m.events[h.kind]
+        : m.events[h.kind];
+  return m.marks.honor(h.year, what, m.places[h.medal]);
 }
 
 /** "10× LCK champion", "3× LCK, 1× LPL champion"; titles with no known league read "other". */
-function domesticLabel(t: TitleTally): string {
-  const parts = Object.entries(t.leagues ?? {}).map(([lg, n]) => `${n}× ${lg}`);
-  const known = Object.values(t.leagues ?? {}).reduce((a, b) => a + b, 0);
-  const other = (t.domestic ?? 0) - known;
-  if (!parts.length) return `${t.domestic}× domestic champion`;
-  if (other > 0) parts.push(`${other}× other league`);
-  return `${parts.join(", ")} champion`;
+function domesticLabel(m: Messages, t: TitleTally): string {
+  const leagues = Object.entries(t.leagues ?? {});
+  const known = leagues.reduce((a, [, n]) => a + n, 0);
+  return m.marks.domesticChampion(leagues, (t.domestic ?? 0) - known, t.domestic ?? 0);
 }
 
 /** Trophy pills for a rankings row: Worlds / MSI / First Stand / EWC / league titles. */
 export function TrophyPills({ titles, compact = false }: { titles?: TitleTally | null; compact?: boolean }) {
+  const m = useT();
   if (!titles) return <span className="text-xs text-text-dim">—</span>;
   const pills: { key: string; node: React.ReactNode; n: number; label: string }[] = [];
   const ev = (k: EventKey, n?: number) =>
-    n && pills.push({ key: k, n, label: `${n}× ${EVENT_LABEL[k]} champion`, node: <EventMark event={k} size={16} /> });
+    n && pills.push({ key: k, n, label: m.marks.eventChampion(n, m.events[k]), node: <EventMark event={k} size={16} /> });
   ev("worlds", titles.worlds);
   ev("msi", titles.msi);
   ev("first_stand", titles.first_stand);
@@ -133,7 +134,7 @@ export function TrophyPills({ titles, compact = false }: { titles?: TitleTally |
     pills.push({
       key: "dom",
       n: titles.domestic,
-      label: domesticLabel(titles),
+      label: domesticLabel(m, titles),
       node: leagueIcon(titles.league) ? (
         <LeagueMark league={titles.league} size={15} />
       ) : (

@@ -1,7 +1,8 @@
-// Shared visual vocabulary: tier colours/labels, medal metals, and the card
-// "edition" a player is printed as. Keep TIER_COLORS in sync with `tier.*` in
+// Shared visual vocabulary: tier colours, medal metals, and the card "edition" a player is
+// printed as. Tier names and other words are in lib/i18n. Keep TIER_COLORS in sync with `tier.*` in
 // tailwind.config.ts.
 
+import type { Messages } from "./i18n/en";
 import type { PlayerDetail, TierKey } from "./types";
 
 export const TIER_COLORS: Record<TierKey, string> = {
@@ -11,25 +12,6 @@ export const TIER_COLORS: Record<TierKey, string> = {
   elite: "#3fbfe8",
   stars: "#3fd29e",
   contenders: "#8b8e95",
-};
-
-export const TIER_LABELS: Record<TierKey, string> = {
-  goats: "GOATs",
-  legends: "Legends",
-  greats: "Greats",
-  elite: "Elite",
-  stars: "Stars",
-  contenders: "Contenders",
-};
-
-/** Singular tier name for plaques ("GOAT", "Legend", ...). */
-export const TIER_SINGULAR: Record<TierKey, string> = {
-  goats: "GOAT",
-  legends: "Legend",
-  greats: "Great",
-  elite: "Elite",
-  stars: "Star",
-  contenders: "Contender",
 };
 
 export const GOLD = "#c9a45c";
@@ -50,18 +32,22 @@ export const MEDAL_COLOR: Record<"gold" | "silver" | "bronze", string> = {
 };
 
 export interface Edition {
-  label: string;     // "Hall of Legends", "World Champion", "GOAT"
-  color: string;
   kind: "hol" | "worlds" | "tier";
+  tier: TierKey;
+  color: string;
 }
 
 /** Card edition: Hall of Legends > World Champion > the player's tier. */
 export function editionFor(p: PlayerDetail): Edition {
   const tier = p.tier ?? "contenders";
-  if (p.hall_of_legends) return { label: "Hall of Legends", color: GOLD_BRIGHT, kind: "hol" };
-  if ((p.resume_breakdown?.wlds_title?.n ?? 0) > 0)
-    return { label: "World Champion", color: GOLD_BRIGHT, kind: "worlds" };
-  return { label: `${TIER_SINGULAR[tier]} Edition`, color: TIER_COLORS[tier], kind: "tier" };
+  if (p.hall_of_legends) return { kind: "hol", tier, color: GOLD_BRIGHT };
+  if ((p.resume_breakdown?.wlds_title?.n ?? 0) > 0) return { kind: "worlds", tier, color: GOLD_BRIGHT };
+  return { kind: "tier", tier, color: TIER_COLORS[tier] };
+}
+
+/** "Hall of Legends", "World Champion", "GOAT Edition", in the reader's language. */
+export function editionLabel(m: Messages, e: Edition): string {
+  return e.kind === "hol" ? m.edition.hol : e.kind === "worlds" ? m.edition.worlds : m.edition.tier(m.tiers[e.tier].one);
 }
 
 /** Team logo for the card corner: the team the photo was taken on, else the latest. */

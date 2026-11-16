@@ -1,5 +1,8 @@
+"use client";
+
 import type { PlayerDetail } from "@/lib/types";
 import { fmt } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 
 // Level 3 — CareerLPS anatomy. Three orthogonal partitions of `total_score`:
 //   phase      : reg / playoff / tourn  (WHEN)
@@ -8,43 +11,35 @@ import { fmt } from "@/lib/format";
 // Plus a per-tournament bar (WLDs / MSI / EWC / …) drawn from `tournaments`.
 
 const PHASE = [
-  { key: "reg_pts", label: "Regular", color: "bg-slate-500/70" },
-  { key: "playoff_pts", label: "Playoffs", color: "bg-indigo-500/70" },
-  { key: "tourn_pts", label: "International", color: "bg-accent-hex/70" },
+  { key: "reg_pts", color: "bg-slate-500/70" },
+  { key: "playoff_pts", color: "bg-indigo-500/70" },
+  { key: "tourn_pts", color: "bg-accent-hex/70" },
 ] as const;
 
 const COMPONENTS = [
-  {
-    key: "base_pts",
-    label: "Baseline",
-    color: "bg-slate-500/70",
-    hint: "Value earned by simply playing the position on a rated team.",
-  },
-  {
-    key: "contrib_pts",
-    label: "Contribution",
-    color: "bg-emerald-500/70",
-    hint: "Above-expected performance — the model's signal.",
-  },
-  {
-    key: "wbonus_pts",
-    label: "Win Bonus",
-    color: "bg-sky-500/70",
-    hint: "Reward for winning games the model did not predict (beta * (result - p_model)).",
-  },
+  { key: "base_pts", color: "bg-slate-500/70" },
+  { key: "contrib_pts", color: "bg-emerald-500/70" },
+  { key: "wbonus_pts", color: "bg-sky-500/70" },
 ] as const;
 
 const SOURCES = [
-  { key: "kills_pts", label: "Kills", color: "bg-rose-500/70" },
-  { key: "deaths_pts", label: "Deaths", color: "bg-amber-500/70" },
-  { key: "assists_pts", label: "Assists", color: "bg-emerald-500/70" },
-  { key: "damage_pts", label: "Damage", color: "bg-fuchsia-500/70" },
+  { key: "kills_pts", color: "bg-rose-500/70" },
+  { key: "deaths_pts", color: "bg-amber-500/70" },
+  { key: "assists_pts", color: "bg-emerald-500/70" },
+  { key: "damage_pts", color: "bg-fuchsia-500/70" },
 ] as const;
 
 export function CareerLpsAnatomy({ player }: { player: PlayerDetail }) {
-  const phaseVals = PHASE.map((p) => ({ ...p, v: player.phase[p.key] ?? 0 }));
-  const compVals = COMPONENTS.map((c) => ({ ...c, v: player.components[c.key] ?? 0 }));
-  const srcVals = SOURCES.map((s) => ({ ...s, v: player.sources[s.key] ?? 0 }));
+  const m = useT();
+  const a = m.anatomy;
+  const phaseVals = PHASE.map((p) => ({ ...p, label: a.phase[p.key], v: player.phase[p.key] ?? 0 }));
+  const compVals = COMPONENTS.map((c) => ({
+    ...c,
+    label: a.comp[c.key],
+    title: a.compHint[c.key],
+    v: player.components[c.key] ?? 0,
+  }));
+  const srcVals = SOURCES.map((s) => ({ ...s, label: a.source[s.key], v: player.sources[s.key] ?? 0 }));
 
   const tourneys = Object.entries(player.tournaments ?? {})
     .filter(([, v]) => Math.abs(v) > 0.001)
@@ -55,15 +50,13 @@ export function CareerLpsAnatomy({ player }: { player: PlayerDetail }) {
   return (
     <section className="deco-panel space-y-4">
       <div className="flex items-baseline justify-between">
-        <h2 className="deco-title">
-          Career LPS Anatomy
-        </h2>
+        <h2 className="deco-title">{a.title}</h2>
         <div className="text-xs text-text-dim">
-          Total <span className="font-mono text-text">{fmt(total, 1)}</span>
+          {a.total} <span className="font-mono text-text">{fmt(total, 1)}</span>
           {player.career_lps.peak_year && (
             <>
               {" "}
-              · Peak <span className="font-mono text-text">
+              · {a.peak} <span className="font-mono text-text">
                 {fmt(player.career_lps.peak_lps, 1)}
               </span>{" "}
               ({player.career_lps.peak_year})
@@ -72,30 +65,15 @@ export function CareerLpsAnatomy({ player }: { player: PlayerDetail }) {
         </div>
       </div>
 
-      <PartitionBar
-        title="By phase"
-        subtitle="Regular season / playoffs / international events"
-        parts={phaseVals}
-      />
+      <PartitionBar title={a.byPhase} subtitle={a.byPhaseSub} parts={phaseVals} />
 
-      <PartitionBar
-        title="By component"
-        subtitle="Baseline / contribution / win bonus"
-        parts={compVals.map((c) => ({ ...c, title: c.hint }))}
-      />
+      <PartitionBar title={a.byComponent} subtitle={a.byComponentSub} parts={compVals} />
 
-      <PartitionBar
-        title="By stat source"
-        subtitle="Kills / Deaths / Assists / Damage — sums to Contribution"
-        parts={srcVals}
-        signed
-      />
+      <PartitionBar title={a.bySource} subtitle={a.bySourceSub} parts={srcVals} signed />
 
       {tourneys.length > 0 && (
         <div>
-          <div className="mb-1.5 text-[10px] uppercase tracking-widest text-text-dim">
-            By tournament
-          </div>
+          <div className="mb-1.5 text-[10px] uppercase tracking-widest text-text-dim">{a.byTournament}</div>
           <ul className="space-y-1">
             {tourneys.map(([name, v]) => (
               <TournamentRow

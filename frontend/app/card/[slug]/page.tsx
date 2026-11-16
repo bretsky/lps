@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { PlayerCard } from "@/components/card/PlayerCard";
 import { loadIndex, loadPlayer } from "@/lib/data";
 import { displayName } from "@/lib/format";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
+import { DocTitle, T } from "@/components/i18n/T";
 
 export async function generateStaticParams() {
   const rows = await loadIndex();
@@ -50,13 +52,15 @@ export default async function CardPage({
             "radial-gradient(ellipse 40% 55% at 50% 50%, rgba(31,209,193,0.10), transparent 70%), radial-gradient(ellipse 30% 20% at 50% 92%, rgba(201,164,92,0.12), transparent 70%)",
         }}
       />
-      <nav className="relative flex gap-5 self-start font-serif text-[11px] font-bold uppercase tracking-[0.25em] text-text-dim">
+      <DocTitle k="card" args={[displayName(player.playername)]} />
+      <nav className="relative flex w-full items-center gap-5 font-serif text-[11px] font-bold uppercase tracking-[0.25em] text-text-dim">
         <Link href="/" className="hover:text-gold-bright">
-          ◂ Rankings
+          ◂ <T k="nav.rankingsShort" />
         </Link>
         <Link href={`/player/${slug}`} className="hover:text-gold-bright">
-          ◂ Profile
+          ◂ <T k="nav.profile" />
         </Link>
+        <LanguageSwitcher className="ml-auto" />
       </nav>
 
       <div className="relative">
@@ -64,7 +68,7 @@ export default async function CardPage({
       </div>
 
       <p className="relative font-serif text-[10px] font-bold uppercase tracking-[0.35em] text-text-dim">
-        Click the card to flip
+        <T k="card.clickToFlip" />
       </p>
     </main>
   );

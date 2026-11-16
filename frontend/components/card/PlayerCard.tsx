@@ -7,14 +7,15 @@ import type { PlayerDetail, TierKey } from "@/lib/types";
 import { displayName, fmt, fmtInt, fmtPct, laneLabel } from "@/lib/format";
 import {
   TIER_COLORS,
-  TIER_SINGULAR,
   TEAL,
   GOLD,
   cardTeamLogo,
   editionFor,
+  editionLabel,
   upper,
   type Edition,
 } from "@/lib/theme";
+import { useT } from "@/lib/i18n";
 import { EventMark, HonorMark, LeagueMark } from "@/components/ui/Marks";
 import { Star } from "@/components/profile/AchievementIcons";
 import { ChampionIcon } from "@/components/ui/ChampionIcon";
@@ -40,10 +41,10 @@ const clipOct = (inset: number, cut: number) =>
     .join(", ")})`;
 
 const CLR_PARTS = [
-  { key: "career_value" as const, label: "Career", color: "#1fd1c1" },
-  { key: "pace_value" as const, label: "Pace", color: "#3fbfe8" },
-  { key: "peak_value" as const, label: "Peak", color: "#b28bff" },
-  { key: "resume_bonus" as const, label: "Résumé", color: "#e9c77a" },
+  { key: "career_value" as const, part: "career" as const, color: "#1fd1c1" },
+  { key: "pace_value" as const, part: "pace" as const, color: "#3fbfe8" },
+  { key: "peak_value" as const, part: "peak" as const, color: "#b28bff" },
+  { key: "resume_bonus" as const, part: "resume" as const, color: "#e9c77a" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -246,7 +247,7 @@ function RankPlaque({ rank }: { rank: number }) {
         boxShadow: `inset 0 0 0 1px ${GOLD}aa`,
       }}
     >
-      <span className="font-serif text-[7px] font-bold tracking-[0.3em] text-gold">RANK</span>
+      <span className="font-serif text-[7px] font-bold tracking-[0.3em] text-gold">{useT().card.rank}</span>
       <span className="font-display text-[30px] font-black leading-[0.95] text-metal">{rank}</span>
     </div>
   );
@@ -254,6 +255,7 @@ function RankPlaque({ rank }: { rank: number }) {
 
 /** Upper-Deck-style plate: chevron fans either side, edition medallion on top. */
 function Nameplate({ player, edition }: { player: PlayerDetail; edition: Edition }) {
+  const m = useT();
   const handle = displayName(player.playername);
   const handleSize = handle.length > 11 ? 20 : handle.length > 8 ? 24 : 28;
   return (
@@ -304,7 +306,7 @@ function Nameplate({ player, edition }: { player: PlayerDetail; edition: Edition
           <LeagueMark league={player.current_league} size={11} className="shrink-0" />
           <span className="min-w-0 truncate">{player.current_team ?? "—"}</span>
           <span className="shrink-0 text-gold">◆</span>
-          <span className="shrink-0">{laneLabel(player.position)}</span>
+          <span className="shrink-0">{laneLabel(m, player.position)}</span>
         </span>
       </div>
     </div>
@@ -320,6 +322,7 @@ function EditionMedallion({
   tier: TierKey;
   holYear: number | null;
 }) {
+  const m = useT();
   const c = edition.color;
   return (
     <div className="relative flex h-[40px] w-[156px] items-center justify-center">
@@ -334,17 +337,19 @@ function EditionMedallion({
           {edition.kind === "tier" ? (
             <>
               <span className="font-display text-[19px] font-black uppercase tracking-wide" style={{ color: c }}>
-                {TIER_SINGULAR[tier]}
+                {m.tiers[tier].one}
               </span>
-              <span className="mt-[1px] font-serif text-[6.5px] font-bold tracking-[0.35em] text-text-muted">EDITION</span>
+              <span className="mt-[1px] font-serif text-[6.5px] font-bold tracking-[0.35em] text-text-muted">
+                {m.edition.word}
+              </span>
             </>
           ) : (
             <>
               <span className="whitespace-nowrap font-serif text-[9.5px] font-extrabold tracking-[0.12em]" style={{ color: c }}>
-                {upper(edition.label)}
+                {upper(editionLabel(m, edition))}
               </span>
               <span className="mt-[2px] font-serif text-[6.5px] font-bold tracking-[0.35em] text-text-muted">
-                {edition.kind === "hol" && holYear ? `INDUCTED ${holYear}` : "EDITION"}
+                {edition.kind === "hol" && holYear ? m.edition.inducted(holYear) : m.edition.word}
               </span>
             </>
           )}
@@ -374,6 +379,8 @@ function StatTile({ label, value, sub }: { label: string; value: string; sub: st
 }
 
 function TrophyShelf({ player }: { player: PlayerDetail }) {
+  const m = useT();
+  const shelf = m.card.shelf;
   const rb = player.resume_breakdown ?? {};
   const honors = player.honors ?? [];
   const n = (k: string) => rb[k]?.n ?? 0;
@@ -390,32 +397,30 @@ function TrophyShelf({ player }: { player: PlayerDetail }) {
   const fst = count("first_stand");
   const ewc = count("ewc");
   const dom = count("domestic") || n("dom_champ");
-  if (worlds) items.push({ key: "w", n: worlds, title: "Worlds titles", node: <EventMark event="worlds" size={22} /> });
-  if (msi) items.push({ key: "m", n: msi, title: "MSI titles", node: <EventMark event="msi" size={22} /> });
-  if (fst) items.push({ key: "f", n: fst, title: "First Stand titles", node: <EventMark event="first_stand" size={22} /> });
-  if (ewc) items.push({ key: "e", n: ewc, title: "Esports World Cup titles", node: <EventMark event="ewc" size={22} /> });
+  if (worlds) items.push({ key: "w", n: worlds, title: shelf.worlds, node: <EventMark event="worlds" size={22} /> });
+  if (msi) items.push({ key: "m", n: msi, title: shelf.msi, node: <EventMark event="msi" size={22} /> });
+  if (fst) items.push({ key: "f", n: fst, title: shelf.first_stand, node: <EventMark event="first_stand" size={22} /> });
+  if (ewc) items.push({ key: "e", n: ewc, title: shelf.ewc, node: <EventMark event="ewc" size={22} /> });
   if (dom)
     items.push({
       key: "d",
       n: dom,
-      title: "Domestic titles",
+      title: shelf.domestic,
       node: <LeagueMark league={topLeague || player.current_league} size={20} />,
     });
-  if (n("mvp")) items.push({ key: "v", n: n("mvp"), title: "MVP awards", node: <Star className="h-5 w-5 text-gold-bright" /> });
+  if (n("mvp")) items.push({ key: "v", n: n("mvp"), title: shelf.mvp, node: <Star className="h-5 w-5 text-gold-bright" /> });
 
   if (!items.length) {
     return (
       <div className="deco-rule text-[9px] font-semibold uppercase tracking-[0.3em] text-text-dim">
-        <span>
-          {player.first_year}–{player.last_year} · {player.n_years} seasons · {fmtInt(player.games)} games
-        </span>
+        <span>{m.card.noShelf(player.first_year, player.last_year, player.n_years, fmtInt(player.games))}</span>
       </div>
     );
   }
   return (
     <div className="flex items-center justify-center gap-3">
       {items.slice(0, 5).map((it) => (
-        <span key={it.key} title={`${it.n} ${it.title}`} className="flex items-center gap-1">
+        <span key={it.key} title={m.card.shelfTitle(it.n, it.title)} className="flex items-center gap-1">
           {it.node}
           <span className="font-display text-[17px] font-black leading-none text-gold-bright">×{it.n}</span>
         </span>
@@ -429,6 +434,8 @@ function TrophyShelf({ player }: { player: PlayerDetail }) {
 // ---------------------------------------------------------------------------
 
 export function PlayerCard({ player }: { player: PlayerDetail }) {
+  const m = useT();
+  const k = m.card;
   const [flipped, setFlipped] = useState(false);
   const tier = player.tier ?? "contenders";
   const edition = editionFor(player);
@@ -489,7 +496,7 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
         className="relative cursor-pointer select-none"
         onClick={() => setFlipped((f) => !f)}
         role="button"
-        aria-label={flipped ? "Flip to card front" : "Flip to card back"}
+        aria-label={k.flip(!flipped)}
       >
         <div
           className="relative h-full w-full"
@@ -507,13 +514,17 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
             <Nameplate player={player} edition={edition} />
 
             <div className="absolute inset-x-[22px] flex gap-2" style={{ top: 414 }}>
-              <StatTile label="CLR" value={fmt(player.clr, 1)} sub={`#${player.rank} all-time`} />
+              <StatTile label="CLR" value={fmt(player.clr, 1)} sub={k.clrSub(player.rank)} />
               <StatTile
-                label="PEAK"
+                label={k.peak}
                 value={fmt(cl?.peak_lps, 1)}
                 sub={cl?.peak_year ? `LPS · ${cl.peak_year}` : "LPS"}
               />
-              <StatTile label="WIN %" value={fmtPct(player.win_rate).replace("%", "")} sub={`${fmtInt(player.games)} games`} />
+              <StatTile
+                label={k.winPct}
+                value={fmtPct(player.win_rate).replace("%", "")}
+                sub={m.common.games(fmtInt(player.games))}
+              />
             </div>
 
             <div className="absolute inset-x-[22px]" style={{ top: 476 }}>
@@ -537,7 +548,7 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
                     {upper(displayName(player.playername))}
                   </div>
                   <div className="text-[8px] font-semibold uppercase tracking-[0.28em] text-text-dim">
-                    {edition.label} · {laneLabel(player.position)}
+                    {editionLabel(m, edition)} · {laneLabel(m, player.position)}
                   </div>
                 </div>
                 <span className="font-display text-[26px] font-black leading-none" style={{ color: accent }}>
@@ -545,7 +556,7 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
                 </span>
               </div>
               <div className="deco-rule mt-1.5 text-[7px] font-bold tracking-[0.35em] text-gold">
-                <span>PERCENTILE PROFILE</span>
+                <span>{k.percentile}</span>
               </div>
 
               <div className="mt-0.5 flex justify-center">
@@ -566,7 +577,7 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
                   {CLR_PARTS.map((p) => (
                     <div key={p.key} className="text-center">
                       <div className="text-[7px] font-bold uppercase tracking-[0.18em]" style={{ color: p.color }}>
-                        {p.label}
+                        {m.parts[p.part]}
                       </div>
                       <div className="font-mono text-[9px] text-text-muted">{fmt(c[p.key] ?? 0, 1)}</div>
                     </div>
@@ -576,22 +587,25 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
 
               {/* readouts */}
               <div className="mt-2 grid grid-cols-3 gap-x-2 gap-y-1.5 border-y border-gold-deep/50 py-1.5">
-                <Readout label="Career LPS" value={fmtInt(cl?.total_score)} />
-                <Readout label="Seasons" value={`${player.n_years}`} sub={`${player.first_year}–${player.last_year}`} />
-                <Readout label="LPS / game" value={player.rates?.pts_per_game != null ? player.rates.pts_per_game.toFixed(3) : "—"} />
-                <Readout label="Best lane rk" value={hn?.hn_lane_best != null ? `#${hn.hn_lane_best}` : "—"} />
-                <Readout label="Best global rk" value={hn?.hn_global_best != null ? `#${hn.hn_global_best}` : "—"} />
-                <Readout label="Peak years" value={`${cl?.peak_years ?? "—"}`} />
+                <Readout label={k.readout.careerLps} value={fmtInt(cl?.total_score)} />
+                <Readout label={k.readout.seasons} value={`${player.n_years}`} sub={`${player.first_year}–${player.last_year}`} />
+                <Readout
+                  label={k.readout.lpsGame}
+                  value={player.rates?.pts_per_game != null ? player.rates.pts_per_game.toFixed(3) : "—"}
+                />
+                <Readout label={k.readout.bestLane} value={hn?.hn_lane_best != null ? `#${hn.hn_lane_best}` : "—"} />
+                <Readout label={k.readout.bestGlobal} value={hn?.hn_global_best != null ? `#${hn.hn_global_best}` : "—"} />
+                <Readout label={k.readout.peakYears} value={`${cl?.peak_years ?? "—"}`} />
               </div>
 
               {/* signature champions (top 3 by LPS earned) + career KDA */}
               {(player.champions?.length ?? 0) > 0 && (
                 <div className="mt-1.5 flex items-center gap-2">
                   <div className="shrink-0 leading-none">
-                    <div className="font-serif text-[7px] font-bold tracking-[0.3em] text-gold">SIGNATURE</div>
+                    <div className="font-serif text-[7px] font-bold tracking-[0.3em] text-gold">{k.signature}</div>
                     {player.career_stats?.kda != null && (
                       <div className="mt-1 font-mono text-[8px] text-text-dim">
-                        {player.career_stats.kda.toFixed(2)} KDA
+                        {m.common.kda(player.career_stats.kda.toFixed(2))}
                       </div>
                     )}
                   </div>
@@ -604,7 +618,7 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
                             {ch.champion}
                           </div>
                           <div className="mt-[2px] font-mono text-[7.5px] text-text-dim">
-                            {ch.games}g · {fmt(ch.lps, 1)}
+                            {k.champLine(ch.games, fmt(ch.lps, 1))}
                           </div>
                         </div>
                       </div>
@@ -626,14 +640,14 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
                     {moreHonors > 0 && (
                       <span
                         className="shrink-0 font-mono text-[8px] font-bold text-gold"
-                        title={`${moreHonors} more title${moreHonors === 1 ? "" : "s"}`}
+                        title={k.moreTitles(moreHonors)}
                       >
                         +{moreHonors}
                       </span>
                     )}
                   </>
                 ) : (
-                  <span className="text-[8px] uppercase tracking-[0.25em] text-text-dim">No titles yet</span>
+                  <span className="text-[8px] uppercase tracking-[0.25em] text-text-dim">{k.noTitles}</span>
                 )}
               </div>
 
@@ -651,12 +665,10 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
           <path d="M6 1.5v6.5M3.2 5.4 6 8.2l2.8-2.8M1.5 10.5h9" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        {saving ? "Saving…" : `Save ${flipped ? "back" : "front"} as image`}
+        {saving ? k.saving : k.save(flipped)}
       </button>
       {saveError && (
-        <p className="-mt-3 text-[10px] uppercase tracking-[0.2em] text-text-dim">
-          Couldn&rsquo;t render the image — try again
-        </p>
+        <p className="-mt-3 text-[10px] uppercase tracking-[0.2em] text-text-dim">{k.saveError}</p>
       )}
     </div>
   );

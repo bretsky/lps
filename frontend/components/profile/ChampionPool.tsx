@@ -1,6 +1,9 @@
+"use client";
+
 import type { BoxLine, ChampionLine, PlayerDetail } from "@/lib/types";
 import { fmt, fmtPct } from "@/lib/format";
 import { ChampionIcon } from "@/components/ui/ChampionIcon";
+import { useT } from "@/lib/i18n";
 
 // Champion pool + career box score. Champions are ranked by the LPS earned on them: every
 // scored game's exact share of its season's LPS (season.build_player_ratings game credit), so
@@ -16,6 +19,8 @@ function kdaLine(b: BoxLine): string {
 }
 
 export function ChampionPool({ player }: { player: PlayerDetail }) {
+  const m = useT();
+  const t = m.champs;
   const champs = player.champions ?? [];
   const cs = player.career_stats;
   if (!champs.length && !cs) return null;
@@ -26,26 +31,22 @@ export function ChampionPool({ player }: { player: PlayerDetail }) {
   return (
     <section className="deco-panel">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="deco-title">Champion Pool</h2>
-        {cs && (
-          <span className="text-[10px] uppercase tracking-widest text-text-dim">
-            {cs.n_champions} champions played · ranked by LPS earned
-          </span>
-        )}
+        <h2 className="deco-title">{t.title}</h2>
+        {cs && <span className="text-[10px] uppercase tracking-widest text-text-dim">{t.summary(cs.n_champions)}</span>}
       </div>
 
       {cs && (
         <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
           <Stat
-            label="Career K / D / A"
+            label={t.careerKda}
             value={cs.kills != null ? `${num(cs.kills)} / ${num(cs.deaths)} / ${num(cs.assists)}` : "—"}
-            hint={cs.kda_games != null ? `Totals over ${num(cs.kda_games)} games with box scores.` : undefined}
+            hint={cs.kda_games != null ? t.careerKdaHint(num(cs.kda_games)) : undefined}
             wide
           />
-          <Stat label="KDA" value={fmt(cs.kda, 2)} hint="(Kills + Assists) / Deaths, career." />
-          <Stat label="Per game" value={kdaLine(cs)} hint="Average kills / deaths / assists per game." wide />
-          <Stat label="Career CS" value={num(cs.cs)} hint="Minions + monsters, games with CS recorded." />
-          <Stat label="CS / min" value={fmt(cs.cspm, 1)} />
+          <Stat label="KDA" value={fmt(cs.kda, 2)} hint={t.kdaHint} />
+          <Stat label={t.perGame} value={kdaLine(cs)} hint={t.perGameHint} wide />
+          <Stat label={t.careerCs} value={num(cs.cs)} hint={t.careerCsHint} />
+          <Stat label={t.cspm} value={fmt(cs.cspm, 1)} />
         </div>
       )}
 
@@ -55,12 +56,12 @@ export function ChampionPool({ player }: { player: PlayerDetail }) {
             <thead>
               <tr className="text-left text-[10px] uppercase tracking-widest text-text-dim">
                 <th className="w-6 pb-1 font-normal">#</th>
-                <th className="pb-1 font-normal">Champion</th>
-                <th className="pb-1 text-right font-normal">Games</th>
-                <th className="pb-1 text-right font-normal">Win%</th>
-                <th className="pb-1 text-right font-normal">K / D / A</th>
+                <th className="pb-1 font-normal">{t.col.champion}</th>
+                <th className="pb-1 text-right font-normal">{t.col.games}</th>
+                <th className="pb-1 text-right font-normal">{t.col.winPct}</th>
+                <th className="pb-1 text-right font-normal">{t.col.kda}</th>
                 <th className="pb-1 text-right font-normal">KDA</th>
-                <th className="pb-1 pl-4 font-normal">LPS earned</th>
+                <th className="pb-1 pl-4 font-normal">{t.col.lps}</th>
               </tr>
             </thead>
             <tbody>

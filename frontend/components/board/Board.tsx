@@ -4,18 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { IndexRow, Lane, TierMeta } from "@/lib/types";
 import { PlayerRow, ROW_GRID } from "./PlayerRow";
-import { LANE_LABELS } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 import { BOARD_PAGE, boardViewUrl, type BoardView, type ViewSummary } from "@/lib/board";
 
 type SortKey = "clr" | "total_score" | "peak_lps" | "resume_bonus" | "n_years";
-
-const SORT_LABELS: Record<SortKey, string> = {
-  clr: "CLR",
-  total_score: "CareerLPS",
-  peak_lps: "PeakLPS",
-  resume_bonus: "Résumé",
-  n_years: "Longevity",
-};
+const SORT_KEYS: SortKey[] = ["clr", "total_score", "peak_lps", "resume_bonus", "n_years"];
 
 const LANE_FILTERS: (Lane | "all")[] = ["all", "top", "jng", "mid", "bot", "sup"];
 
@@ -31,6 +24,7 @@ interface Props {
 
 export default function Board({ initialRows, summaries, tiers, asOf, years, latestYear, prevYear }: Props) {
   const router = useRouter();
+  const m = useT();
   const [q, setQ] = useState("");
   const [lane, setLaneState] = useState<Lane | "all">("all");
 
@@ -156,7 +150,7 @@ export default function Board({ initialRows, summaries, tiers, asOf, years, late
                 active ? "text-gold-bright" : "text-text-dim hover:text-text-muted"
               }`}
             >
-              {l === "all" ? "All Roles" : LANE_LABELS[l]}
+              {l === "all" ? m.board.allRoles : m.lanes[l]}
               <span
                 className={`absolute inset-x-0 bottom-0 h-[2px] transition-opacity ${active ? "opacity-100" : "opacity-0"}`}
                 style={{ background: "linear-gradient(90deg, transparent, #f1d58f, transparent)", boxShadow: "0 0 8px #c9a45c" }}
@@ -169,21 +163,22 @@ export default function Board({ initialRows, summaries, tiers, asOf, years, late
             <select
               value={asOf === null ? "today" : String(asOf)}
               onChange={(e) => goToYear(e.target.value)}
-              title="See the rankings as they stood at the end of a past season"
-              aria-label="Rankings as of season"
+              title={m.board.yearTitle}
+              aria-label={m.board.yearAria}
               className={`deco-control px-2 py-1.5 text-xs uppercase tracking-wider ${asOf !== null ? "!border-teal text-teal" : ""}`}
             >
-              <option value="today">As of today ({latestYear})</option>
+              <option value="today">{m.board.asOfToday(latestYear)}</option>
               {years.map((y) => (
                 <option key={y} value={y}>
-                  As of end of {y}
+                  {m.board.asOfEnd(y)}
                 </option>
               ))}
             </select>
           )}
           <input
             type="text"
-            placeholder="Search player or name…"
+            placeholder={m.board.search}
+            aria-label={m.board.search}
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="deco-control w-52 px-3 py-1.5 text-sm placeholder:text-text-dim focus:border-teal focus:outline-none"
@@ -191,22 +186,24 @@ export default function Board({ initialRows, summaries, tiers, asOf, years, late
           <select
             value={league}
             onChange={(e) => setLeague(e.target.value)}
+            aria-label={m.board.leagueAria}
             className="deco-control px-2 py-1.5 text-xs uppercase tracking-wider"
           >
             {leagues.map((l) => (
               <option key={l} value={l}>
-                {l === "all" ? "All leagues" : l}
+                {l === "all" ? m.board.allLeagues : l}
               </option>
             ))}
           </select>
           <select
             value={sortKey}
             onChange={(e) => setSortKey(e.target.value as SortKey)}
+            aria-label={m.board.sortAria}
             className="deco-control px-2 py-1.5 text-xs uppercase tracking-wider"
           >
-            {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
+            {SORT_KEYS.map((k) => (
               <option key={k} value={k}>
-                Sort · {SORT_LABELS[k]}
+                {m.board.sortBy(m.board.sort[k])}
               </option>
             ))}
           </select>
@@ -219,12 +216,12 @@ export default function Board({ initialRows, summaries, tiers, asOf, years, late
       >
         <div className="text-right">#</div>
         <div />
-        <div>Player</div>
-        <div className="hidden md:block">Role</div>
-        <div className="hidden lg:block">Career</div>
-        <div className="hidden sm:block">Titles</div>
-        <div className="text-right">CLR</div>
-        <div className="hidden lg:block text-right">Peak</div>
+        <div>{m.board.col.player}</div>
+        <div className="hidden md:block">{m.board.col.role}</div>
+        <div className="hidden lg:block">{m.board.col.career}</div>
+        <div className="hidden sm:block">{m.board.col.titles}</div>
+        <div className="text-right">{m.board.col.clr}</div>
+        <div className="hidden lg:block text-right">{m.board.col.peak}</div>
       </div>
 
       <div className="deco-panel !p-0">
@@ -255,7 +252,7 @@ export default function Board({ initialRows, summaries, tiers, asOf, years, late
         </div>
       </div>
       <div className="mt-3 text-right font-mono text-[11px] text-text-dim">
-        {source === null ? "…" : `${total} player${total === 1 ? "" : "s"}`}
+        {source === null ? "…" : m.board.players(total)}
       </div>
     </div>
   );
@@ -263,17 +260,18 @@ export default function Board({ initialRows, summaries, tiers, asOf, years, late
 
 /** Placeholder while a view's rows are on their way, or a retry if fetching them failed. */
 function BoardStatus({ failed, onRetry }: { failed: boolean; onRetry: () => void }) {
+  const m = useT();
   return (
     <div className="px-4 py-6 text-center font-serif text-[11px] font-bold uppercase tracking-[0.25em] text-text-dim">
       {failed ? (
         <>
-          Couldn&apos;t load more players{" "}
+          {m.board.loadFailed}{" "}
           <button onClick={onRetry} className="ml-2 text-gold underline-offset-4 hover:text-gold-bright hover:underline">
-            Retry
+            {m.board.retry}
           </button>
         </>
       ) : (
-        "Loading players…"
+        m.board.loading
       )}
     </div>
   );
@@ -281,6 +279,7 @@ function BoardStatus({ failed, onRetry }: { failed: boolean; onRetry: () => void
 
 /** Tier divider: a lozenge, engraved tier name, and a rule in the tier's colour. */
 function TierBanner({ tier, count }: { tier: TierMeta; count: number }) {
+  const m = useT();
   const c = tier.color;
   return (
     <div
@@ -292,7 +291,7 @@ function TierBanner({ tier, count }: { tier: TierMeta; count: number }) {
     >
       <span className="h-2.5 w-2.5 rotate-45" style={{ background: c, boxShadow: `0 0 10px ${c}` }} />
       <span className="font-serif text-sm font-extrabold uppercase tracking-[0.3em]" style={{ color: c }}>
-        {tier.label}
+        {m.tiers[tier.key]?.label ?? tier.label}
       </span>
       <span className="h-px flex-1" style={{ background: `linear-gradient(90deg, ${c}88, transparent)` }} />
       <span className="font-mono text-[11px] text-text-muted">

@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import type { IndexRow } from "@/lib/types";
 import { fmt, fmtInt, fmtPct, laneLabel, displayName } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 import { TIER_COLORS } from "@/lib/theme";
 import { LeagueMark, Portrait, TrophyPills } from "@/components/ui/Marks";
 import { ClrBar } from "./ClrBar";
@@ -14,26 +17,26 @@ export const ROW_GRID =
  *  ▲n up, ▼n down, – unchanged, NEW = not yet rated then. Nothing when there's no
  *  previous board to compare with (`prevYear` null, e.g. the first frozen year). */
 function RankMove({ rank, prev, prevYear }: { rank: number; prev: number | null | undefined; prevYear: number | null }) {
+  const m = useT();
   if (prevYear === null || prev === undefined) return null;
   const base = "block font-mono text-[10px] font-bold leading-none mt-1";
   if (prev === null)
     return (
-      <span className={`${base} tracking-wider text-teal`} title={`Not yet rated at the end of ${prevYear}`}>
-        NEW
+      <span className={`${base} tracking-wider text-teal`} title={m.row.notRated(prevYear)}>
+        {m.row.isNew}
       </span>
     );
   const d = prev - rank;
-  const title = `#${prev} at the end of ${prevYear}`;
   if (d === 0)
     return (
-      <span className={`${base} text-text-dim`} title={`${title} (no change)`}>
+      <span className={`${base} text-text-dim`} title={m.row.rankSame(prev, prevYear)}>
         –
       </span>
     );
   return (
     <span
       className={`${base} ${d > 0 ? "text-emerald-400" : "text-rose-400"}`}
-      title={`${d > 0 ? "Up" : "Down"} ${Math.abs(d)} · ${title}`}
+      title={m.row.rankMove(d > 0, Math.abs(d), prev, prevYear)}
     >
       {d > 0 ? "▲" : "▼"}
       {Math.abs(d)}
@@ -44,19 +47,19 @@ function RankMove({ rank, prev, prevYear }: { rank: number; prev: number | null 
 /** CLR gained (or lost) since the previous season's board, beside the CLR value. Nothing
  *  without a previous board, or for a player who hadn't played yet (the rank says NEW). */
 function ClrMove({ clr, prev, prevYear }: { clr: number; prev: number | null | undefined; prevYear: number | null }) {
+  const m = useT();
   if (prevYear === null || prev === null || prev === undefined) return null;
   const d = Math.round((clr - prev) * 10) / 10;
-  const title = `CLR ${fmt(prev, 1)} at the end of ${prevYear}`;
   if (d === 0)
     return (
-      <span className="font-mono text-[11px] font-bold text-text-dim" title={`${title} (no change)`}>
+      <span className="font-mono text-[11px] font-bold text-text-dim" title={m.row.clrSame(fmt(prev, 1), prevYear)}>
         ±0
       </span>
     );
   return (
     <span
       className={`font-mono text-[11px] font-bold ${d > 0 ? "text-emerald-400" : "text-rose-400"}`}
-      title={`${title} (${d > 0 ? "+" : "−"}${Math.abs(d).toFixed(1)})`}
+      title={m.row.clrMove(fmt(prev, 1), prevYear, `${d > 0 ? "+" : "−"}${Math.abs(d).toFixed(1)}`)}
     >
       {d > 0 ? "+" : "−"}
       {Math.abs(d).toFixed(1)}
@@ -65,6 +68,7 @@ function ClrMove({ clr, prev, prevYear }: { clr: number; prev: number | null | u
 }
 
 export function PlayerRow({ row, maxClr, prevYear = null }: { row: IndexRow; maxClr: number; prevYear?: number | null }) {
+  const m = useT();
   const isHol = row.hall_of_legends;
   const tierColor = TIER_COLORS[row.tier];
   const podium = row.rank <= 3;
@@ -115,15 +119,15 @@ export function PlayerRow({ row, maxClr, prevYear = null }: { row: IndexRow; max
       </div>
       <div className="hidden text-[11px] font-semibold uppercase tracking-[0.14em] text-text-muted md:block">
         {row.positions && row.positions.length > 1
-          ? row.positions.map((p) => laneLabel(p.lane)).join(" / ")
-          : laneLabel(row.position)}
+          ? row.positions.map((p) => laneLabel(m, p.lane)).join(" / ")
+          : laneLabel(m, row.position)}
       </div>
       <div className="hidden text-xs text-text-muted lg:block">
         <div className="font-mono">
           {row.first_year === row.last_year ? row.first_year : `${row.first_year}–${String(row.last_year).slice(2)}`}
         </div>
         <div className="text-[10px] text-text-dim">
-          {fmtInt(row.games)} G · {fmtPct(row.win_rate)}
+          {m.row.gamesWin(fmtInt(row.games), fmtPct(row.win_rate))}
         </div>
       </div>
       <div className="hidden sm:block">

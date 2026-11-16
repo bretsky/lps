@@ -3,16 +3,9 @@
 import { useState } from "react";
 import type { PlayerDetail, RadarAxes } from "@/lib/types";
 import { laneLabel } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 
-const AXES: { key: RadarAxes; label: string }[] = [
-  { key: "peak", label: "Peak" },
-  { key: "longevity", label: "Longev." },
-  { key: "consistency", label: "Consis." },
-  { key: "resume", label: "Résumé" },
-  { key: "impact", label: "Impact" },
-  { key: "clutch", label: "Clutch" },
-  { key: "dominance", label: "Domin." },
-];
+const AXES: RadarAxes[] = ["peak", "longevity", "consistency", "resume", "impact", "clutch", "dominance"];
 
 const N = AXES.length;
 const CX = 128;
@@ -50,10 +43,11 @@ interface CardRadarProps {
 }
 
 export function CardRadar({ player, accentColor }: CardRadarProps) {
+  const t = useT();
   const hasLane = player.radar.lane !== null;
   const [mode, setMode] = useState<"global" | "lane">("global");
   const radarData = mode === "lane" && hasLane ? player.radar.lane! : player.radar.global;
-  const values = AXES.map((a) => radarData[a.key] ?? null);
+  const values = AXES.map((a) => radarData[a] ?? null);
 
   return (
     <div className="flex flex-col items-center">
@@ -119,7 +113,7 @@ export function CardRadar({ player, accentColor }: CardRadarProps) {
           const anchor = lx < CX - 4 ? "end" : lx > CX + 4 ? "start" : "middle";
           const bright = pct != null && pct >= 90;
           return (
-            <g key={axis.key}>
+            <g key={axis}>
               <text
                 x={lx.toFixed(1)}
                 y={(ly - 3).toFixed(1)}
@@ -128,7 +122,7 @@ export function CardRadar({ player, accentColor }: CardRadarProps) {
                 fontFamily="var(--font-display), sans-serif" fontStyle="italic" fontWeight="600" letterSpacing="0.06em"
                 fill="#7f93bd"
               >
-                {axis.label}
+                {t.radar.axes[axis]}
               </text>
               <text
                 x={lx.toFixed(1)}
@@ -159,7 +153,7 @@ export function CardRadar({ player, accentColor }: CardRadarProps) {
                 : "text-text-dim hover:text-text-muted disabled:cursor-not-allowed disabled:opacity-25"
             }`}
           >
-            {m === "global" ? "All players" : `vs ${laneLabel(player.position)}`}
+            {m === "global" ? t.radar.all : t.radar.vsLane(laneLabel(t, player.position))}
           </button>
         ))}
       </div>

@@ -50,10 +50,11 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["var(--font-display)", "var(--font-sans)", "sans-serif"],
-        serif: ["var(--font-serif)", "Georgia", "serif"],
-        mono: ["var(--font-mono)", "ui-monospace", "Consolas", "monospace"],
+        // --font-cjk (globals.css) covers Korean / Chinese text, which the Latin web fonts lack.
+        sans: ["var(--font-sans)", "var(--font-cjk)", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "var(--font-sans)", "var(--font-cjk)", "sans-serif"],
+        serif: ["var(--font-serif)", "Georgia", "var(--font-cjk)", "serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "Consolas", "var(--font-cjk)", "monospace"],
       },
       keyframes: {
         sheen: {

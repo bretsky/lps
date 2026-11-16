@@ -17,16 +17,6 @@ export function isEventKind(kind: HonorKind): kind is EventKey {
   return kind in EVENT_ICON;
 }
 
-export const EVENT_LABEL: Record<HonorKind, string> = {
-  worlds: "Worlds",
-  msi: "MSI",
-  first_stand: "First Stand",
-  ewc: "Esports World Cup",
-  intl: "International",
-  domestic: "League",
-  cup: "Cup",
-};
-
 // League short names as they appear in the data (Oracle `league`, achievements
 // `league` keys) -> bundled icon file. `invert` marks dark-on-transparent logos
 // that need flipping to read on the site's dark surfaces.

@@ -1,8 +1,11 @@
+"use client";
+
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import type { PlayerDetail } from "@/lib/types";
-import { fmt, fmtInt, fmtPct, laneLabel, yearsLabel, displayName } from "@/lib/format";
-import { TIER_COLORS, editionFor, upper, cardTeamLogo } from "@/lib/theme";
+import { fmt, fmtInt, fmtPct, laneLabel, displayName } from "@/lib/format";
+import { TIER_COLORS, editionFor, editionLabel, upper, cardTeamLogo } from "@/lib/theme";
+import { useT } from "@/lib/i18n";
 import { TierBadge } from "@/components/board/TierBadge";
 import { HolCrown, StatusDot } from "@/components/board/StatusBadges";
 import { EventMark, LeagueMark } from "@/components/ui/Marks";
@@ -17,6 +20,7 @@ export function ProfileHeader({
   player: PlayerDetail;
   laneRank: number | null;
 }) {
+  const m = useT();
   const isHol = player.hall_of_legends;
   const tier = player.tier ?? "contenders";
   const accent = isHol ? "#f1d58f" : TIER_COLORS[tier];
@@ -24,8 +28,8 @@ export function ProfileHeader({
   const team = cardTeamLogo(player);
   const lanes =
     player.positions && player.positions.length > 1
-      ? player.positions.map((p) => laneLabel(p.lane)).join(" / ")
-      : laneLabel(player.position);
+      ? player.positions.map((p) => laneLabel(m, p.lane)).join(" / ")
+      : laneLabel(m, player.position);
   const handle = displayName(player.playername);
   const gold = (player.honors ?? []).filter((h) => h.medal === "gold");
   const count = (k: string) => gold.filter((h) => h.kind === k).length;
@@ -99,7 +103,7 @@ export function ProfileHeader({
             )}
             {player.photo_caption && (
               <span className="absolute bottom-1 right-0 text-[9px] uppercase tracking-[0.2em] text-text-dim">
-                Photo · {player.photo_caption}
+                {m.profile.photo(player.photo_caption)}
               </span>
             )}
           </div>
@@ -109,7 +113,7 @@ export function ProfileHeader({
             <div className="flex flex-wrap items-center gap-2">
               {player.tier && <TierBadge tier={player.tier} size="md" />}
               <span className="font-serif text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: edition.color }}>
-                {edition.kind === "tier" ? "" : edition.label}
+                {edition.kind === "tier" ? "" : editionLabel(m, edition)}
                 {isHol && player.hol_year ? ` · ${player.hol_year}` : ""}
               </span>
             </div>
@@ -136,30 +140,30 @@ export function ProfileHeader({
               <span>{lanes}</span>
             </div>
             <div className="mt-1 font-mono text-xs text-text-dim">
-              {yearsLabel(player.first_year, player.last_year, player.n_years)} · {fmtInt(player.games)} games ·{" "}
-              {fmtPct(player.win_rate)} win rate
-              {player.career_stats?.kda != null && <> · {fmt(player.career_stats.kda, 2)} KDA</>}
+              {m.profile.years(player.first_year, player.last_year, player.n_years)} ·{" "}
+              {m.common.games(fmtInt(player.games))} · {m.common.winRate(fmtPct(player.win_rate))}
+              {player.career_stats?.kda != null && <> · {m.common.kda(fmt(player.career_stats.kda, 2))}</>}
             </div>
 
             {/* headline trophies */}
             {(gold.length > 0 || mvp > 0) && (
               <div className="mt-4 flex flex-wrap items-center gap-4">
-                {count("worlds") > 0 && <Trophy node={<EventMark event="worlds" size={30} />} n={count("worlds")} label="Worlds" />}
-                {count("msi") > 0 && <Trophy node={<EventMark event="msi" size={30} />} n={count("msi")} label="MSI" />}
+                {count("worlds") > 0 && <Trophy node={<EventMark event="worlds" size={30} />} n={count("worlds")} label={m.profile.trophy.worlds} />}
+                {count("msi") > 0 && <Trophy node={<EventMark event="msi" size={30} />} n={count("msi")} label={m.profile.trophy.msi} />}
                 {count("first_stand") > 0 && (
-                  <Trophy node={<EventMark event="first_stand" size={30} />} n={count("first_stand")} label="First Stand" />
+                  <Trophy node={<EventMark event="first_stand" size={30} />} n={count("first_stand")} label={m.profile.trophy.first_stand} />
                 )}
                 {count("ewc") > 0 && (
-                  <Trophy node={<EventMark event="ewc" size={30} />} n={count("ewc")} label="EWC" />
+                  <Trophy node={<EventMark event="ewc" size={30} />} n={count("ewc")} label={m.profile.trophy.ewc} />
                 )}
                 {count("domestic") > 0 && (
                   <Trophy
                     node={<LeagueMark league={topLeague(player)} size={28} />}
                     n={count("domestic")}
-                    label="League titles"
+                    label={m.profile.trophy.domestic}
                   />
                 )}
-                {mvp > 0 && <Trophy node={<Star className="h-7 w-7 text-gold-bright" />} n={mvp} label="MVP" />}
+                {mvp > 0 && <Trophy node={<Star className="h-7 w-7 text-gold-bright" />} n={mvp} label={m.profile.trophy.mvp} />}
               </div>
             )}
           </div>
@@ -168,14 +172,14 @@ export function ProfileHeader({
           <div className="flex gap-3 pb-6 md:flex-col md:items-stretch">
             <Plaque label="CLR" value={fmt(player.clr, 1)} big accent={accent} />
             <div className="flex gap-3">
-              <Plaque label="Global" value={`#${player.rank}`} />
-              {laneRank && player.position && <Plaque label={laneLabel(player.position)} value={`#${laneRank}`} />}
+              <Plaque label={m.profile.global} value={`#${player.rank}`} />
+              {laneRank && player.position && <Plaque label={laneLabel(m, player.position)} value={`#${laneRank}`} />}
             </div>
             <Link
               href={`/card/${player.slug}`}
               className="deco-control px-3 py-1.5 text-center font-serif text-[10px] font-bold uppercase tracking-[0.25em] text-gold-bright hover:border-gold hover:text-text"
             >
-              View card ▸
+              {m.nav.viewCard} ▸
             </Link>
           </div>
         </div>
@@ -191,8 +195,9 @@ function topLeague(p: PlayerDetail): string | null {
 }
 
 function Trophy({ node, n, label }: { node: React.ReactNode; n: number; label: string }) {
+  const m = useT();
   return (
-    <div className="flex items-center gap-2" title={`${n}× ${label}`}>
+    <div className="flex items-center gap-2" title={m.profile.trophyTitle(n, label)}>
       {node}
       <div className="leading-none">
         <div className="font-display text-2xl font-black text-gold-bright">×{n}</div>
