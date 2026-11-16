@@ -93,7 +93,9 @@ starting your own.
 
 **Deploying the site.** Static export (`output: "export"`) to Cloudflare Pages via
 `frontend/scripts/deploy.mjs` (`npm run stage` builds `frontend/out/` only; `npm run deploy` also
-uploads with `npx wrangler@4`; `update_all --deploy` runs it last). Gotchas:
+uploads with `npx wrangler@4`; `update_all --deploy` runs it last). The full human-facing
+write-up (first-time Cloudflare setup, env vars, what the script does) is `docs/deploying.md`;
+keep it in sync with the script. Gotchas:
 - **Never run `next build` in `frontend/` itself.** Under `output: "export"` it always wipes and
   rewrites `.next/` (a custom `distDir` only renames `out/`), which breaks the running dev server
   (500s: missing `middleware-manifest.json`). `deploy.mjs` builds in a `.build/` copy for this reason.

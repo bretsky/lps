@@ -62,7 +62,6 @@ In order, it:
    `player_ratings_career_<first>_<last>.xlsx` (the career ranking and CLR) via `lps.career`.
 7. **Photos**: picks Leaguepedia photos for new players.
 8. **Web bundle**: writes the site's JSON to `../frontend/public/data/current/` via `lps.export_web`.
-9. **Deploy**, only with `--deploy`: builds and uploads the site.
 
 Useful flags: `--skip-fetch` (no network, recompute from cache), `--skip-oracle`,
 `--skip-achievements`, `--skip-regions`, `--skip-elo`, `--skip-web`, `--year N`. Exit code `2` means

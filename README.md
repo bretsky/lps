@@ -38,7 +38,7 @@ design reasoning behind CLR.
 | Folder | What it is |
 |---|---|
 | [`backend/`](backend/) | Python 3.12 (Poetry). Data ingestion, the win-probability and expected-performance models, regional Elo, and the pipeline that writes per-season and career workbooks plus the site's JSON bundle. See [`backend/README.md`](backend/README.md). |
-| [`frontend/`](frontend/) | The website: Next.js 15, React 19, TypeScript and Tailwind, exported as a fully static site and hosted on Cloudflare Pages. |
+| [`frontend/`](frontend/) | The website: Next.js 15, React 19, TypeScript and Tailwind, exported as a fully static site. |
 | [`docs/`](docs/) | Design notes: the CLR plan, the website plan and the roadmap. |
 | [`CLAUDE.md`](CLAUDE.md) | Contributor notes on how the pieces fit together and the non-obvious gotchas. |
 
@@ -72,20 +72,6 @@ poetry run python -m lps.update_all              # refresh the latest season end
 `update_all` pulls the latest Oracle's Elixir and Leaguepedia data, recomputes regional Elo,
 rebuilds every season's scores and the career ranking, and writes the site bundle. The full set of
 steps, flags and the yearly rollover are in [`backend/README.md`](backend/README.md).
-
-## Publishing
-
-The site is a static export with no server. `frontend/scripts/deploy.mjs` builds every page into
-`frontend/out/` and uploads it to Cloudflare Pages with `wrangler`:
-
-```bash
-cd frontend && npm run stage     # build out/ only
-cd frontend && npm run deploy    # build and upload
-```
-
-`python -m lps.update_all --deploy` runs the deploy as its last step. The Korean and Chinese
-profile pages go to a second Pages deployment that the main site proxies, to stay under Pages'
-20,000-file limit; [`CLAUDE.md`](CLAUDE.md) explains the setup.
 
 ## Data sources and credits
 
