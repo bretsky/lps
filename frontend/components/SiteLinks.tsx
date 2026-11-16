@@ -2,7 +2,8 @@
 
 // Footer links to every board: today's role boards and each frozen past season. Readers
 // mostly use the tabs and the season picker above the board, but those are scripted, so
-// this plain list is also how search engines find those pages.
+// this plain list is also how search engines find those pages. Ends with a link to the
+// author's homepage (brettselby.xyz), which links back here and to the pickems site.
 
 import Link from "next/link";
 import { useLocale, useT } from "@/lib/i18n";
@@ -33,6 +34,11 @@ export function SiteLinks({ years }: { years: number[] }) {
           ))}
         </p>
       )}
+      <p className="flex justify-center pt-1">
+        <a href="https://brettselby.xyz" className={`font-mono normal-case tracking-normal ${linkCls}`}>
+          brettselby.xyz
+        </a>
+      </p>
     </nav>
   );
 }

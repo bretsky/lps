@@ -36,7 +36,8 @@ images are PNGs drawn at build time with `next/og` (`lib/og.tsx`): `/og/player/<
 the build never hits Leaguepedia). Today's role boards are pages (`/role/{top,jungle,mid,adc,support}`);
 the board's role tabs are links that rewrite the URL in place. Profiles end in a "Ranked nearby"
 list and every board/profile/About footer links all role boards and past seasons (`SiteLinks`), so
-crawlers can reach every page by plain links.
+crawlers can reach every page by plain links. `SiteLinks` ends with a link to `brettselby.xyz` (the
+author's homepage, which links to this site and pickems).
 
 Languages: the site is English / Korean / Simplified Chinese. UI text lives in
 `frontend/lib/i18n/{en,ko,zh}.tsx` (`en` defines the `Messages` shape; TypeScript flags a key a
