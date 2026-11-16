@@ -6,14 +6,11 @@
 import type { ReactNode } from "react";
 import type { Messages } from "./en";
 
+const ROLE_NAMES: Record<string, string> = { top: "上单", jng: "打野", mid: "中单", bot: "ADC", sup: "辅助" };
+
 export const zh: Messages = {
-  meta: {
-    home: "CLR · 历史排行榜",
-    asof: (y: number) => `CLR · 截至${y}赛季末的历史排行榜`,
-    about: "关于 · CLR",
-    card: (name: string) => `${name} · CLR选手卡`,
-  },
   lang: { label: "语言" },
+  notFound: { title: "页面未找到", body: "该页面不存在或已移动。" },
   nav: {
     rankings: "历史排行榜",
     rankingsShort: "排行榜",
@@ -26,6 +23,8 @@ export const zh: Messages = {
     build: (build: string, rated: number, asOf: number | null, minGames: number) =>
       `版本 ${build} · ${asOf !== null ? `截至${asOf}赛季末，` : ""}参评选手 ${rated} 名（至少 ${minGames} 场）`,
     aboutLink: "关于CLR与术语表",
+    byRole: "各位置历史排行榜",
+    pastSeasons: "往届赛季",
     disclaimer: "本站未获Riot Games认可 · 数据和照片来自Oracle's Elixir与Leaguepedia · 联赛标志版权归各自所有者所有",
   },
 
@@ -92,6 +91,7 @@ export const zh: Messages = {
     subtitle: "生涯传奇评分",
     asOf: (y: number) => `截至${y}赛季末`,
     viewCard: (rank: number, name: string) => `#${rank} ${name} — 查看选手卡`,
+    roleB: ROLE_NAMES,
   },
   board: {
     allRoles: "全部位置",
@@ -136,6 +136,7 @@ export const zh: Messages = {
     },
     trophyTitle: (n: number, label: string) => `${label} ×${n}`,
     global: "总榜",
+    nearby: "排名相近",
   },
   waterfall: {
     title: "CLR构成",

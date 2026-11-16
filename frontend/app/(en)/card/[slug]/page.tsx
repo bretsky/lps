@@ -1,10 +1,13 @@
-import Link from "next/link";
+import { PlayerLink } from "@/components/PlayerLink";
+import { LocalizedLink } from "@/components/i18n/LocalizedLink";
 import { notFound } from "next/navigation";
 import { PlayerCard } from "@/components/card/PlayerCard";
 import { loadIndex, loadPlayer } from "@/lib/data";
 import { displayName } from "@/lib/format";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { DocTitle, T } from "@/components/i18n/T";
+import { pageMeta } from "@/lib/seo";
+import { ogPlayerImage } from "@/lib/site";
 
 export async function generateStaticParams() {
   const rows = await loadIndex();
@@ -19,10 +22,16 @@ export async function generateMetadata({
   const { slug } = await params;
   try {
     const p = await loadPlayer(slug);
-    return {
-      title: `${displayName(p.playername)} · CLR Card`,
-      description: `${displayName(p.playername)} — CLR ${p.clr.toFixed(1)}, rank #${p.rank}. Click to flip.`,
-    };
+    const name = displayName(p.playername);
+    // The card is a view of the profile: search engines index the profile (canonical) instead.
+    return pageMeta({
+      title: `${name} · CLR Card`,
+      description: `${name}'s CLR player card: #${p.rank} all-time in League of Legends esports, CLR ${p.clr.toFixed(1)}.`,
+      path: `/player/${slug}`,
+      image: ogPlayerImage(slug),
+      imageAlt: `${name}: #${p.rank} all-time, CLR ${p.clr.toFixed(1)}`,
+      type: "profile",
+    });
   } catch {
     return { title: "Player Card · CLR" };
   }
@@ -54,12 +63,12 @@ export default async function CardPage({
       />
       <DocTitle k="card" args={[displayName(player.playername)]} />
       <nav className="relative flex w-full items-center gap-5 font-serif text-[11px] font-bold uppercase tracking-[0.25em] text-text-dim">
-        <Link href="/" className="hover:text-gold-bright">
+        <LocalizedLink path="/" className="hover:text-gold-bright">
           ◂ <T k="nav.rankingsShort" />
-        </Link>
-        <Link href={`/player/${slug}`} className="hover:text-gold-bright">
+        </LocalizedLink>
+        <PlayerLink slug={slug} className="hover:text-gold-bright">
           ◂ <T k="nav.profile" />
-        </Link>
+        </PlayerLink>
         <LanguageSwitcher className="ml-auto" />
       </nav>
 

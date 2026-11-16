@@ -6,7 +6,8 @@
 // re-renders in the reader's language straight after; client-side navigation renders in the
 // reader's language from the start.
 
-import { useSyncExternalStore } from "react";
+import { useContext, useSyncExternalStore } from "react";
+import { PageLocale } from "@/components/i18n/PageLocale";
 import { HTML_LANG, STORAGE_KEY, isLocale, type Locale } from "./config";
 import { en, type Messages } from "./en";
 import { ko } from "./ko";
@@ -56,9 +57,16 @@ export function setLocale(l: Locale) {
   listeners.forEach((f) => f());
 }
 
-/** The reader's language ("en" while hydrating). */
+/** The page's language: the one its URL fixes (/ko, /zh), else the reader's ("en" while hydrating). */
 export function useLocale(): Locale {
-  return useSyncExternalStore(subscribe, readLocale, () => "en");
+  const fixed = useContext(PageLocale);
+  const reader = useSyncExternalStore<Locale>(subscribe, readLocale, () => "en");
+  return fixed ?? reader;
+}
+
+/** The language the page's URL fixes (/ko, /zh), or null on unprefixed pages. */
+export function usePageLocale(): Locale | null {
+  return useContext(PageLocale);
 }
 
 /** The message table for the reader's language. */

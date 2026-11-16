@@ -2,6 +2,7 @@
 
 // The /about page body. A client component so every heading, the résumé tables and the
 // backend-translated glossary text (entries' `i18n`) follow the reader's language.
+import { SiteLinks } from "@/components/SiteLinks";
 import { Fragment } from "react";
 import { tidy, type GlossaryEntry, type GlossarySection } from "@/lib/glossary";
 import { localized, useLocale, useT, type Locale, type Messages } from "@/lib/i18n";
@@ -237,6 +238,7 @@ export function AboutBody({
   years,
   ratedMinGames,
   buildId,
+  boardYears = [],
 }: {
   sections: GlossarySection[];
   resumeScoring: ResumeScoring | null;
@@ -244,6 +246,7 @@ export function AboutBody({
   years: [number, number];
   ratedMinGames: number;
   buildId: string;
+  boardYears?: number[];   // seasons with a frozen past-year board, newest first (footer links)
 }) {
   const m = useT();
   const a = m.about;
@@ -312,7 +315,8 @@ export function AboutBody({
       </div>
 
       <footer className="mt-10 border-t border-gold-deep/40 py-8 text-center">
-        <p className="text-[11px] text-text-dim">{m.footer.disclaimer}</p>
+        <SiteLinks years={boardYears} />
+        <p className="mt-4 text-[11px] text-text-dim">{m.footer.disclaimer}</p>
       </footer>
     </>
   );

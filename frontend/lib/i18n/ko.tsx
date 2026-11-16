@@ -6,14 +6,11 @@
 import type { ReactNode } from "react";
 import type { Messages } from "./en";
 
+const ROLE_NAMES: Record<string, string> = { top: "탑 라이너", jng: "정글러", mid: "미드 라이너", bot: "원거리 딜러", sup: "서포터" };
+
 export const ko: Messages = {
-  meta: {
-    home: "CLR · 역대 랭킹",
-    asof: (y: number) => `CLR · ${y} 시즌 종료 기준 역대 랭킹`,
-    about: "소개 · CLR",
-    card: (name: string) => `${name} · CLR 카드`,
-  },
   lang: { label: "언어" },
+  notFound: { title: "페이지를 찾을 수 없습니다", body: "존재하지 않거나 이동된 페이지입니다." },
   nav: {
     rankings: "역대 랭킹",
     rankingsShort: "랭킹",
@@ -26,6 +23,8 @@ export const ko: Messages = {
     build: (build: string, rated: number, asOf: number | null, minGames: number) =>
       `빌드 ${build} · ${asOf !== null ? `${asOf} 시즌 종료 기준 ` : ""}평가 대상 선수 ${rated}명 (${minGames}경기 이상)`,
     aboutLink: "CLR 소개 및 용어 설명",
+    byRole: "포지션별 역대 랭킹",
+    pastSeasons: "지난 시즌",
     disclaimer:
       "Riot Games의 공식 승인을 받지 않은 사이트입니다 · 데이터 및 사진 출처: Oracle's Elixir, Leaguepedia · 리그 로고의 권리는 각 소유자에게 있습니다",
   },
@@ -93,6 +92,7 @@ export const ko: Messages = {
     subtitle: "커리어 레전드 레이팅",
     asOf: (y: number) => `${y} 시즌 종료 기준`,
     viewCard: (rank: number, name: string) => `#${rank} ${name} — 카드 보기`,
+    roleB: ROLE_NAMES,
   },
   board: {
     allRoles: "전체 포지션",
@@ -137,6 +137,7 @@ export const ko: Messages = {
     },
     trophyTitle: (n: number, label: string) => `${label} ${n}회`,
     global: "전체",
+    nearby: "인근 순위",
   },
   waterfall: {
     title: "CLR 구성",

@@ -13,3 +13,5 @@ public/data/archive/
 # scripts/deploy.mjs builds in a copy of the app so it never touches the dev
 # server's .next/.
 .build/
+# Korean / Chinese profiles, deployed separately by scripts/deploy.mjs.
+out-i18n/

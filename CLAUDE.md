@@ -25,13 +25,49 @@ rebuilt by `backend/analysis/fetch_brand_icons.py`) and are mapped by league sho
 editing it, run `node scripts/build-icons.mjs` in `frontend/` to regenerate `app/favicon.ico` and
 `app/apple-icon.png` from it. Player photos and team logos are hotlinked from Leaguepedia's CDN.
 
-Languages: the site is English / Korean / Simplified Chinese, switched client-side (no `/ko/…` routes:
-they'd triple the file count past Pages' cap). UI text lives in `frontend/lib/i18n/{en,ko,zh}.tsx`
-(`en` defines the `Messages` shape; TypeScript flags a key a translation lacks); components read it with
-`useT()`, server components with `<T k="…" />`. The choice is kept in `localStorage` (`clr-locale`),
-defaulting to the browser language; an inline script in `app/layout.tsx` applies it before paint. Any new
+Search & link previews: the production origin is `SITE_URL` in `frontend/lib/site.ts`
+(`https://clr.brettselby.xyz`; `NEXT_PUBLIC_SITE_URL` overrides it). Every page builds its title,
+description, canonical URL and Open Graph / X preview through `lib/seo.ts`'s `pageMeta` (Next merges
+metadata shallowly, so a page's `openGraph` must be complete). Titles and descriptions in all three
+languages live in `lib/i18n/seo.ts` (`SEO`); `DocTitle` sets the same titles client-side when the reader's
+language changes. `app/sitemap.ts` / `app/robots.ts` emit `/sitemap.xml` / `/robots.txt`. Preview
+images are PNGs drawn at build time with `next/og` (`lib/og.tsx`): `/og/player/<slug>.png` per player,
+`/og/site.png` for the boards (fonts from the `@fontsource/*` dev dependencies; no player photos, so
+the build never hits Leaguepedia). Today's role boards are pages (`/role/{top,jungle,mid,adc,support}`);
+the board's role tabs are links that rewrite the URL in place. Profiles end in a "Ranked nearby"
+list and every board/profile/About footer links all role boards and past seasons (`SiteLinks`), so
+crawlers can reach every page by plain links.
+
+Languages: the site is English / Korean / Simplified Chinese. UI text lives in
+`frontend/lib/i18n/{en,ko,zh}.tsx` (`en` defines the `Messages` shape; TypeScript flags a key a
+translation lacks); components read it with `useT()`, server components with `<T k="…" />`. Any new
 visible string goes in all three tables. Korean: never put a particle (이/가, 을/를, 로) straight after a
 variable number; reword instead.
+- **Boards, About and profiles have their own URLs per language** (`/ko`, `/zh/role/adc`,
+  `/ko/about`, `/zh/asof/2016`, `/ko/player/faker`), prerendered in that language so search engines index them, with hreflang
+  alternates. The app has two root layouts for this: `app/(en)/` (every unprefixed page) and
+  `app/(intl)/[lang]/` (`<html lang>` + a fixed locale via `PageLocale` context); both render
+  `components/RootDocument.tsx`. Page bodies are shared in `components/routes/` (`BoardRoute`,
+  `AboutRoute`, `PlayerRoute`), so add a localized page there and wrap it in both groups. Moving between the two
+  groups is a full page load (Next's rule for separate root layouts).
+- **Cards are English URLs only**, translated in the browser. The reader's choice is kept in `localStorage`
+  (`clr-locale`), defaulting to the browser language; `RootDocument`'s inline script applies it before
+  paint, and visiting a `/ko` or `/zh` page saves that language.
+- Links: the board's role tabs stay in the page's own language (`usePageLocale`); links that leave
+  the page (back links, footer `SiteLinks`, About) go to the reader's language URL (`useLocale`,
+  `LocalizedLink`). The language switcher is a set of links between `/`, `/ko`, `/zh` on localized
+  pages and switches in place elsewhere. Profile links use `PlayerLink` (reader's language, and
+  never prefetched for /ko, /zh: see below).
+- **The Korean / Chinese profiles are a second Pages deployment.** They don't fit in production's
+  20k files, so `scripts/deploy.mjs` moves `out/{ko,zh}/player/` to `out-i18n/`, uploads that as the
+  `i18n` branch (`i18n.lps-80q.pages.dev`), then uploads production with `functions/`, whose
+  `{ko,zh}/player/[[path]].js` proxy those paths from the branch onto the site's domain
+  (`functions-shared/i18n-proxy.js`; it strips the `X-Robots-Tag: noindex` Pages puts on branch
+  deployments). Same pattern as the pickems site's `/v/` snapshots. Every proxied request counts
+  toward Pages Functions' daily quota (100k/day free), hence no prefetching of those links. The
+  project name and branch are hard-coded in both `deploy.mjs` and the proxy: change them together.
+- **404:** with two root layouts Next only exports an unstyled `404.html`, so `app/(en)/not-found-page`
+  is built and `deploy.mjs` copies it over `out/404.html`.
 
 One-off investigation/debug scripts go in **`backend/analysis/`**, not `src/lps/` or the
 `backend/` root. They're kept for reference and aren't part of the pipeline (see its README).
@@ -64,7 +100,8 @@ uploads with `npx wrangler@4`; `update_all --deploy` runs it last). Gotchas:
 - Everything in `public/` is copied into the site, and Pages caps a site at 20,000 files (free) and
   25 MiB per file. `public/data/current/` is read only at build time, so the script drops `out/data/`;
   past bundles archive to `frontend/data-archive/` (outside `public/`, gitignored). Keep new bulky
-  build inputs out of `public/` too. Each player costs 4 files (profile + card, each HTML + RSC payload).
+  build inputs out of `public/` too. Each player costs 5 files (profile + card, each HTML + RSC payload, plus the preview PNG). Each
+  localized board/About page costs 4 files (`/ko` + `/zh`, HTML + RSC payload).
 - Every route must stay prerenderable (`generateStaticParams`, `force-static` route handlers, no
   middleware/cookies/`next/image` optimisation): there's no server in production.
 

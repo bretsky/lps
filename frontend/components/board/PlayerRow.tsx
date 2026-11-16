@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { PlayerLink } from "@/components/PlayerLink";
 import type { IndexRow } from "@/lib/types";
 import { fmt, fmtInt, fmtPct, laneLabel, displayName, localRealName } from "@/lib/format";
 import { useLocale, useT } from "@/lib/i18n";
@@ -74,8 +74,8 @@ export function PlayerRow({ row, maxClr, prevYear = null }: { row: IndexRow; max
   const tierColor = TIER_COLORS[row.tier];
   const podium = row.rank <= 3;
   return (
-    <Link
-      href={`/player/${row.slug}`}
+    <PlayerLink
+      slug={row.slug}
       className={`${ROW_GRID} group relative border-b border-border/60 px-4 py-2 transition-colors hover:bg-teal/[0.06]`}
     >
       {/* active-row marker, like a selected ladder row */}
@@ -147,6 +147,6 @@ export function PlayerRow({ row, maxClr, prevYear = null }: { row: IndexRow; max
         <div className="font-mono">{fmt(row.peak_lps, 1)}</div>
         <div className="text-[10px] text-text-dim">LPS {fmt(row.total_score, 0)}</div>
       </div>
-    </Link>
+    </PlayerLink>
   );
 }

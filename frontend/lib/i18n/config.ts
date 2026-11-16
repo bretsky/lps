@@ -17,12 +17,14 @@ export const STORAGE_KEY = "clr-locale";
 
 export const isLocale = (x: unknown): x is Locale => typeof x === "string" && (LOCALES as readonly string[]).includes(x);
 
-/** Runs in <head> before first paint: applies the saved (or browser) language to <html> so
+/** Runs in <head> before first paint. On a /ko or /zh page (<html data-locale-fixed>) it only
+ *  saves that language as the reader's choice. Elsewhere it applies the saved (or browser) language to <html> so
  *  CSS and the first client render see it, and hides the page until React has re-rendered
  *  in that language (LocaleReady removes the flag; the timeout is a fallback if JS stalls),
  *  so Korean and Chinese readers don't see the English build flash first. */
 export const LOCALE_INIT_SCRIPT = `(function(){try{
-var d=document.documentElement,l=null;
+var d=document.documentElement,l=null,f=d.getAttribute("data-locale-fixed");
+if(f){try{localStorage.setItem(${JSON.stringify(STORAGE_KEY)},f)}catch(e){}return}
 try{l=localStorage.getItem(${JSON.stringify(STORAGE_KEY)})}catch(e){}
 if(l!=="en"&&l!=="ko"&&l!=="zh"){var n=((navigator.languages&&navigator.languages[0])||navigator.language||"").toLowerCase();l=n.indexOf("ko")===0?"ko":n.indexOf("zh")===0?"zh":"en"}
 d.setAttribute("data-locale",l);d.lang=l==="zh"?"zh-CN":l;

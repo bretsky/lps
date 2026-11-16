@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { IndexRow, Lane, TierMeta } from "@/lib/types";
 import { PlayerRow, ROW_GRID } from "./PlayerRow";
-import { useT } from "@/lib/i18n";
+import { usePageLocale, useT } from "@/lib/i18n";
 import { BOARD_PAGE, boardViewUrl, type BoardView, type ViewSummary } from "@/lib/board";
+import { boardPath } from "@/lib/site";
 
 type SortKey = "clr" | "total_score" | "peak_lps" | "resume_bonus" | "n_years";
 const SORT_KEYS: SortKey[] = ["clr", "total_score", "peak_lps", "resume_bonus", "n_years"];
@@ -13,7 +14,11 @@ const SORT_KEYS: SortKey[] = ["clr", "total_score", "peak_lps", "resume_bonus", 
 const LANE_FILTERS: (Lane | "all")[] = ["all", "top", "jng", "mid", "bot", "sup"];
 
 interface Props {
-  initialRows: IndexRow[];   // first BOARD_PAGE rows of the all-roles view (server-rendered)
+  initialRows: IndexRow[];   // first BOARD_PAGE rows of `initialView` (server-rendered)
+  initialView: BoardView;    // the view this page was built for: "all", or a role board (/role/<x>)
+  lane: BoardView;           // the role tab showing now (owned by RankingsPage, which shares it with the hero)
+  onLane: (l: BoardView) => void;
+  onViewRows: (view: BoardView, rows: IndexRow[]) => void; // a view's full list arrived
   summaries: Record<BoardView, ViewSummary>;
   tiers: TierMeta[];
   asOf: number | null;      // season this board is frozen at; null = today
@@ -22,29 +27,33 @@ interface Props {
   prevYear: number | null;  // season the rank-movement arrows compare against
 }
 
-export default function Board({ initialRows, summaries, tiers, asOf, years, latestYear, prevYear }: Props) {
+export default function Board({
+  initialRows, initialView, lane, onLane, summaries, tiers, asOf, years, latestYear, prevYear, onViewRows,
+}: Props) {
   const router = useRouter();
   const m = useT();
+  const pageLocale = usePageLocale(); // /ko, /zh boards link within their language
   const [q, setQ] = useState("");
-  const [lane, setLaneState] = useState<Lane | "all">("all");
 
-  // The role tab rides along in `?lane=` so switching years (and shared links) keep it.
+  // The role tab lives in the URL: today's role boards are pages of their own (/role/<x>),
+  // a past season carries it in `?lane=`. Switching tabs rewrites the URL in place, so the
+  // search, league and sort settings survive; the tabs are real links for crawlers.
+  const setLane = (l: BoardView) => {
+    onLane(l);
+    window.history.replaceState(null, "", boardPath(asOf, l, pageLocale));
+  };
   useEffect(() => {
     const l = new URLSearchParams(window.location.search).get("lane") as Lane | null;
-    if (l && LANE_FILTERS.includes(l)) setLaneState(l);
+    if (l && LANE_FILTERS.includes(l)) setLane(l); // also turns an old `/?lane=mid` link into /role/mid
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const laneQuery = (l: Lane | "all") => (l === "all" ? "" : `?lane=${l}`);
-  const setLane = (l: Lane | "all") => {
-    setLaneState(l);
-    window.history.replaceState(null, "", window.location.pathname + laneQuery(l));
-  };
-  const goToYear = (y: string) => router.push((y === "today" ? "/" : `/asof/${y}`) + laneQuery(lane));
+  const goToYear = (y: string) => router.push(boardPath(y === "today" ? null : Number(y), lane, pageLocale));
   const [league, setLeague] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("clr");
 
   // Each view's full row list, fetched on demand. Until the all-roles list arrives the
   // board shows the server-rendered first page, which is only complete enough for the
-  // default view (all roles, every league, no search, CLR order); anything else waits.
+  // default view (the page's own role tab, every league, no search, CLR order); anything else waits.
   const [full, setFull] = useState<Partial<Record<BoardView, IndexRow[]>>>({});
   const [failed, setFailed] = useState<BoardView | null>(null);
   const inflight = useRef(new Set<BoardView>());
@@ -58,14 +67,17 @@ export default function Board({ initialRows, summaries, tiers, asOf, years, late
           if (!r.ok) throw new Error(`${r.status}`);
           return r.json() as Promise<IndexRow[]>;
         })
-        .then((data) => setFull((f) => ({ ...f, [v]: data })))
+        .then((data) => {
+          setFull((f) => ({ ...f, [v]: data }));
+          onViewRows(v, data);
+        })
         .catch(() => setFailed(v))
         .finally(() => inflight.current.delete(v));
     },
-    [asOf, full],
+    [asOf, full, onViewRows],
   );
 
-  const isDefault = lane === "all" && !q.trim() && league === "all" && sortKey === "clr";
+  const isDefault = lane === initialView && !q.trim() && league === "all" && sortKey === "clr";
   useEffect(() => {
     if (!isDefault) requestView(lane);
   }, [isDefault, lane, requestView]);
@@ -146,9 +158,15 @@ export default function Board({ initialRows, summaries, tiers, asOf, years, late
         {LANE_FILTERS.map((l) => {
           const active = lane === l;
           return (
-            <button
+            <a
               key={l}
-              onClick={() => setLane(l)}
+              href={boardPath(asOf, l, pageLocale)}
+              aria-current={active ? "page" : undefined}
+              onClick={(e) => {
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; // new tab etc.
+                e.preventDefault();
+                setLane(l);
+              }}
               className={`relative -mb-px pb-2.5 font-serif text-[13px] font-bold uppercase tracking-[0.18em] transition-colors ${
                 active ? "text-gold-bright" : "text-text-dim hover:text-text-muted"
               }`}
@@ -158,7 +176,7 @@ export default function Board({ initialRows, summaries, tiers, asOf, years, late
                 className={`absolute inset-x-0 bottom-0 h-[2px] transition-opacity ${active ? "opacity-100" : "opacity-0"}`}
                 style={{ background: "linear-gradient(90deg, transparent, #f1d58f, transparent)", boxShadow: "0 0 8px #c9a45c" }}
               />
-            </button>
+            </a>
           );
         })}
         <div className="ml-auto flex flex-wrap items-center gap-2 pb-2">

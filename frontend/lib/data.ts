@@ -51,7 +51,7 @@ export async function loadPlayer(slug: string): Promise<PlayerDetail> {
 const LANES: Lane[] = ["top", "jng", "mid", "bot", "sup"];
 
 export interface BoardData {
-  rows: IndexRow[];                            // first BOARD_PAGE rows of the all-roles view
+  rows: IndexRow[];                            // first BOARD_PAGE rows of the requested view
   summaries: Record<BoardView, ViewSummary>;
   tiers: TierMeta[];
   ratedCount: number;
@@ -116,15 +116,16 @@ function summarize(rows: IndexRow[]): ViewSummary {
   return { total: rows.length, maxClr, leagues: Array.from(leagues).sort(), tierCounts };
 }
 
-/** The first page of a board (today when `asOf` is null) plus a summary of every view.
- *  The full lists are served by `app/api/board/[board]/[view]` and fetched on demand. */
-export async function loadBoardPage(asOf: number | null): Promise<BoardData> {
+/** The first page of one view of a board (today when `asOf` is null; all roles unless
+ *  `view` names a role board) plus a summary of every view. The full lists are served by
+ *  `app/api/board/[board]/[view]` and fetched on demand. */
+export async function loadBoardPage(asOf: number | null, view: BoardView = "all"): Promise<BoardData> {
   const full = await loadFull(asOf);
   const summaries = Object.fromEntries(
     BOARD_VIEWS.map((v) => [v, summarize(full.views[v])]),
   ) as Record<BoardView, ViewSummary>;
   return {
-    rows: full.views.all.slice(0, BOARD_PAGE),
+    rows: full.views[view].slice(0, BOARD_PAGE),
     summaries,
     tiers: full.tiers,
     ratedCount: full.ratedCount,

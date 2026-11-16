@@ -7,9 +7,12 @@
 
 import { displayName, localRealName } from "@/lib/format";
 import { useLocale, useT } from "@/lib/i18n";
+import { localePath } from "@/lib/site";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import Link from "next/link";
+import { PlayerLink } from "@/components/PlayerLink";
 import type { IndexRow } from "@/lib/types";
+import type { BoardView } from "@/lib/board";
 import { TIER_COLORS } from "@/lib/theme";
 
 // Stage slot per leaderboard rank (#1 centre, #2 left, #3 right, #4 / #5 outer):
@@ -32,7 +35,7 @@ const ROLL_CLASSES = [
   "order-5 border-l lg:order-5",
 ];
 
-export function Hero({ rows, asOf = null }: { rows: IndexRow[]; asOf?: number | null }) {
+export function Hero({ rows, asOf = null, lane = "all" }: { rows: IndexRow[]; asOf?: number | null; lane?: BoardView }) {
   const m = useT();
   const locale = useLocale();
   const top = rows.slice(0, 5);
@@ -68,7 +71,7 @@ export function Hero({ rows, asOf = null }: { rows: IndexRow[]; asOf?: number | 
         <div className="absolute right-4 top-3 z-10 flex items-center gap-5">
           <LanguageSwitcher />
           <Link
-            href="/about"
+            href={localePath(locale, "/about")}
             className="font-serif text-[11px] font-bold uppercase tracking-[0.25em] text-text-dim hover:text-gold-bright"
           >
             {m.nav.about} ▸
@@ -81,7 +84,9 @@ export function Hero({ rows, asOf = null }: { rows: IndexRow[]; asOf?: number | 
           </div>
           <h1 className="mt-3 font-display text-[56px] font-black uppercase leading-[0.85] tracking-[0.02em] sm:text-[88px]">
             <span className="text-metal">{m.hero.titleA}</span>{" "}
-            <span className="font-serif text-[0.62em] font-semibold tracking-[0.12em] text-text">{m.hero.titleB}</span>
+            <span className="font-serif text-[0.62em] font-semibold tracking-[0.12em] text-text">
+              {lane === "all" ? m.hero.titleB : m.hero.roleB[lane]}
+            </span>
           </h1>
           <p className="mt-3 font-serif text-[11px] font-semibold uppercase tracking-[0.32em] text-text-muted">
             {m.hero.subtitle}
@@ -146,9 +151,9 @@ export function Hero({ rows, asOf = null }: { rows: IndexRow[]; asOf?: number | 
         {/* name roll, poster style */}
         <div className="relative grid grid-cols-2 items-end gap-y-3 pb-7 pt-4 lg:flex lg:flex-wrap lg:justify-center">
           {top.map((r, i) => (
-            <Link
+            <PlayerLink
               key={r.slug}
-              href={`/player/${r.slug}`}
+              slug={r.slug}
               className={`group flex flex-col items-center border-gold-deep/70 px-4 text-center sm:px-6 ${ROLL_CLASSES[i]}`}
             >
               <span className="text-[9px] font-semibold uppercase tracking-[0.28em] text-text-muted">
@@ -158,7 +163,7 @@ export function Hero({ rows, asOf = null }: { rows: IndexRow[]; asOf?: number | 
                 <span className="mr-1.5 text-metal">{r.rank}</span>
                 {displayName(r.playername)}
               </span>
-            </Link>
+            </PlayerLink>
           ))}
         </div>
       </div>

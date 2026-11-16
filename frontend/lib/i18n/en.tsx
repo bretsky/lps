@@ -10,14 +10,11 @@ import type { ReactNode } from "react";
 
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 
+const ROLE_NAMES: Record<string, string> = { top: "Top Laners", jng: "Junglers", mid: "Mid Laners", bot: "ADCs", sup: "Supports" };
+
 export const en = {
-  meta: {
-    home: "CLR · All-Time Rankings",
-    asof: (y: number) => `CLR · All-Time Rankings as of ${y}`,
-    about: "About · CLR",
-    card: (name: string) => `${name} · CLR Card`,
-  },
   lang: { label: "Language" },
+  notFound: { title: "Page not found", body: "That page doesn't exist, or has moved." },
   nav: {
     rankings: "All-time rankings",
     rankingsShort: "Rankings",
@@ -30,6 +27,8 @@ export const en = {
     build: (build: string, rated: number, asOf: number | null, minGames: number) =>
       `Build ${build} · ${rated} rated players${asOf !== null ? ` as of ${asOf}` : ""} (games ≥ ${minGames})`,
     aboutLink: "About CLR & glossary",
+    byRole: "Greatest by role",
+    pastSeasons: "Past seasons",
     disclaimer:
       "Not endorsed by Riot Games · Data and photos from Oracle's Elixir and Leaguepedia · League marks © their owners",
   },
@@ -103,6 +102,7 @@ export const en = {
     subtitle: "Career Legend Rating",
     asOf: (y: number) => `as of ${y}`,
     viewCard: (rank: number, name: string) => `#${rank} ${name} — view card`,
+    roleB: ROLE_NAMES,
   },
   board: {
     allRoles: "All Roles",
@@ -148,6 +148,7 @@ export const en = {
     },
     trophyTitle: (n: number, label: string) => `${n}× ${label}`,
     global: "Global",
+    nearby: "Ranked nearby",
   },
   waterfall: {
     title: "CLR Composition",
