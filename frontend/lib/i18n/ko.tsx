@@ -111,6 +111,8 @@ export const ko: Messages = {
     loadFailed: "선수를 더 불러오지 못했습니다",
     retry: "다시 시도",
     loading: "선수 불러오는 중…",
+    csv: "CSV 다운로드",
+    csvTitle: "이 순위표의 모든 선수를 스프레드시트로 받기 (선수별 프로필 링크 포함)",
   },
   row: {
     isNew: "신규",

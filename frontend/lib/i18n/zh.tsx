@@ -110,6 +110,8 @@ export const zh: Messages = {
     loadFailed: "无法加载更多选手",
     retry: "重试",
     loading: "正在加载选手…",
+    csv: "下载 CSV",
+    csvTitle: "以表格下载本榜单全部选手（附每位选手的资料页链接）",
   },
   row: {
     isNew: "新",

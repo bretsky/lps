@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { IndexRow, Lane, TierMeta } from "@/lib/types";
 import { PlayerRow, ROW_GRID } from "./PlayerRow";
 import { usePageLocale, useT } from "@/lib/i18n";
-import { BOARD_PAGE, boardViewUrl, type BoardView, type ViewSummary } from "@/lib/board";
+import { BOARD_PAGE, boardCsvName, boardCsvUrl, boardViewUrl, type BoardView, type ViewSummary } from "@/lib/board";
 import { boardPath } from "@/lib/site";
 
 type SortKey = "clr" | "total_score" | "peak_lps" | "resume_bonus" | "n_years";
@@ -230,6 +230,19 @@ export default function Board({
           </select>
         </div>
       </nav>
+
+      {/* Above the list, which loads endlessly as you scroll. The file is the whole view (every
+          league, CLR order), whatever the search / league / sort show. */}
+      <div className="-mt-2 mb-3 flex justify-end">
+        <a
+          href={boardCsvUrl(asOf, lane)}
+          download={boardCsvName(asOf, lane)}
+          title={m.board.csvTitle}
+          className="font-serif text-[11px] font-bold uppercase tracking-[0.2em] text-gold hover:text-gold-bright"
+        >
+          ⤓ {m.board.csv}
+        </a>
+      </div>
 
       {/* column header */}
       <div

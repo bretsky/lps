@@ -101,7 +101,9 @@ uploads with `npx wrangler@4`; `update_all --deploy` runs it last). Gotchas:
   25 MiB per file. `public/data/current/` is read only at build time, so the script drops `out/data/`;
   past bundles archive to `frontend/data-archive/` (outside `public/`, gitignored). Keep new bulky
   build inputs out of `public/` too. Each player costs 5 files (profile + card, each HTML + RSC payload, plus the preview PNG). Each
-  localized board/About page costs 4 files (`/ko` + `/zh`, HTML + RSC payload).
+  localized board/About page costs 4 files (`/ko` + `/zh`, HTML + RSC payload). Each board (today +
+  every past season) costs 6 CSV downloads (`/csv/<board>/<role>.csv`, `app/csv/`), which link back
+  to each player's profile.
 - Every route must stay prerenderable (`generateStaticParams`, `force-static` route handlers, no
   middleware/cookies/`next/image` optimisation): there's no server in production.
 

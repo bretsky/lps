@@ -19,3 +19,13 @@ export interface ViewSummary {
 
 /** URL of the full row list for one view; served by `app/api/board/[board]/[view]/route.ts`. */
 export const boardViewUrl = (asOf: number | null, view: BoardView) => `/api/board/${asOf ?? "today"}/${view}`;
+
+/** The CSV of one view, for readers to download and cite; served by `app/csv/[board]/[file]/route.ts`.
+ *  Files are named by the role's URL slug (jungle, adc, support), as on the role boards. */
+export const CSV_SLUGS: Record<BoardView, string> = {
+  all: "all", top: "top", jng: "jungle", mid: "mid", bot: "adc", sup: "support",
+};
+export const boardCsvUrl = (asOf: number | null, view: BoardView) => `/csv/${asOf ?? "today"}/${CSV_SLUGS[view]}.csv`;
+/** The file name a download saves as: clr-mid.csv, clr-mid-end-2016.csv. */
+export const boardCsvName = (asOf: number | null, view: BoardView) =>
+  `clr-${CSV_SLUGS[view]}${asOf === null ? "" : `-end-${asOf}`}.csv`;

@@ -121,6 +121,8 @@ export const en = {
     loadFailed: "Couldn't load more players",
     retry: "Retry",
     loading: "Loading players…",
+    csv: "Download CSV",
+    csvTitle: "Every player on this board as a spreadsheet, with a link to each profile",
   },
   row: {
     isNew: "NEW",
