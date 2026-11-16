@@ -21,14 +21,21 @@ const SLOTS: [number, number, number, number][] = [
   [14, 235, 3, 0.75],
   [86, 235, 3, 0.75],
 ];
-// Left-to-right reading order of the stage, for the name roll beneath it.
-const STAGE_ORDER = [3, 1, 0, 2, 4];
+// Name roll beneath the stage, per leaderboard rank. Phones get a podium grid
+// (#1 alone, then 2 | 3, then 4 | 5); from `lg` up it's one row in the stage's
+// left-to-right order (4 2 1 3 5), which only reads right when it doesn't wrap.
+const ROLL_CLASSES = [
+  "order-1 col-span-2 lg:order-3 lg:border-l",
+  "order-2 lg:order-2 lg:border-l",
+  "order-3 border-l lg:order-4",
+  "order-4 lg:order-1",
+  "order-5 border-l lg:order-5",
+];
 
 export function Hero({ rows, asOf = null }: { rows: IndexRow[]; asOf?: number | null }) {
   const m = useT();
   const locale = useLocale();
   const top = rows.slice(0, 5);
-  const roll = STAGE_ORDER.map((i) => top[i]).filter(Boolean);
 
   return (
     <section className="relative overflow-hidden border-b border-gold-deep/50">
@@ -137,14 +144,12 @@ export function Hero({ rows, asOf = null }: { rows: IndexRow[]; asOf?: number | 
         </div>
 
         {/* name roll, poster style */}
-        <div className="relative flex flex-wrap items-end justify-center gap-y-3 pb-7 pt-4">
-          {roll.map((r, i) => (
+        <div className="relative grid grid-cols-2 items-end gap-y-3 pb-7 pt-4 lg:flex lg:flex-wrap lg:justify-center">
+          {top.map((r, i) => (
             <Link
               key={r.slug}
               href={`/player/${r.slug}`}
-              className={`group flex flex-col items-center px-4 text-center sm:px-6 ${
-                i > 0 ? "border-l border-gold-deep/70" : ""
-              }`}
+              className={`group flex flex-col items-center border-gold-deep/70 px-4 text-center sm:px-6 ${ROLL_CLASSES[i]}`}
             >
               <span className="text-[9px] font-semibold uppercase tracking-[0.28em] text-text-muted">
                 {localRealName(r, locale) ?? `#${r.rank}`}
