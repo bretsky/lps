@@ -863,7 +863,8 @@ _RESUME_ROUNDS: list[tuple[str, str]] = [
 _AWARD_LABELS: list[tuple[str, str]] = [
     ("worlds_finals_mvp", "Worlds Finals MVP"),
     ("worlds_mvp", "Worlds tournament MVP"),
-    ("worlds_all_pro", "Worlds All-Pro team"),
+    # No worlds_all_pro row: Riot names no Worlds All-Pro team and Leaguepedia has none on
+    # record, so the scored token never fires. Keep it off the site's points table.
     ("msi_finals_mvp", "MSI Finals MVP"),
     ("msi_mvp", "MSI tournament MVP"),
     ("msi_all_pro", "MSI All-Pro team"),
