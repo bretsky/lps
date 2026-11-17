@@ -256,7 +256,10 @@ export function Portrait({
         <img
           src={scaledPhoto(src, w1 * 2)}
           srcSet={`${scaledPhoto(src, w1)} 1x, ${scaledPhoto(src, w1 * 2)} 2x`}
-          alt=""
+          // Named for search engines (Bing flags empty alts); hidden from screen readers, since
+          // the name is printed beside every portrait.
+          alt={name}
+          aria-hidden
           loading="lazy"
           referrerPolicy="no-referrer"
           // Zoom by sizing (not transform: scale, which upsamples a 44px raster and blurs it);

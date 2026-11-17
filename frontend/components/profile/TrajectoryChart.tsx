@@ -518,7 +518,7 @@ function AchievementCell({ ach, league }: { ach: YearAchievements; league?: stri
               style={{ boxShadow: "inset 0 0 0 1.5px currentColor" }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={lg.src} alt="" className="h-4 w-4 object-contain" style={{ filter: lg.invert ? "invert(1)" : undefined }} />
+              <img src={lg.src} alt={league ?? ""} className="h-4 w-4 object-contain" style={{ filter: lg.invert ? "invert(1)" : undefined }} />
             </span>
             {n > 1 && <span className="text-[10px] font-bold tabular-nums">×{n}</span>}
           </span>,

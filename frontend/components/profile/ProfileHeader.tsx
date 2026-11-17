@@ -134,7 +134,7 @@ export function ProfileHeader({
               {isHol && <HolCrown year={player.hol_year} />}
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold uppercase tracking-[0.18em] text-text-muted">
-              {team && <img src={team.logo} alt="" referrerPolicy="no-referrer" className="h-5 w-5 object-contain" />}
+              {team && <img src={team.logo} alt={player.current_team ?? ""} aria-hidden referrerPolicy="no-referrer" className="h-5 w-5 object-contain" />}
               <span>{player.current_team ?? "—"}</span>
               <span className="text-gold">◆</span>
               <LeagueMark league={player.current_league} size={16} />
