@@ -30,7 +30,9 @@ Search & link previews: the production origin is `SITE_URL` in `frontend/lib/sit
 description, canonical URL and Open Graph / X preview through `lib/seo.ts`'s `pageMeta` (Next merges
 metadata shallowly, so a page's `openGraph` must be complete). Titles and descriptions in all three
 languages live in `lib/i18n/seo.ts` (`SEO`); `DocTitle` sets the same titles client-side when the reader's
-language changes. `app/sitemap.ts` / `app/robots.ts` emit `/sitemap.xml` / `/robots.txt`. Preview
+language changes. `app/robots.ts` emits `/robots.txt`; `/sitemap.xml` is a sitemap index of
+`/sitemaps/{pages,players,players-ko,players-zh}.xml` (`lib/sitemap.ts`; small files, because one
+3.5 MB sitemap sat at "could not be read" in Search Console). Preview
 images are PNGs drawn at build time with `next/og` (`lib/og.tsx`): `/og/player/<slug>.png` per player,
 `/og/role/<slug>.png` / `/og/asof/<year>.png` per role board and past season (each with that board's own top five, `lib/og-board.tsx`), `/og/site.png` for today's board and About (fonts from the `@fontsource/*` dev dependencies; no player photos, so
 the build never hits Leaguepedia). Today's role boards are pages (`/role/{top,jungle,mid,adc,support}`);
