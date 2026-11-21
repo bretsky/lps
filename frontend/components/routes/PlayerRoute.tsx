@@ -99,13 +99,20 @@ export async function PlayerRoute({ locale, slug }: { locale: Locale; slug: stri
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-6">
-      <nav className="mb-4 flex items-center justify-between font-serif text-[11px] font-bold uppercase tracking-[0.25em]">
+      <nav className="mb-4 flex items-center justify-between gap-3 whitespace-nowrap font-serif text-[11px] font-bold uppercase tracking-[0.18em] sm:tracking-[0.25em]">
         <LocalizedLink path="/" className="text-text-dim hover:text-gold-bright">
-          ◂ <T k="nav.rankings" />
+          ◂{" "}
+          <span className="sm:hidden">
+            <T k="nav.rankingsShort" />
+          </span>
+          <span className="hidden sm:inline">
+            <T k="nav.rankings" />
+          </span>
         </LocalizedLink>
         <div className="flex items-center gap-5">
           <LanguageSwitcher />
-          <Link href={`/card/${slug}`} prefetch={false} className="text-text-dim hover:text-gold-bright">
+          {/* on phones the header's "View card" plaque is the way to the card */}
+          <Link href={`/card/${slug}`} prefetch={false} className="hidden text-text-dim hover:text-gold-bright sm:inline">
             <T k="nav.playerCard" /> ▸
           </Link>
         </div>

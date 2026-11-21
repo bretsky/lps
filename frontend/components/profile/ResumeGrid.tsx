@@ -76,15 +76,16 @@ export function ResumeGrid({ player }: { player: PlayerDetail }) {
 
   return (
     <section className="deco-panel">
-      <div className="mb-4 flex items-baseline justify-between gap-4">
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 className="deco-title flex-1">{m.resume.title}</h2>
         <div className="shrink-0 font-mono text-xs text-text-dim">{m.resume.summary(fmt(totalPts, 1), totalN)}</div>
       </div>
 
       <div className="space-y-2">
         {rows.map((row) => (
-          <div key={row.label} className="flex items-stretch gap-3">
-            <div className="flex w-24 shrink-0 items-center gap-2">
+          // phones: the row's name above its tiles, so the three tiles get the full width
+          <div key={row.label} className="flex flex-col gap-1 sm:flex-row sm:items-stretch sm:gap-3">
+            <div className="flex shrink-0 items-center gap-2 sm:w-24">
               <span className="flex w-7 justify-center">{row.icon}</span>
               <span className="font-serif text-[11px] font-bold uppercase tracking-[0.14em] text-text-muted">
                 {row.label}
@@ -112,21 +113,25 @@ function Tile({ cat, n, pts }: { cat: Cat; n: number; pts: number }) {
   return (
     <div
       title={`${cat.hint}`}
-      className={`relative flex items-center justify-between gap-2 px-3 py-1.5 ${dim ? "opacity-35" : ""}`}
+      className={`relative flex items-center justify-between gap-2 px-2 py-1.5 sm:px-3 ${dim ? "opacity-35" : ""}`}
       style={{
         clipPath: "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)",
         background: dim ? "rgba(255,255,255,0.02)" : `linear-gradient(90deg, ${color}1f, rgba(5,11,20,0.4))`,
         boxShadow: `inset 2px 0 0 ${dim ? "#3a4a55" : color}`,
       }}
     >
-      <div className="min-w-0">
-        <div className="flex items-center gap-1 truncate text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: dim ? undefined : color }}>
-          {Icon && <Icon className="h-3 w-3" />}
+      {/* phones: the count sits beside the points, under the label, so the label isn't cut short */}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1 text-[10px] font-bold uppercase leading-tight tracking-[0.08em] sm:truncate sm:tracking-[0.16em]" style={{ color: dim ? undefined : color }}>
+          {Icon && <Icon className="h-3 w-3 shrink-0" />}
           {cat.label}
         </div>
-        <div className="font-mono text-[10px] text-text-dim">{m.common.pts(fmt(pts, 1))}</div>
+        <div className="flex items-baseline justify-between gap-1">
+          <div className="font-mono text-[10px] text-text-dim">{m.common.pts(fmt(pts, 1))}</div>
+          <span className={`font-display text-xl font-extrabold leading-none sm:hidden ${dim ? "text-text-dim" : "text-text"}`}>{n}</span>
+        </div>
       </div>
-      <span className={`font-display text-2xl font-extrabold leading-none ${dim ? "text-text-dim" : "text-text"}`}>{n}</span>
+      <span className={`hidden font-display text-2xl font-extrabold leading-none sm:inline ${dim ? "text-text-dim" : "text-text"}`}>{n}</span>
     </div>
   );
 }

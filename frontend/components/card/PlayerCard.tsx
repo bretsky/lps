@@ -618,7 +618,7 @@ export function PlayerCard({ player }: { player: PlayerDetail }) {
                           <div className="max-w-[58px] truncate text-[8px] font-semibold uppercase tracking-[0.08em] text-text-muted">
                             {ch.champion}
                           </div>
-                          <div className="mt-[2px] font-mono text-[7.5px] text-text-dim">
+                          <div className="mt-[2px] whitespace-nowrap font-mono text-[7.5px] text-text-dim">
                             {k.champLine(ch.games, fmt(ch.lps, 1))}
                           </div>
                         </div>

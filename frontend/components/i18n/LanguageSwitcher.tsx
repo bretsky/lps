@@ -18,7 +18,7 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
     <div
       role="group"
       aria-label={m.lang.label}
-      className={`flex items-center font-serif text-[11px] font-bold uppercase tracking-[0.18em] ${className}`}
+      className={`flex items-center whitespace-nowrap font-serif text-[11px] font-bold uppercase tracking-[0.18em] ${className}`}
     >
       {LOCALES.map((l, i) => {
         const cls = `transition-colors ${

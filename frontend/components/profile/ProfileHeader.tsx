@@ -71,7 +71,7 @@ export function ProfileHeader({
           {handle}
         </div>
 
-        <div className="relative flex flex-col gap-6 px-6 pt-6 md:flex-row md:items-end md:pt-0">
+        <div className="relative flex flex-col gap-6 px-4 pt-6 sm:px-6 md:flex-row md:items-end md:pt-0">
           {/* portrait */}
           <div className="relative mx-auto h-[260px] w-[300px] shrink-0 md:mx-0 md:mt-6 md:h-[290px]">
             {player.photo ? (
@@ -121,14 +121,14 @@ export function ProfileHeader({
               </span>
             </div>
             {realName && (
-              <div className="mt-3 text-[11px] font-semibold tracking-[0.4em] text-text-muted">
+              <div className="mt-3 text-[11px] font-semibold tracking-[0.25em] text-text-muted sm:tracking-[0.4em]">
                 {upper(realName)}
                 {player.country ? <span className="text-text-dim"> · {upper(countryName(player.country, locale))}</span> : null}
               </div>
             )}
             <div className="flex items-center gap-3">
               <StatusDot row={player} />
-              <h1 className="truncate font-serif text-5xl font-extrabold tracking-[0.04em] text-metal md:text-6xl">
+              <h1 className="truncate font-serif text-4xl font-extrabold tracking-[0.04em] text-metal sm:text-5xl md:text-6xl">
                 {upper(handle)}
               </h1>
               {isHol && <HolCrown year={player.hol_year} />}
@@ -172,15 +172,15 @@ export function ProfileHeader({
           </div>
 
           {/* plaques */}
-          <div className="flex gap-3 pb-6 md:flex-col md:items-stretch">
+          <div className="flex flex-wrap gap-3 pb-6 md:flex-col md:flex-nowrap md:items-stretch">
             <Plaque label="CLR" value={fmt(player.clr, 1)} big accent={accent} />
-            <div className="flex gap-3">
+            <div className="flex flex-1 gap-3 md:flex-none">
               <Plaque label={m.profile.global} value={`#${player.rank}`} />
               {laneRank && player.position && <Plaque label={laneLabel(m, player.position)} value={`#${laneRank}`} />}
             </div>
             <Link
               href={`/card/${player.slug}`}
-              className="deco-control px-3 py-1.5 text-center font-serif text-[10px] font-bold uppercase tracking-[0.25em] text-gold-bright hover:border-gold hover:text-text"
+              className="deco-control w-full px-3 py-1.5 text-center font-serif text-[10px] font-bold uppercase tracking-[0.25em] text-gold-bright hover:border-gold hover:text-text"
             >
               {m.nav.viewCard} ▸
             </Link>
@@ -213,7 +213,7 @@ function Trophy({ node, n, label }: { node: React.ReactNode; n: number; label: s
 function Plaque({ label, value, big = false, accent }: { label: string; value: string; big?: boolean; accent?: string }) {
   return (
     <div
-      className={`flex flex-col items-center justify-center ${big ? "min-w-[132px] px-4 py-2" : "min-w-[62px] flex-1 px-3 py-1.5"}`}
+      className={`flex flex-col items-center justify-center ${big ? "min-w-[132px] flex-1 px-4 py-2 md:flex-none" : "min-w-[62px] flex-1 px-3 py-1.5"}`}
       style={{
         clipPath: "polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px)",
         background: big ? `linear-gradient(180deg, ${accent}22, rgba(5,11,20,0.85))` : "rgba(5,11,20,0.75)",

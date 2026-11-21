@@ -36,23 +36,33 @@ export function ChampionPool({ player }: { player: PlayerDetail }) {
       </div>
 
       {cs && (
-        <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+        // phones: totals on their own row, then per game + KDA, then CS + CS/min (3 columns);
+        // lg: all five in one row of 7
+        <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-7">
           <Stat
             label={t.careerKda}
             value={cs.kills != null ? `${num(cs.kills)} / ${num(cs.deaths)} / ${num(cs.assists)}` : "—"}
             hint={cs.kda_games != null ? t.careerKdaHint(num(cs.kda_games)) : undefined}
-            wide
+            className="col-span-3 sm:col-span-2"
           />
+          <Stat label={t.perGame} value={kdaLine(cs)} hint={t.perGameHint} className="col-span-2" />
           <Stat label="KDA" value={fmt(cs.kda, 2)} hint={t.kdaHint} />
-          <Stat label={t.perGame} value={kdaLine(cs)} hint={t.perGameHint} wide />
-          <Stat label={t.careerCs} value={num(cs.cs)} hint={t.careerCsHint} />
+          <Stat label={t.careerCs} value={num(cs.cs)} hint={t.careerCsHint} className="col-span-2 sm:col-span-1" />
           <Stat label={t.cspm} value={fmt(cs.cspm, 1)} />
         </div>
       )}
 
       {champs.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[520px] border-separate border-spacing-y-1 text-xs">
+        <ol className="space-y-1 sm:hidden">
+          {champs.map((c, i) => (
+            <ChampionItem key={c.champion} c={c} i={i} max={max} total={total} />
+          ))}
+        </ol>
+      )}
+
+      {champs.length > 0 && (
+        <div className="hidden overflow-x-auto sm:block">
+          <table className="w-full min-w-[520px] border-separate border-spacing-y-1 whitespace-nowrap text-xs">
             <thead>
               <tr className="text-left text-[10px] uppercase tracking-widest text-text-dim">
                 <th className="w-6 pb-1 font-normal">#</th>
@@ -98,10 +108,10 @@ function ChampionRow({
           <span className="font-semibold text-text">{c.champion}</span>
         </div>
       </td>
-      <td className="py-1 text-right font-mono text-text-muted">{c.games}</td>
-      <td className="py-1 text-right font-mono text-text-muted">{fmtPct(c.games ? c.wins / c.games : null)}</td>
-      <td className="py-1 text-right font-mono text-text-muted">{kdaLine(c)}</td>
-      <td className="py-1 text-right font-mono text-text">{fmt(c.kda, 2)}</td>
+      <td className="py-1 pl-3 text-right font-mono text-text-muted">{c.games}</td>
+      <td className="py-1 pl-3 text-right font-mono text-text-muted">{fmtPct(c.games ? c.wins / c.games : null)}</td>
+      <td className="py-1 pl-3 text-right font-mono text-text-muted">{kdaLine(c)}</td>
+      <td className="py-1 pl-3 text-right font-mono text-text">{fmt(c.kda, 2)}</td>
       <td className="w-[34%] rounded-r py-1 pl-4 pr-2">
         <div className="flex items-center gap-2">
           <div className="h-1.5 flex-1 overflow-hidden rounded-sm bg-black/40">
@@ -117,20 +127,62 @@ function ChampionRow({
   );
 }
 
+/** One champion on a phone, where the table's seven columns don't fit: name and LPS earned on
+ *  top, the bar, then games / win rate / K/D/A / KDA as a wrapping line. */
+function ChampionItem({
+  c,
+  i,
+  max,
+  total,
+}: {
+  c: ChampionLine;
+  i: number;
+  max: number;
+  total: number | null;
+}) {
+  const m = useT();
+  const w = (Math.max(0, c.lps) / max) * 100;
+  const share = total && total > 0 ? c.lps / total : null;
+  return (
+    <li className="flex items-center gap-2.5 rounded bg-bg-rail/60 px-2 py-1.5">
+      <span className="w-4 shrink-0 text-right font-mono text-[10px] text-text-dim">{i + 1}</span>
+      <ChampionIcon name={c.champion} size={32} ring="rgba(201,164,92,0.55)" />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-2">
+          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-text">{c.champion}</span>
+          <span className="font-mono text-xs text-text">{fmt(c.lps, 1)}</span>
+          {share != null && (
+            <span className="w-7 text-right font-mono text-[10px] text-text-dim">{`${(share * 100).toFixed(0)}%`}</span>
+          )}
+        </div>
+        <div className="mt-1 h-1 overflow-hidden rounded-sm bg-black/40">
+          <div className="h-full bg-accent-hex/70" style={{ width: `${w}%` }} />
+        </div>
+        <div className="mt-1 flex flex-wrap gap-x-2 font-mono text-[10px] text-text-muted">
+          <span className="whitespace-nowrap">{m.common.games(String(c.games))}</span>
+          <span className="whitespace-nowrap">{m.common.winRate(fmtPct(c.games ? c.wins / c.games : null))}</span>
+          <span className="whitespace-nowrap">{kdaLine(c)}</span>
+          <span className="whitespace-nowrap text-text">{m.common.kda(fmt(c.kda, 2))}</span>
+        </div>
+      </div>
+    </li>
+  );
+}
+
 function Stat({
   label,
   value,
   hint,
-  wide = false,
+  className = "",
 }: {
   label: string;
   value: string;
   hint?: string;
-  wide?: boolean;
+  className?: string;
 }) {
   return (
     <div
-      className={`rounded border border-border/70 bg-bg-rail px-3 py-2 ${wide ? "col-span-2" : ""}`}
+      className={`rounded border border-border/70 bg-bg-rail px-3 py-2 ${className}`}
       title={hint}
     >
       <div className="text-[10px] uppercase tracking-widest text-text-dim">{label}</div>

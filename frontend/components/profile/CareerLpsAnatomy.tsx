@@ -49,7 +49,7 @@ export function CareerLpsAnatomy({ player }: { player: PlayerDetail }) {
 
   return (
     <section className="deco-panel space-y-4">
-      <div className="flex items-baseline justify-between">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 className="deco-title">{a.title}</h2>
         <div className="text-xs text-text-dim">
           {a.total} <span className="font-mono text-text">{fmt(total, 1)}</span>
@@ -113,7 +113,7 @@ function PartitionBar({
   const shownParts = signed ? parts : parts.filter((p) => p.v > 0);
   return (
     <div>
-      <div className="mb-1.5 flex items-baseline justify-between">
+      <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3">
         <div className="text-[10px] uppercase tracking-widest text-text-dim">
           {title}
         </div>

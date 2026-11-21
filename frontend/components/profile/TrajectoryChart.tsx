@@ -117,7 +117,7 @@ export function TrajectoryChart({ player }: { player: PlayerDetail }) {
 
   return (
     <section className="deco-panel">
-      <div className="mb-3 flex items-baseline justify-between">
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 className="deco-title">{m.season.title}</h2>
         <div className="text-xs text-text-dim">
           {m.season.summary(fmt(player.career_lps.peak_lps, 1), peakYear, entries.length)}

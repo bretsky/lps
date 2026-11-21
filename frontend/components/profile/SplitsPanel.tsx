@@ -15,7 +15,7 @@ export function SplitsPanel({ player }: { player: PlayerDetail }) {
 
   return (
     <section className="deco-panel">
-      <div className="mb-3 flex items-baseline justify-between">
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 className="deco-title">{m.splits.title}</h2>
       </div>
 

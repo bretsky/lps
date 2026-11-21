@@ -62,7 +62,7 @@ export default async function CardPage({
         }}
       />
       <DocTitle k="card" args={[displayName(player.playername)]} />
-      <nav className="relative flex w-full items-center gap-5 font-serif text-[11px] font-bold uppercase tracking-[0.25em] text-text-dim">
+      <nav className="relative flex w-full items-center gap-4 whitespace-nowrap font-serif text-[11px] font-bold uppercase tracking-[0.15em] text-text-dim sm:gap-5 sm:tracking-[0.25em]">
         <LocalizedLink path="/" className="hover:text-gold-bright">
           ◂ <T k="nav.rankingsShort" />
         </LocalizedLink>
